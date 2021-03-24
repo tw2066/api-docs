@@ -1,0 +1,40 @@
+{
+    "name": "tangwei/apidocs",
+    "description": "A swagger library for Hyperf.",
+    "license": "MIT",
+    "keywords": [
+        "php",
+        "docs",
+        "hyperf",
+        "swagger"
+    ],
+    "authors": [
+        {
+            "name": "tang",
+            "email": "tw2066@163.com",
+            "homepage": "https://github.com/tw2066",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "hyperf/http-server": "^2.0.0",
+        "tangwei/dto": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tang\\ApiDocs\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "hyperf": {
+            "config": "Tang\\DTO\\ConfigProvider"
+        },
+        "branch-alias":{
+            "dev-master":"1.0.x-dev"
+        }
+    }
+}
