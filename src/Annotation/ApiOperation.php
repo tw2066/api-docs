@@ -19,9 +19,9 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiOperation extends AbstractAnnotation
 {
-    public $summary;
+    public ?string $summary = '';
 
-    public $description;
+    public ?string $description = '';
 
 //    public string $deprecated;
 

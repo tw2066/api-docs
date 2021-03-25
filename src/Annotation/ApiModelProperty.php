@@ -19,9 +19,25 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiModelProperty extends AbstractAnnotation
 {
+
     /**
      * @var string
      */
-    public  $description = '';
+    public string $value = '';
+
+    /**
+     * @var string|null
+     */
+    public ?string $example = null;
+
+    /**
+     * @var bool
+     */
+    public bool $hidden = false;
+
+    /**
+     * @var bool
+     */
+    public ?bool $required = null;
 
 }

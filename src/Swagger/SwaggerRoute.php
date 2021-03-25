@@ -25,7 +25,6 @@ class SwaggerRoute
     {
         $this->prefix = $prefix;
         $this->outputDir = $outputDir;
-//        $this->path = BASE_PATH . '/vendor/tangwei/apidocs/src/swagger-ui';
         $this->path = __DIR__ . '/../swagger-ui';
     }
 
@@ -54,6 +53,7 @@ class SwaggerRoute
                 $response = Context::get(ResponseInterface::class);
                 return $response->withBody(new SwooleFileStream($file));
             });
+            $route->addRoute(['GET'], $this->prefix.$file.'.map', function () {});
         }
     }
 
@@ -69,10 +69,5 @@ class SwaggerRoute
             return $response->withAddedHeader('Content-Type','application/json')->withBody(new SwooleFileStream($outputFile));
         });
 
-    }
-
-    public function discard(RouteCollector $route)
-    {
-        $route->addRoute(['GET'], $this->prefix.'/{name}', function (){});
     }
 }

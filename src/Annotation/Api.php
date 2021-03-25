@@ -21,13 +21,13 @@ class Api extends AbstractAnnotation
 {
 
     /**
-     * @var null | string
+     * @var string
      */
-    public  $tag;
+    public string $tag = '';
 
     /**
      * @var string
      */
-    public  $description = '';
+    public string $description = '';
 
 }

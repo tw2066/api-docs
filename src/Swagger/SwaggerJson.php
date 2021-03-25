@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tang\ApiDocs\Swagger;
 
 use Hyperf\Di\ReflectionType;
+use Hyperf\HttpServer\Annotation\AutoController;
 use ReflectionProperty;
 use Tang\ApiDocs\Annotation\Api;
 use Tang\ApiDocs\Annotation\ApiModelProperty;
@@ -70,7 +71,13 @@ class SwaggerJson extends JsonMapper
         }
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $controlerAnno */
-        $controlerAnno = $classAnnotation[Api::class] ?? null;
+        $controlerAnno = $classAnnotation[Api::class] ?? new Api();
+
+        //AutoController Annotation POST
+        $autoControllerAnno = $classAnnotation[AutoController::class] ?? null;
+        if($autoControllerAnno && $methods != 'POST'){
+            return;
+        }
 
         $bindServer = $this->config->get('server.servers.0.name');
 
@@ -86,8 +93,7 @@ class SwaggerJson extends JsonMapper
 
         $methodAnnotations = ApiAnnotation::methodMetadata($className, $methodName);
 
-        /** @var ApiOperation $apiOperation */
-        $apiOperation = null;
+        $apiOperation = new ApiOperation();
         $consumes = null;
         foreach ($methodAnnotations as $option) {
             /** @var ApiOperation $apiOperationAnnotation */
@@ -96,7 +102,7 @@ class SwaggerJson extends JsonMapper
             }
         }
 
-        $tag = $controlerAnno->tag ?: $className;
+        $tag = $controlerAnno->tag ?: $this->getSimpleClassName($className);
         $this->swagger['tags'][$tag] = [
             'name' => $tag,
             'description' => $controlerAnno->description,
@@ -129,16 +135,28 @@ class SwaggerJson extends JsonMapper
                 $property['default'] = $reflectionProperty->getValue(make($parameterClassName));
             } catch (Throwable $exception) {
             }
-            $property['type'] = $this->type2SwaggerType($this->getTypeName($reflectionProperty));
-            /** @var ApiModelProperty $apiModelProperty */
-            $apiModelProperty = null;
-            $propertyReflectionPropertys = ApiAnnotation::propertyMetadata($parameterClassName, $reflectionProperty->getName());
-            foreach ($propertyReflectionPropertys as $propertyReflectionProperty) {
+            $phpType = $this->getTypeName($reflectionProperty);
+            $property['type'] = $this->type2SwaggerType($phpType);
+            if(!in_array($phpType,['integer','int','boolean','bool','string','double','float'])){
+                continue;
+            }
+            $apiModelProperty = new ApiModelProperty();
+            $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($parameterClassName, $reflectionProperty->getName());
+            foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
                 if ($propertyReflectionProperty instanceof ApiModelProperty) {
                     $apiModelProperty = $propertyReflectionProperty;
                 }
             }
-            $property['description'] = $apiModelProperty->description ?? '';
+            if($apiModelProperty->hidden){
+                continue;
+            }
+            if($apiModelProperty->required !== null){
+                $property['required'] = $apiModelProperty->required;
+            }
+            if($apiModelProperty->example !== null){
+                $property['example'] = $apiModelProperty->example;
+            }
+            $property['description'] = $apiModelProperty->value ?? '';
             $parameters[] = $property;
         }
         return $parameters;
@@ -216,16 +234,6 @@ class SwaggerJson extends JsonMapper
         return $type;
     }
 
-    private function allowsNull(ReflectionProperty $rp) : bool
-    {
-        try {
-            $bool = !$rp->getType()->allowsNull();
-        }catch (Throwable $throwable){
-            $bool = false;
-        }
-        return $bool;
-    }
-
 
     private function getDefinitions($className){
         return '#/definitions/'.$this->getSimpleClassName($className);
@@ -261,21 +269,25 @@ class SwaggerJson extends JsonMapper
             $type = $this->getTypeName($reflectionProperty);
             $fieldName = $reflectionProperty->getName();
             $type = $this->type2SwaggerType($type);
-            /** @var ApiModelProperty $apiModelProperty */
-            $apiModelProperty = null;
-            $propertyReflectionPropertys = ApiAnnotation::propertyMetadata($className, $fieldName);
-            foreach ($propertyReflectionPropertys as $propertyReflectionProperty) {
+            $apiModelProperty = new ApiModelProperty();
+            $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($className, $fieldName);
+            foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
                 if ($propertyReflectionProperty instanceof ApiModelProperty) {
                     $apiModelProperty = $propertyReflectionProperty;
                 }
             }
-
+            if($apiModelProperty->hidden){
+                continue;
+            }
             $property = [];
             $property['type'] = $type;
-            $property['description'] = $apiModelProperty->description ?? '';
-            //$property['example'] = null;
-            $property['required'] = $this->allowsNull($reflectionProperty);
-
+            $property['description'] = $apiModelProperty->value ?? '';
+            if($apiModelProperty->required !== null){
+                $property['required'] = $apiModelProperty->required;
+            }
+            if($apiModelProperty->example !== null){
+                $property['example'] = $apiModelProperty->example;
+            }
             if ($type == 'array') {
                 $docblock = $reflectionProperty->getDocComment();
                 $annotations = static::parseAnnotations($docblock);
@@ -322,6 +334,10 @@ class SwaggerJson extends JsonMapper
             case 'boolean':
             case 'bool':
                 $type = 'boolean';
+                break;
+            case 'double':
+            case 'float':
+                $type = 'number';
                 break;
             case 'array':
                 $type = 'array';
