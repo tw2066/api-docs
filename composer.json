@@ -29,6 +29,7 @@
     "config": {
         "sort-packages": true
     },
+    "minimum-stability": "dev",
     "extra": {
         "hyperf": {
             "config": "Hyperf\\ApiDocs\\ConfigProvider"
