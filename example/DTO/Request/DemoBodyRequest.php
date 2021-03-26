@@ -2,8 +2,8 @@
 
 namespace App\DTO\Request;
 
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\DTO\Contracts\RequestBody;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Contracts\RequestBody;
 
 class DemoBodyRequest implements RequestBody
 {

@@ -2,8 +2,8 @@
 
 namespace App\DTO\Request;
 
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\DTO\Contracts\RequestFormData;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Contracts\RequestFormData;
 
 class DemoFormData implements RequestFormData
 {

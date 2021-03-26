@@ -9,9 +9,10 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-namespace Tang\ApiDocs\Annotation;
+namespace Hyperf\ApiDocs\Annotation;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
+use Hyperf\Utils\Str;
 
 /**
  * @Annotation
@@ -21,13 +22,20 @@ class Api extends AbstractAnnotation
 {
 
     /**
-     * @var string
+     * @var array
      */
-    public string $tag = '';
+    public $tags;
 
     /**
      * @var string
      */
-    public string $description = '';
+    public $description = '';
 
+    public function __construct($value = null)
+    {
+        if (isset($value['tags']) && is_string($value['tags'])){
+            $value['tags'] = explode(',', str_replace(' ', '', $value['tags']));
+        }
+        parent::__construct($value);
+    }
 }

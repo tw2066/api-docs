@@ -1,15 +1,8 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
-namespace Tang\ApiDocs;
+
+namespace Hyperf\ApiDocs;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Hyperf\Di\Annotation\AnnotationCollector;
@@ -23,7 +16,7 @@ class ApiAnnotation
         $reader = new AnnotationReader();
         return $reader->getMethodAnnotations($reflectMethod);
     }
-    
+
     public static function propertyMetadata($className, $propertyName)
     {
         $reflectMethod = ReflectionManager::reflectProperty($className, $propertyName);

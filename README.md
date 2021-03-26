@@ -1,9 +1,12 @@
 ## PHP Swagger Api Docs
-一个基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 DTO 及 swagger 文档生成组件
+ 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件
 
-1.  请求参数映射到PHP类，根据类和注解自动生成Swagger文档
-2.  借鉴Java的swagger、 DTO写法，根据依赖类直接生成文档
-3.  文件上传文档暂不支持  PHP >= 7.4
+##### 优点
+- 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
+- 代码可维护性好，扩展性好 
+
+##### 缺点
+- 模型类需要手工编写
 
 ## 安装
 
@@ -16,7 +19,6 @@ composer require tangwei/apidocs
 
 ```bash
 php bin/hyperf.php vendor:publish tangwei/apidocs
-
 ```
 > config/autoload/apidocs.php
 ```php
@@ -32,7 +34,7 @@ return [
             'description' => 'swagger api desc',
             'version' => '1.0.0',
             'title' => 'API DOC',
-        ]，
+        ],
         'host' => '',
         'schemes' => [],
     ],
@@ -47,29 +49,34 @@ php bin/hyperf.php start
 [INFO] TaskWorker#1 started.
 [INFO] Worker#0 started.
 [INFO] HTTP Server listening at 0.0.0.0:9531
-[INFO] Process[metric.0] start.
-[INFO] Process[crontab-dispatcher.0] start.
-
 ```
+> 看到`Swagger Url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
 
-> 看到`Swagger Url`显示，表示生成成功，访问`/swagger`即可以看到swagger页面
 
+### 3. 使用
 
-### 3. 介绍
-
-## 定义契约Contracts 
-> 定义一个类，增加类型属性 实现`implements`即可
+## 组件契约
+> 定义一个类，增加类型属性 实现`implements`对应的接口即可
+> 命名空间:`Hyperf\DTO\Contracts`
 #### RequestBody
 - Body参数
+```php
+class DemoBodyRequest implements RequestBody{}
+```
 ### RequestQuery
-- GET参数生成
+- GET参数
+```php
+class DemoQuery implements RequestQuery{}
+```
 ### RequestFormData
 - 表单请求
-
-> tip: 一个方法中，入参中RequestBody和RequestFormData不能同时共存
+```php
+class GoodsFormData implements RequestFormData{}
+```
+> 注意: 一个方法中，不要同时注入RequestBody和RequestFormData
 
 ## 示例
-
+### 控制器
 ```php
 <?php
 
@@ -80,8 +87,8 @@ namespace App\Controller;
 use App\DTO\Request\DemoBodyRequest;
 use App\DTO\Request\DemoFormData;
 use App\DTO\Request\DemoQuery;
-use Tang\ApiDocs\Annotation\Api;
-use Tang\ApiDocs\Annotation\ApiOperation;
+use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
 use App\DTO\Response\Contact;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
@@ -89,7 +96,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 
 /**
  * @Controller(prefix="/demo")
- * @Api(tag="demo管理")
+ * @Api(tags="demo管理")
  */
 class DemoController
 {
@@ -138,13 +145,14 @@ class DemoController
     }
 }
 ```
+### 数据传输对象(DTO类)
 ```php
 <?php
 
 namespace App\DTO\Request;
 
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\DTO\Contracts\RequestBody;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Contracts\RequestBody;
 
 class DemoBodyRequest implements RequestBody
 {
@@ -173,9 +181,7 @@ class DemoBodyRequest implements RequestBody
     public array $addressArr;
 }
 ```
-> 其他DTO文件 test文件夹
-
+> 其他例子，请查看example
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
 
-## 相关软件

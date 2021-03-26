@@ -2,8 +2,8 @@
 
 namespace App\DTO\Response;
 
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\DTO\Response;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Response;
 
 class Contact extends Response
 {

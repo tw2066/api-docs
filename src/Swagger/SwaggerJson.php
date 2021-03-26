@@ -1,33 +1,24 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
 
-namespace Tang\ApiDocs\Swagger;
+namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\HttpServer\Annotation\AutoController;
 use ReflectionProperty;
-use Tang\ApiDocs\Annotation\Api;
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\ApiDocs\Annotation\ApiOperation;
-use Tang\DTO\Contracts\RequestBody;
-use Tang\DTO\Contracts\RequestFormData;
-use Tang\DTO\Contracts\RequestQuery;
-use Doctrine\Common\Annotations\AnnotationReader;
+use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
+use Hyperf\DTO\Contracts\RequestBody;
+use Hyperf\DTO\Contracts\RequestFormData;
+use Hyperf\DTO\Contracts\RequestQuery;
 use JsonMapper;
-use Tang\ApiDocs\ApiAnnotation;
+use Hyperf\ApiDocs\ApiAnnotation;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionManager;
-use Hyperf\Logger\LoggerFactory;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
 use Throwable;
@@ -38,9 +29,9 @@ class SwaggerJson extends JsonMapper
 
     public $swagger;
 
-    public $logger;
+    public $stdoutLogger;
 
-    public $server;
+    public string $serverName;
     /**
      * @var MethodDefinitionCollectorInterface|mixed
      */
@@ -52,42 +43,37 @@ class SwaggerJson extends JsonMapper
 
     private array $simpleClassName;
 
-    public function __construct(string $server)
+    public function __construct(string $serverName)
     {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
-        $this->logger = $this->container->get(LoggerFactory::class)->get('apidocs');
-        $this->swagger = $this->config->get('apidog.swagger');
-        $this->server = $server;
+        $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
+        $this->swagger = $this->config->get('apidocs.swagger');
+        $this->serverName = $serverName;
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
         $this->initModel();
     }
 
     public function addPath($methods, $route, $className, $methodName)
     {
-        $ignores = $this->config->get('annotations.scan.ignore_annotations', []);
-        foreach ($ignores as $ignore) {
-            AnnotationReader::addGlobalIgnoredName($ignore);
-        }
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $controlerAnno */
         $controlerAnno = $classAnnotation[Api::class] ?? new Api();
 
         //AutoController Annotation POST
         $autoControllerAnno = $classAnnotation[AutoController::class] ?? null;
-        if($autoControllerAnno && $methods != 'POST'){
+        if ($autoControllerAnno && $methods != 'POST') {
             return;
         }
 
         $bindServer = $this->config->get('server.servers.0.name');
-
         $servers = $this->config->get('server.servers');
         $servers_name = array_column($servers, 'name');
         if (!in_array($bindServer, $servers_name)) {
             throw new \Exception(sprintf('The bind ApiServer name [%s] not found, defined in %s!', $bindServer, $className));
         }
 
-        if ($bindServer !== $this->server) {
+        if ($bindServer !== $this->serverName) {
             return;
         }
 
@@ -101,16 +87,18 @@ class SwaggerJson extends JsonMapper
                 $apiOperation = $option;
             }
         }
+        $tags = $controlerAnno->tags ?: [$this->getSimpleClassName($className)];
 
-        $tag = $controlerAnno->tag ?: $this->getSimpleClassName($className);
-        $this->swagger['tags'][$tag] = [
-            'name' => $tag,
-            'description' => $controlerAnno->description,
-        ];
+        foreach ($tags as $tag) {
+            $this->swagger['tags'][$tag] = [
+                'name' => $tag,
+                'description' => $controlerAnno->description,
+            ];
+        }
 
         $method = strtolower($methods);
         $this->swagger['paths'][$route][$method] = [
-            'tags' => [$tag],
+            'tags' => $tags,
             'summary' => $apiOperation->summary ?? '',
             'description' => $apiOperation->description ?? '',
             'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
@@ -137,7 +125,7 @@ class SwaggerJson extends JsonMapper
             }
             $phpType = $this->getTypeName($reflectionProperty);
             $property['type'] = $this->type2SwaggerType($phpType);
-            if(!in_array($phpType,['integer','int','boolean','bool','string','double','float'])){
+            if (!in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
             $apiModelProperty = new ApiModelProperty();
@@ -147,13 +135,13 @@ class SwaggerJson extends JsonMapper
                     $apiModelProperty = $propertyReflectionProperty;
                 }
             }
-            if($apiModelProperty->hidden){
+            if ($apiModelProperty->hidden) {
                 continue;
             }
-            if($apiModelProperty->required !== null){
+            if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;
             }
-            if($apiModelProperty->example !== null){
+            if ($apiModelProperty->example !== null) {
                 $property['example'] = $apiModelProperty->example;
             }
             $property['description'] = $apiModelProperty->value ?? '';
@@ -228,29 +216,31 @@ class SwaggerJson extends JsonMapper
     {
         try {
             $type = $rp->getType()->getName();
-        }catch (Throwable $throwable){
+        } catch (Throwable $throwable) {
             $type = 'string';
         }
         return $type;
     }
 
 
-    private function getDefinitions($className){
-        return '#/definitions/'.$this->getSimpleClassName($className);
+    private function getDefinitions($className)
+    {
+        return '#/definitions/' . $this->getSimpleClassName($className);
     }
 
-    private function getSimpleClassName($className){
+    private function getSimpleClassName($className)
+    {
 
         $className = '\\' . $className;
 
-        if(isset($this->className[$className])){
+        if (isset($this->className[$className])) {
             return $this->className[$className];
         }
-        $simpleClassName =  substr($className,strrpos($className,'\\')+1);
+        $simpleClassName = substr($className, strrpos($className, '\\') + 1);
 
-        if(isset($this->simpleClassName[$simpleClassName])){
+        if (isset($this->simpleClassName[$simpleClassName])) {
             $simpleClassName .= ++$this->simpleClassName[$simpleClassName];
-        }else{
+        } else {
             $this->simpleClassName[$simpleClassName] = 0;
         }
         $this->className[$className] = $simpleClassName;
@@ -276,24 +266,24 @@ class SwaggerJson extends JsonMapper
                     $apiModelProperty = $propertyReflectionProperty;
                 }
             }
-            if($apiModelProperty->hidden){
+            if ($apiModelProperty->hidden) {
                 continue;
             }
             $property = [];
             $property['type'] = $type;
             $property['description'] = $apiModelProperty->value ?? '';
-            if($apiModelProperty->required !== null){
+            if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;
             }
-            if($apiModelProperty->example !== null){
+            if ($apiModelProperty->example !== null) {
                 $property['example'] = $apiModelProperty->example;
             }
             if ($type == 'array') {
                 $docblock = $reflectionProperty->getDocComment();
                 $annotations = static::parseAnnotations($docblock);
-                if(empty($annotations)){
+                if (empty($annotations)) {
                     $property['items']['$ref'] = '#/definitions/ModelArray';
-                }else{
+                } else {
                     //support "@var type description"
                     list($type) = explode(' ', $annotations['var'][0]);
                     $type = $this->getFullNamespace($type, $strNs);
@@ -322,7 +312,6 @@ class SwaggerJson extends JsonMapper
         $this->swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
 
     }
-
 
     private function type2SwaggerType($phpType)
     {
@@ -377,7 +366,7 @@ class SwaggerJson extends JsonMapper
     public function putFile(string $file, string $content)
     {
         $pathInfo = pathinfo($file);
-        if (! empty($pathInfo['dirname'])) {
+        if (!empty($pathInfo['dirname'])) {
             if (file_exists($pathInfo['dirname']) === false) {
                 if (mkdir($pathInfo['dirname'], 0644, true) === false) {
                     return false;
@@ -389,18 +378,16 @@ class SwaggerJson extends JsonMapper
 
     public function save()
     {
-
         $this->swagger['tags'] = array_values($this->swagger['tags'] ?? []);
-        $outputFile = $this->config->get('apidocs.output_dir');
-        if (! $outputFile) {
-            $this->logger->error('/config/autoload/apidog.php need set output_file');
+        $outputDir = $this->config->get('apidocs.output_dir');
+        if (!$outputDir) {
+            $this->stdoutLogger->error('/config/autoload/apidocs.php need set output_dir');
             return;
         }
-        $outputFile = $outputFile.'/'.$this->server.'.json';
+        $outputFile = $outputDir . '/' . $this->serverName . '.json';
         $this->putFile($outputFile, json_encode($this->swagger, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        $this->logger->debug('Generate swagger.json success!');
+        $this->stdoutLogger->debug('Generate swagger.json success!');
         return $outputFile;
-
     }
 
 

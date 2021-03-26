@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tw
- * Date: 2021/3/24 0024
- * Time: 10:35
- */
 
-namespace Tang\ApiDocs\Swagger;
-
+namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;

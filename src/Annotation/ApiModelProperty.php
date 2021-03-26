@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-namespace Tang\ApiDocs\Annotation;
+namespace Hyperf\ApiDocs\Annotation;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
 
@@ -23,21 +23,20 @@ class ApiModelProperty extends AbstractAnnotation
     /**
      * @var string
      */
-    public string $value = '';
+    public $value = '';
 
     /**
      * @var string|null
      */
-    public ?string $example = null;
+    public  $example = null;
 
     /**
      * @var bool
      */
-    public bool $hidden = false;
+    public $hidden = false;
 
     /**
      * @var bool
      */
-    public ?bool $required = null;
-
+    public $required = null;
 }

@@ -10,7 +10,7 @@
     ],
     "authors": [
         {
-            "name": "tang",
+            "name": "Tang",
             "email": "tw2066@163.com",
             "homepage": "https://github.com/tw2066",
             "role": "Developer"
@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Tang\\ApiDocs\\": "src/"
+            "Hyperf\\ApiDocs\\": "src/"
         }
     },
     "config": {
@@ -31,7 +31,7 @@
     },
     "extra": {
         "hyperf": {
-            "config": "Tang\\ApiDocs\\ConfigProvider"
+            "config": "Hyperf\\ApiDocs\\ConfigProvider"
         },
         "branch-alias":{
             "dev-master":"1.0.x-dev"

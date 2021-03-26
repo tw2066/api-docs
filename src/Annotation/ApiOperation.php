@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-namespace Tang\ApiDocs\Annotation;
+namespace Hyperf\ApiDocs\Annotation;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
 
@@ -19,10 +19,7 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiOperation extends AbstractAnnotation
 {
-    public ?string $summary = '';
+    public $summary = '';
 
-    public ?string $description = '';
-
-//    public string $deprecated;
-
+    public $description = '';
 }

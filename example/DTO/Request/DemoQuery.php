@@ -2,8 +2,8 @@
 
 namespace App\DTO\Request;
 
-use Tang\ApiDocs\Annotation\ApiModelProperty;
-use Tang\DTO\Contracts\RequestQuery;
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Contracts\RequestQuery;
 
 class DemoQuery implements RequestQuery
 {
