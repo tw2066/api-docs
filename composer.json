@@ -19,7 +19,7 @@
     "require": {
         "php": ">=7.4",
         "hyperf/http-server": "^2.0.0",
-        "tangwei/dto": "dev-master"
+        "tangwei/dto": "v1.0@beta"
     },
     "autoload": {
         "psr-4": {
