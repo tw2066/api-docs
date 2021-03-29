@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Annotation;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
-use Hyperf\Utils\Str;
 
 /**
  * @Annotation
@@ -25,6 +24,11 @@ class Api extends AbstractAnnotation
      * @var array
      */
     public $tags;
+
+    /**
+     * @var int
+     */
+    public $position = 0;
 
     /**
      * @var string

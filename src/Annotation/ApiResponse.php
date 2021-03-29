@@ -10,14 +10,12 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  * @Annotation
  * @Target({"METHOD"})
  */
-class ApiOperation extends AbstractAnnotation
+class ApiResponse extends AbstractAnnotation
 {
-    public $summary = '';
+    public $code;
 
-    public $description = '';
+    public $description;
 
-    /**
-     * @var int
-     */
-    public $position = 0;
+    public $className;
+
 }

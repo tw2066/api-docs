@@ -1,0 +1,92 @@
+<?php
+
+namespace Hyperf\ApiDocs\Swagger;
+
+use Hyperf\Apidocs\Annotation\ApiResponse;
+use Hyperf\Di\MethodDefinitionCollectorInterface;
+use Hyperf\Di\ReflectionType;
+use Hyperf\Utils\ApplicationContext;
+use Psr\Container\ContainerInterface;
+
+class MakeResponses
+{
+    private string $className;
+    private string $methodName;
+    /**
+     * @var Common
+     */
+    private Common $common;
+    /**
+     * @var MethodDefinitionCollectorInterface|mixed
+     */
+    private $methodDefinitionCollector;
+
+    private ContainerInterface $container;
+
+    private array $config;
+
+    private array $apiResponseArr;
+
+    public function __construct(string $className, string $methodName,array $apiResponseArr,array $config)
+    {
+        $this->container = ApplicationContext::getContainer();
+        $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
+        $this->className = $className;
+        $this->methodName = $methodName;
+        $this->config = $config;
+        $this->apiResponseArr = $apiResponseArr;
+        $this->common = new Common();
+    }
+
+
+    public function make()
+    {
+        /** @var ReflectionType $definitions */
+        $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
+        $returnTypeClassName = $definition->getName();
+        $code = $this->config['responses_code'] ?? 200;
+        $resp[$code] = $this->makeSchema($returnTypeClassName);
+        $resp[$code]['description'] = 'OK';
+        $globalResp = $this->makeGlobalResp();
+        $AnnotationResp = $this->makeAnnotationResp();
+        return $resp+$AnnotationResp+$globalResp;
+    }
+
+    private function makeSchema($returnTypeClassName)
+    {
+        $schema = [];
+        if ($this->common->isSimpleType($returnTypeClassName)) {
+            $type = $this->common->type2SwaggerType($returnTypeClassName);
+            if ($type == 'array') {
+                $schema['schema']['items']['$ref'] = '#/definitions/ModelArray';
+            }
+            if ($type == 'object') {
+                $schema['schema']['items']['$ref'] = '#/definitions/ModelObject';
+            }
+            $schema['schema']['type'] = $type;
+        } else if ($this->container->has($returnTypeClassName)) {
+            $this->common->class2schema($returnTypeClassName);
+            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
+        }
+        return $schema;
+    }
+
+    private function makeGlobalResp(){
+        $resp = [];
+        foreach ($this->config['responses'] as $code=>$value) {
+            isset($value['className']) && $resp[$code] = $this->makeSchema($value['className']);
+            $resp[$code]['description'] = $value['description'];
+        }
+        return $resp;
+    }
+
+    private function makeAnnotationResp(){
+        $resp = [];
+        /** @var ApiResponse $apiResponse */
+        foreach ($this->apiResponseArr as $apiResponse) {
+            $apiResponse->className && $resp[$apiResponse->code] = $this->makeSchema($apiResponse->className);
+            $resp[$apiResponse->code]['description'] = $apiResponse->description;
+        }
+        return $resp;
+    }
+}

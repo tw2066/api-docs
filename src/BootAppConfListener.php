@@ -44,7 +44,9 @@ class BootAppConfListener implements ListenerInterface
         $swaggerRoute = new SwaggerRoute($prefix, $outputDir);
 
         $servers = $config->get('server.servers');
-        $mark = true;
+        $httpServerRouter = null;
+        $httpServer = null;
+        $outputFileArr = [];
         foreach ($servers as $server) {
             $router = $container->get(DispatcherFactory::class)->getRouter($server['name']);
             $data = $router->getData();
@@ -60,18 +62,27 @@ class BootAppConfListener implements ListenerInterface
                 }
             }
 
-            $outputFileArr[] = $swagger->save();
+            $outputFileArr[$server['name']] = $swagger->save();
 
-            if ($mark && $server['type'] == Server::SERVER_HTTP) {
-                $swaggerRoute->add($router, $server['name']);
-                foreach ($outputFileArr as $outputFile) {
-                    $swaggerRoute->addJson($router, $server['name'], $outputFile);
-                }
-                $mark = false;
-                $logger->info('Swagger Url at ' . $server['host'] . ':' . $server['port'] . $prefix);
+            if (empty($httpServerRouter) && $server['type'] == Server::SERVER_HTTP) {
+                $httpServerRouter = $router;
+                $httpServer = $server;
             }
         }
+
+        if(empty($httpServerRouter)){
+            $logger->warning('Swagger: http Service not started');
+            return;
+        }
+
+        $swaggerRoute->add($httpServerRouter, $httpServer['name']);
+//        $logger->info('Swagger Url at ' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix);
+        $logger->info(sprintf('Swagger Url at %s:%s',$httpServer['host'],$httpServer['port'] . $prefix));
+        foreach ($outputFileArr as $serverName=>$outputFile) {
+            $swaggerRoute->addJson($httpServerRouter, $serverName, $outputFile);
+        }
     }
+
 
     protected function prepareHandler($handler): array
     {
