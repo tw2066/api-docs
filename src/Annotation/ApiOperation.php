@@ -15,9 +15,4 @@ class ApiOperation extends AbstractAnnotation
     public $summary = '';
 
     public $description = '';
-
-    /**
-     * @var int
-     */
-    public $position = 0;
 }

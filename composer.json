@@ -26,6 +26,11 @@
             "Hyperf\\ApiDocs\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "HyperfTest\\ApiDocs\\": "tests/"
+        }
+    },
     "config": {
         "sort-packages": true
     },

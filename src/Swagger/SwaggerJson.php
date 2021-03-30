@@ -86,6 +86,10 @@ class SwaggerJson
 
     public function addPath($methods, $route, $className, $methodName)
     {
+        //todo
+        if($className != 'App\Controller\DemoController'){
+//                return;
+        }
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
         $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
@@ -129,7 +133,6 @@ class SwaggerJson
         $method = strtolower($methods);
         $makeParameters = new MakeParameters($route, $method, $className, $methodName,$apiHeaderArr,$apiFormDataArr);
         $makeResponses = new MakeResponses($className, $methodName,$apiResponseArr,$this->config->get('apidocs'));
-        self::$swagger['paths']['position'] = $apiOperation->position;
         self::$swagger['paths'][$route][$method] = [
             'tags' => $tags,
             'summary' => $apiOperation->summary ?? '',
@@ -140,7 +143,7 @@ class SwaggerJson
                 'application/json',
             ],
             'responses' => $makeResponses->make(),
-            'security'=>$this->securityMethod(),
+            'security'=> $this->securityMethod(),
         ];
 
     }
@@ -181,13 +184,13 @@ class SwaggerJson
                 ->map(function ($item) {
                     return collect($item)->except('position');
                 })
+                ->values()
                 ->toArray();
     }
 
     public function save()
     {
-        self::$swagger['tags'] = array_values($this->sortByDesc(self::$swagger['tags']));
-        self::$swagger['paths'] = $this->sortByDesc(self::$swagger['paths']);
+        self::$swagger['tags'] = $this->sortByDesc(self::$swagger['tags']);
         $outputDir = $this->config->get('apidocs.output_dir');
         if (!$outputDir) {
             $this->stdoutLogger->error('/config/autoload/apidocs.php need set output_dir');

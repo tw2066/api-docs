@@ -41,7 +41,7 @@ class DemoController
     }
 
     /**
-     * @ApiOperation(summary="查询单条记录",position=1)
+     * @ApiOperation(summary="查询单条记录")
      * @GetMapping(path="find/{id}/and/{in}")
      */
     public function find(int $id,float $in): array
@@ -64,6 +64,7 @@ class DemoController
      * @ApiOperation(summary="表单提交")
      * @ApiFormData(name="fileAddr",type="file")
      * @ApiResponse(code="404",description="Not Found")
+     * @ApiResponse(code="4045")
      * @PostMapping(path="fromData")
      */
     public function fromData(DemoFormData $formData): bool

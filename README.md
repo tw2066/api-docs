@@ -4,6 +4,7 @@
 ##### 优点
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
 - 代码可维护性好，扩展性好 
+- 支持api token认证
 
 ##### 缺点
 - 模型类需要手工编写
@@ -25,8 +26,13 @@ php bin/hyperf.php vendor:publish tangwei/apidocs
 return [
     // enable false 将不会启动 swagger 服务
     'enable' => env('APP_ENV') !== 'prod',
-    //json文件输出目录
-    'output_dir' => BASE_PATH.'/runtime/swagger',
+    'output_dir' => BASE_PATH . '/runtime/swagger',
+    //认证api key
+    //'security_api_key' => ['Authorization'],
+    //全局responses
+    'responses' => [
+        401=>['description'=>'Unauthorized']
+    ],
     // swagger 的基础配置
     'swagger' => [
         'swagger' => '2.0',
@@ -180,6 +186,18 @@ class DemoBodyRequest implements RequestBody
      */
     public array $addressArr;
 }
+```
+### 文件上传
+```php
+    /**
+     * @ApiOperation(summary="文件提交")
+     * @ApiFormData(name="file",type="file")
+     * @PostMapping(path="fileAdd")
+     */
+    public function fileAdd(): bool
+    {
+        return true;
+    }
 ```
 > 其他例子，请查看example
 ## Swagger界面
