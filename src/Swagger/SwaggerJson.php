@@ -190,7 +190,7 @@ class SwaggerJson
 
     public function save()
     {
-        self::$swagger['tags'] = $this->sortByDesc(self::$swagger['tags']);
+        self::$swagger['tags'] = $this->sortByDesc(self::$swagger['tags'] ?? []);
         $outputDir = $this->config->get('apidocs.output_dir');
         if (!$outputDir) {
             $this->stdoutLogger->error('/config/autoload/apidocs.php need set output_dir');
