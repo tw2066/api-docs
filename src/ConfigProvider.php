@@ -12,7 +12,7 @@ class ConfigProvider
             'dependencies' => [
             ],
             'listeners' => [
-                BootAppConfListener::class,
+                AfterDTOStartListener::class,
             ],
             'annotations' => [
                 'scan' => [

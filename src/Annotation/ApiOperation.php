@@ -12,7 +12,13 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiOperation extends AbstractAnnotation
 {
+    /**
+     * @var string
+     */
     public $summary = '';
 
+    /**
+     * @var string
+     */
     public $description = '';
 }

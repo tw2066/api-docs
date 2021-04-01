@@ -5,11 +5,13 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\ApiAnnotation;
 use Hyperf\Di\ReflectionManager;
+use Hyperf\DTO\Annotation\Required;
+use Hyperf\DTO\Scan\PropertyManager;
 use ReflectionProperty;
 use JsonMapper;
 use Throwable;
 
-class Common extends JsonMapper
+class Common
 {
 
     public function getDefinitions($className)
@@ -40,10 +42,14 @@ class Common extends JsonMapper
                 continue;
             }
             $apiModelProperty = new ApiModelProperty();
+            $requiredAnnotation = null;
             $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($parameterClassName, $reflectionProperty->getName());
             foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
                 if ($propertyReflectionProperty instanceof ApiModelProperty) {
                     $apiModelProperty = $propertyReflectionProperty;
+                }
+                if ($propertyReflectionProperty instanceof Required) {
+                    $requiredAnnotation = $propertyReflectionProperty;
                 }
             }
             if ($apiModelProperty->hidden) {
@@ -51,6 +57,9 @@ class Common extends JsonMapper
             }
             if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;
+            }
+            if ($requiredAnnotation !== null) {
+                $property['required'] = true;
             }
             if ($apiModelProperty->example !== null) {
                 $property['example'] = $apiModelProperty->example;
@@ -130,11 +139,11 @@ class Common extends JsonMapper
             'properties' => [],
         ];
         $rc = ReflectionManager::reflectClass($className);
-        $strNs = $rc->getNamespaceName();
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
-            $type = $this->getTypeName($reflectionProperty);
             $fieldName = $reflectionProperty->getName();
-            $type = $this->type2SwaggerType($type);
+            $propertyClass = PropertyManager::getProperty($className,$fieldName);
+            $phpType = $propertyClass->type;
+            $type = $this->type2SwaggerType($phpType);
             $apiModelProperty = new ApiModelProperty();
             $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($className, $fieldName);
             foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
@@ -155,39 +164,29 @@ class Common extends JsonMapper
                 $property['example'] = $apiModelProperty->example;
             }
 
-            if ($type == 'array') {
-                $docblock = $reflectionProperty->getDocComment();
-                $annotations = static::parseAnnotations($docblock);
-                if (empty($annotations)) {
+            if ($phpType == 'array') {
+                if ($propertyClass->className == null) {
                     $property['items']['$ref'] = '#/definitions/ModelArray';
                 } else {
-                    //support "@var type description"
-                    list($type) = explode(' ', $annotations['var'][0]);
-                    $type = $this->getFullNamespace($type, $strNs);
-                    if ($this->isArrayOfType($type)) {
-                        $subtype = substr($type, 0, -2);
-                        if ($this->isSimpleType($subtype)) {
-                            $property['items']['type'] = $this->type2SwaggerType($subtype);
-                        } else {
-                            $this->class2schema($subtype);
-                            $property['items']['$ref'] = $this->getDefinitions($subtype);
-                        }
+                    if ($propertyClass->isSimpleType) {
+                        $property['items']['type'] = $this->type2SwaggerType($propertyClass->className);
+                    } else {
+                        $this->class2schema($propertyClass->className);
+                        $property['items']['$ref'] = $this->getDefinitions($propertyClass->className);
                     }
                 }
             }
             if ($type == 'object') {
                 $property['items']['$ref'] = '#/definitions/ModelObject';
             }
-
-            if (!$this->isSimpleType($type) && class_exists($type)) {
-                $this->class2schema($type);
-                $property['$ref'] = $this->getDefinitions($type);
+            if (!$this->isSimpleType($phpType) && class_exists($phpType)) {
+                $this->class2schema($phpType);
+                $property['$ref'] = $this->getDefinitions($phpType);
             }
 
             $schema['properties'][$fieldName] = $property;
         }
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
-
     }
 
 

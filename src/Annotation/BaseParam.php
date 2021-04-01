@@ -34,6 +34,9 @@ abstract class BaseParam extends AbstractAnnotation
 
     public $example = null;
 
+    /**
+     * @var string
+     */
     public $description = null;
 
     /**

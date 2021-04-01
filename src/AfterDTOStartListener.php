@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs;
 
+use Hyperf\DTO\Event\AfterDTOStart;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Event\Contract\ListenerInterface;
-use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Handler;
 use Hyperf\Server\Server;
@@ -15,19 +15,18 @@ use Hyperf\Utils\ApplicationContext;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 
-class BootAppConfListener implements ListenerInterface
+class AfterDTOStartListener implements ListenerInterface
 {
     public function listen(): array
     {
         return [
-            BootApplication::class,
+            AfterDTOStart::class,
         ];
     }
 
     public function process(object $event)
     {
         $container = ApplicationContext::getContainer();
-
         $logger = $container->get(StdoutLoggerInterface::class);
         $config = $container->get(ConfigInterface::class);
         if (! $config->get('apidocs.enable', false)) {
@@ -39,10 +38,6 @@ class BootAppConfListener implements ListenerInterface
             $logger->error('/config/autoload/apidocs.php need set output_dir');
             return;
         }
-
-        $prefix = $config->get('apidocs.prefix', '/swagger');
-        $swaggerRoute = new SwaggerRoute($prefix, $outputDir);
-
         $servers = $config->get('server.servers');
         $httpServerRouter = null;
         $httpServer = null;
@@ -63,7 +58,6 @@ class BootAppConfListener implements ListenerInterface
             }
 
             $outputFileArr[$server['name']] = $swagger->save();
-
             if (empty($httpServerRouter) && $server['type'] == Server::SERVER_HTTP) {
                 $httpServerRouter = $router;
                 $httpServer = $server;
@@ -75,14 +69,14 @@ class BootAppConfListener implements ListenerInterface
             return;
         }
 
+        $prefix = $config->get('apidocs.prefix', '/swagger');
+        $swaggerRoute = new SwaggerRoute($prefix, $outputDir);
         $swaggerRoute->add($httpServerRouter, $httpServer['name']);
-//        $logger->info('Swagger Url at ' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix);
         $logger->info(sprintf('Swagger Url at %s:%s',$httpServer['host'],$httpServer['port'] . $prefix));
         foreach ($outputFileArr as $serverName=>$outputFile) {
             $swaggerRoute->addJson($httpServerRouter, $serverName, $outputFile);
         }
     }
-
 
     protected function prepareHandler($handler): array
     {

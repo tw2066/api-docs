@@ -106,6 +106,7 @@ class MakeParameters
                     $property['in'] = 'body';
                     $property['name'] = $this->common->getSimpleClassName($parameterClassName);
                     $property['description'] = '';
+                    $property['required'] = true;
                     $property['schema']['$ref'] = $this->common->getDefinitions($parameterClassName);
                     $parameters[] = $property;
                     $consumes = 'application/json';

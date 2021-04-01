@@ -12,10 +12,19 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiResponse extends AbstractAnnotation
 {
+    /**
+     * @var string
+     */
     public $code;
 
+    /**
+     * @var string
+     */
     public $description;
 
+    /**
+     * @var string
+     */
     public $className;
 
 }

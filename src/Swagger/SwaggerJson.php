@@ -86,10 +86,6 @@ class SwaggerJson
 
     public function addPath($methods, $route, $className, $methodName)
     {
-        //todo
-        if($className != 'App\Controller\DemoController'){
-//                return;
-        }
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
         $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
@@ -151,7 +147,7 @@ class SwaggerJson
 
     public static function getSimpleClassName($className)
     {
-        $className = '\\' . $className;
+        $className = '\\' . trim($className,'\\');
         if (isset(self::$className[$className])) {
             return self::$className[$className];
         }
