@@ -4,6 +4,7 @@
 ##### 优点
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
 - 代码可维护性好，扩展性好 
+- 支持数组，递归，嵌套和数据校验
 - 支持api token认证
 
 ##### 缺点
@@ -93,59 +94,63 @@ namespace App\Controller;
 use App\DTO\Request\DemoBodyRequest;
 use App\DTO\Request\DemoFormData;
 use App\DTO\Request\DemoQuery;
-use Hyperf\ApiDocs\Annotation\Api;
-use Hyperf\ApiDocs\Annotation\ApiOperation;
 use App\DTO\Response\Contact;
+use Hyperf\ApiDocs\Annotation\ApiFormData;
+use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\PostMapping;
+use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
+use Hyperf\HttpServer\Annotation\PutMapping;
 
 /**
  * @Controller(prefix="/demo")
- * @Api(tags="demo管理")
+ * @Api(tags="demo管理",position=1)
  */
-class DemoController
+class DemoController extends AbstractController
 {
     /**
      * @ApiOperation(summary="查询")
      * @PostMapping(path="index")
-     * @param DemoQuery $request
-     * @return Contact
      */
-    public function index(DemoQuery $request) : Contact
+    public function index(DemoQuery $request): Contact
     {
         $contact = new Contact();
         var_dump($request);
         return $contact;
     }
+
     /**
      * @ApiOperation(summary="查询单条记录")
      * @GetMapping(path="find/{id}/and/{in}")
      */
-    public function find(int $id,int $in) : array
+    public function find(int $id,float $in): array
     {
-        return ['$id'=>$id,'$in'=>$in];
+        return ['$id' => $id, '$in' => $in];
     }
+
     /**
      * @ApiOperation(summary="提交body数据和get参数")
-     * @PostMapping(path="add")
-     * @param DemoBodyRequest $request
-     * @param DemoQuery $request2
+     * @PutMapping(path="add")
      */
-    public function add(DemoBodyRequest $request,DemoQuery $request2) :Contact
+    public function add(DemoBodyRequest $request, DemoQuery $request2)
     {
         var_dump($request2);
-        var_dump($request);
-        return new Contact();
+        return json_encode($request,JSON_UNESCAPED_UNICODE);
     }
+
     /**
      * @ApiOperation(summary="表单提交")
+     * @ApiFormData(name="photo",type="file")
+     * @ApiResponse(code="404",description="Not Found")
      * @PostMapping(path="fromData")
-     * @param DemoFormData $formData
-     * @return bool
      */
-    public function fromData(DemoFormData $formData) : bool
+    public function fromData(DemoFormData $formData): bool
     {
+        //文件上传
+        $file = $this->request->file('photo');
+        var_dump($file);
         var_dump($formData);
         return true;
     }
@@ -157,7 +162,11 @@ class DemoController
 
 namespace App\DTO\Request;
 
+use App\DTO\Address;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Annotation\Validation\Email;
+use Hyperf\DTO\Annotation\Validation\Required;
+use Hyperf\DTO\Annotation\Validation\Validation;
 use Hyperf\DTO\Contracts\RequestBody;
 
 class DemoBodyRequest implements RequestBody
@@ -169,37 +178,95 @@ class DemoBodyRequest implements RequestBody
     public ?string $demoName = null;
 
     /**
-     * @ApiModelProperty(value="价格",required=true)
+     * @ApiModelProperty(value="价格")
+     * @Required()
      */
     public float $price;
-
+    /**
+     * @ApiModelProperty(value="电子邮件",example="1@qq.com")
+     * @Required()
+     * @Email(messages="请输入正确的电子邮件")
+     * @var string
+     */
+    public string $email;
     /**
      * @ApiModelProperty(value="示例id",required=true)
+     * @Validation(rule="array")
      * @var int[]
      */
     public array $demoId;
-
     /**
-     * 需要绝对路径
-     * @ApiModelProperty(value="地址")
+     * @ApiModelProperty(value="地址数组")
+     * @Required()
      * @var \App\DTO\Address[]
      */
-    public array $addressArr;
+    public array $addrArr;
+    /**
+     * @ApiModelProperty(value="地址")
+     * @Required()
+     */
+    public Address $addr;
+
+
+    /**
+     * @ApiModelProperty(value="地址数组",required=true)
+     * @Validation(rule="array",messages="必须为数组")
+     */
+    public array $addr2;
+
 }
 ```
-### 文件上传
+## 验证器
+### 基于框架所有的验证
+- 注解
+`@Required` `@Between` `@Date` `@Email` `@Image` `@Integer` `@Nullable` `@Numeric`  `@Url` `@Validation`
+
 ```php
     /**
-     * @ApiOperation(summary="文件提交")
-     * @ApiFormData(name="file",type="file")
-     * @PostMapping(path="fileAdd")
+     * @ApiModelProperty(value="电子邮件",example="1@qq.com")
+     * @Required()
+     * @Email(messages="请输入正确的电子邮件")
+     * @var string
      */
-    public function fileAdd(): bool
-    {
-        return true;
-    }
+    public string $email;
+
+    /**
+     * @ApiModelProperty(value="电子邮件",example="1@qq.com")
+     * @Validation(rule="required")
+     * @Validation(rule="email",messages="请输入正确的电子邮件")
+     * @var string
+     */
+    public string $email2;
 ```
+- @Validation
+> rule 支持框架所有验证
+- 自定义验证注解
+> 只需继承`Hyperf\DTO\Annotation\Validation\BaseValidation`即可
+```php
+/**
+ * @Annotation
+ * @Target({"PROPERTY"})
+ */
+class Image extends BaseValidation
+{
+    public $rule = 'image';
+}
+```
+  
 > 其他例子，请查看example
+## 注意
+```php
+    /**
+     * @ApiModelProperty(value="地址数组")
+     * @Required()
+     * @var \App\DTO\Address[]
+     */
+    public array $addrArr;
+```
+- 映射数组类时,`@var`需要写绝对路径
+- 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
+
+
 

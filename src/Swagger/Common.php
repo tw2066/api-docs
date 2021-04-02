@@ -5,10 +5,9 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\ApiAnnotation;
 use Hyperf\Di\ReflectionManager;
-use Hyperf\DTO\Annotation\Required;
+use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Scan\PropertyManager;
 use ReflectionProperty;
-use JsonMapper;
 use Throwable;
 
 class Common
@@ -166,7 +165,7 @@ class Common
 
             if ($phpType == 'array') {
                 if ($propertyClass->className == null) {
-                    $property['items']['$ref'] = '#/definitions/ModelArray';
+                    $property['items'] = (object)[];
                 } else {
                     if ($propertyClass->isSimpleType) {
                         $property['items']['type'] = $this->type2SwaggerType($propertyClass->className);
@@ -177,13 +176,12 @@ class Common
                 }
             }
             if ($type == 'object') {
-                $property['items']['$ref'] = '#/definitions/ModelObject';
+                $property['items'] = (object)[];
             }
-            if (!$this->isSimpleType($phpType) && class_exists($phpType)) {
-                $this->class2schema($phpType);
-                $property['$ref'] = $this->getDefinitions($phpType);
+            if (!$propertyClass->isSimpleType && class_exists($propertyClass->className)) {
+                $this->class2schema($propertyClass->className);
+                $property['$ref'] = $this->getDefinitions($propertyClass->className);
             }
-
             $schema['properties'][$fieldName] = $property;
         }
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;

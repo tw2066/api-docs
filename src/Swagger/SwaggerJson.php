@@ -47,7 +47,6 @@ class SwaggerJson
         self::$swagger = $this->config->get('apidocs.swagger');
         $this->serverName = $serverName;
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
-        $this->initModel();
         $this->securityKey();
     }
 
@@ -91,7 +90,7 @@ class SwaggerJson
         $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
         /** @var Api $apiHeaderControllerAnnotation */
         $apiHeaderControllerAnnotation = $classAnnotation[ApiHeader::class] ?? null;
-        //AutoController Annotation POST
+        //AutoController Validation POST
         $autoControllerAnnotation = $classAnnotation[AutoController::class] ?? null;
         if ($autoControllerAnnotation && $methods != 'POST') {
             return;
@@ -197,24 +196,5 @@ class SwaggerJson
         self::$swagger = [];
         $this->stdoutLogger->debug('Generate swagger.json success!');
         return $outputFile;
-    }
-
-
-    private function initModel()
-    {
-        $arraySchema = [
-            'type' => 'array',
-            'required' => [],
-            'items' => [
-            ],
-        ];
-        $objectSchema = [
-            'type' => 'object',
-            'required' => [],
-            'items' => [
-            ],
-        ];
-        self::$swagger['definitions']['ModelArray'] = $arraySchema;
-        self::$swagger['definitions']['ModelObject'] = $objectSchema;
     }
 }
