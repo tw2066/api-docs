@@ -27,4 +27,9 @@ class ApiResponse extends AbstractAnnotation
      */
     public $className;
 
+    /**
+     * @var string
+     */
+    public $type;
+
 }

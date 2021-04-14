@@ -5,6 +5,7 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\Apidocs\Annotation\ApiResponse;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
+use Hyperf\DTO\Scan\ScanAnnotation;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
 
@@ -49,7 +50,7 @@ class MakeResponses
         $resp[$code]['description'] = 'OK';
         $globalResp = $this->makeGlobalResp();
         $AnnotationResp = $this->makeAnnotationResp();
-        return $resp+$AnnotationResp+$globalResp;
+        return $AnnotationResp + $resp + $globalResp;
     }
 
     private function makeSchema($returnTypeClassName)
@@ -58,10 +59,10 @@ class MakeResponses
         if ($this->common->isSimpleType($returnTypeClassName)) {
             $type = $this->common->type2SwaggerType($returnTypeClassName);
             if ($type == 'array') {
-                $schema['schema']['items']['$ref'] = '#/definitions/ModelArray';
+                $schema['schema']['items'] = (object)[];
             }
             if ($type == 'object') {
-                $schema['schema']['items']['$ref'] = '#/definitions/ModelObject';
+                $schema['schema']['items'] = (object)[];
             }
             $schema['schema']['type'] = $type;
         } else if ($this->container->has($returnTypeClassName)) {
@@ -84,7 +85,18 @@ class MakeResponses
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {
-            $apiResponse->className && $resp[$apiResponse->code] = $this->makeSchema($apiResponse->className);
+            if ($apiResponse->className) {
+                $scanAnnotation = $this->container->get(ScanAnnotation::class);
+                $scanAnnotation->scanClass($apiResponse->className);
+                $this->makeSchema($apiResponse->className);
+                if (!empty($apiResponse->type)) {
+                    $schema['schema']['type'] = $apiResponse->type;
+                    $schema['schema']['items']['$ref'] = $this->makeSchema($apiResponse->className)['schema']['$ref'];
+                    $resp[$apiResponse->code] = $schema;
+                } else {
+                    $resp[$apiResponse->code] = $this->makeSchema($apiResponse->className);
+                }
+            }
             $resp[$apiResponse->code]['description'] = $apiResponse->description;
         }
         return $resp;

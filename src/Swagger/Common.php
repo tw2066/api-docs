@@ -4,9 +4,11 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\ApiAnnotation;
+use Hyperf\Database\Model\Model;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Scan\PropertyManager;
+use Hyperf\Utils\ApplicationContext;
 use ReflectionProperty;
 use Throwable;
 
@@ -133,6 +135,14 @@ class Common
 
     public function class2schema($className)
     {
+        if (!ApplicationContext::getContainer()->has($className)) {
+            return $this->emptySchema($className);
+        }
+        $obj = ApplicationContext::getContainer()->get($className);
+        if ($obj instanceof Model) {
+            //$this->makeModelSchema($obj);
+            return $this->emptySchema($className);
+        }
         $schema = [
             'type' => 'object',
             'properties' => [],
@@ -140,7 +150,7 @@ class Common
         $rc = ReflectionManager::reflectClass($className);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
-            $propertyClass = PropertyManager::getProperty($className,$fieldName);
+            $propertyClass = PropertyManager::getProperty($className, $fieldName);
             $phpType = $propertyClass->type;
             $type = $this->type2SwaggerType($phpType);
             $apiModelProperty = new ApiModelProperty();
@@ -178,13 +188,30 @@ class Common
             if ($type == 'object') {
                 $property['items'] = (object)[];
             }
-            if (!$propertyClass->isSimpleType && class_exists($propertyClass->className)) {
+            if (!$propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
                 $this->class2schema($propertyClass->className);
                 $property['$ref'] = $this->getDefinitions($propertyClass->className);
             }
             $schema['properties'][$fieldName] = $property;
         }
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+    }
+
+
+    protected function emptySchema($className)
+    {
+        $schema = [
+            'type' => 'object',
+            'properties' => [],
+        ];
+        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+    }
+
+
+    protected function makeModelSchema(object $model)
+    {
+        //$reflect = new ReflectionObject($model);
+        //$docComment = $reflect->getDocComment();
     }
 
 
