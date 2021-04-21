@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs;
 
+use Hyperf\ApiDocs\Listener\AfterDTOStartListener;
+use Hyperf\ApiDocs\Listener\BootAppConfListener;
+
 class ConfigProvider
 {
     public function __invoke(): array
@@ -13,6 +16,7 @@ class ConfigProvider
             ],
             'listeners' => [
                 AfterDTOStartListener::class,
+                BootAppConfListener::class
             ],
             'annotations' => [
                 'scan' => [
