@@ -49,8 +49,11 @@ class AfterDTOStartListener implements ListenerInterface
             foreach ($routeData ?? [] as $methods => $handlerArr) {
                 array_walk_recursive($handlerArr, function ($item) use ($swagger, $methods) {
                     if ($item instanceof Handler && !($item->callback instanceof \Closure)) {
-                        [$controller, $action] = $this->prepareHandler($item->callback);
-                        $swagger->addPath($methods, $item->route, $controller, $action);
+                        $prepareHandler = $this->prepareHandler($item->callback);
+                        if (count($prepareHandler) > 1) {
+                            [$controller, $action] = $prepareHandler;
+                            $swagger->addPath($methods, $item->route, $controller, $action);
+                        }
                     }
                 });
             }
