@@ -14,7 +14,6 @@ use Hyperf\HttpServer\Router\RouteCollector;
 use Hyperf\Server\Server;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
-use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 
 class AfterDTOStartListener implements ListenerInterface
 {
