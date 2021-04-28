@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs;
 
 use Hyperf\ApiDocs\Listener\AfterDTOStartListener;
-use Hyperf\ApiDocs\Listener\BootAppConfListener;
+use Hyperf\ApiDocs\Listener\BootAppRouteListener;
 
 class ConfigProvider
 {
@@ -16,7 +16,7 @@ class ConfigProvider
             ],
             'listeners' => [
                 AfterDTOStartListener::class,
-                BootAppConfListener::class
+                BootAppRouteListener::class
             ],
             'annotations' => [
                 'scan' => [

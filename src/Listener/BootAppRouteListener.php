@@ -13,7 +13,7 @@ use Hyperf\Server\Server;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 
-class BootAppConfListener implements ListenerInterface
+class BootAppRouteListener implements ListenerInterface
 {
     public function listen(): array
     {
