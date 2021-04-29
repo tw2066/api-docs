@@ -172,6 +172,9 @@ class Common
             if ($apiModelProperty->example !== null) {
                 $property['example'] = $apiModelProperty->example;
             }
+            if ($reflectionProperty->isInitialized($obj)) {
+                $property['default'] = $reflectionProperty->getValue($obj);
+            }
 
             if ($phpType == 'array') {
                 if ($propertyClass->className == null) {
