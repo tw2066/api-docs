@@ -10,6 +10,7 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  * @Annotation
  * @Target({"METHOD"})
  */
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class ApiOperation extends AbstractAnnotation
 {
     /**

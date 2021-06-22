@@ -1,7 +1,8 @@
 <?php
 
-namespace Hyperf\ApiDocs\Swagger;
+declare(strict_types=1);
 
+namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\BaseParam;
 use Hyperf\Contract\ConfigInterface;
@@ -16,6 +17,7 @@ use Psr\Container\ContainerInterface;
 class MakeParameters
 {
     public $config;
+
     /**
      * @var MethodDefinitionCollectorInterface|mixed
      */
@@ -24,21 +26,33 @@ class MakeParameters
     private ContainerInterface $container;
 
     private string $route;
+
     private string $method;
+
     private string $controller;
+
     private string $action;
+
     private Common $common;
+
     /**
      * @var \Hyperf\ApiDocs\Annotation\ApiHeader[]
      */
     private array $apiHeaderArr;
+
     /**
      * @var \Hyperf\ApiDocs\Annotation\ApiFormData[]
      */
     private array $apiFormDataArr;
 
-    public function __construct(string $route, string $method, string $controller,
-                                string $action, array $apiHeaderArr, array $apiFormDataArr)
+    public function __construct(
+        string $route,
+        string $method,
+        string $controller,
+        string $action,
+        array $apiHeaderArr,
+        array $apiFormDataArr
+    )
     {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
@@ -52,35 +66,12 @@ class MakeParameters
         $this->common = new Common();
     }
 
-
-    private function makeParam($paramArr)
-    {
-        $parameters = [];
-        /** @var BaseParam $param */
-        foreach ($paramArr as $param) {
-            if($param->hidden){
-                continue;
-            }
-            $property = [];
-            $property['in'] = $param->in;
-            $property['name'] = $param->name;
-            $property['type'] = $param->type;
-            $param->example !== null && $property['example'] = $param->example;
-            $param->default !== null && $property['default'] = $param->default;
-            $param->required !== null && $property['required'] = $param->required;
-            $param->description !== null && $property['description'] = $param->description;
-            $parameters[] = $property;
-        }
-        return $parameters;
-    }
-
-
     public function make()
     {
         $consumes = null;
         $parameters = $this->makeParam($this->apiHeaderArr);
-        if(!empty($this->apiFormDataArr)){
-            $parameters = Arr::merge($parameters,$this->makeParam($this->apiFormDataArr));
+        if (!empty($this->apiFormDataArr)) {
+            $parameters = Arr::merge($parameters, $this->makeParam($this->apiFormDataArr));
             $consumes = 'application/x-www-form-urlencoded';
         }
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
@@ -126,10 +117,30 @@ class MakeParameters
                 }
             }
         }
-        if($consumes != null){
+        if ($consumes != null) {
             SwaggerJson::$swagger['paths'][$this->route][$this->method]['consumes'] = [$consumes];
         }
         return array_values($parameters);
     }
 
+    private function makeParam($paramArr)
+    {
+        $parameters = [];
+        /** @var BaseParam $param */
+        foreach ($paramArr as $param) {
+            if ($param->hidden) {
+                continue;
+            }
+            $property = [];
+            $property['in'] = $param->in;
+            $property['name'] = $param->name;
+            $property['type'] = $param->type;
+            $param->example !== null && $property['example'] = $param->example;
+            $param->default !== null && $property['default'] = $param->default;
+            $param->required !== null && $property['required'] = $param->required;
+            $param->description !== null && $property['description'] = $param->description;
+            $parameters[] = $property;
+        }
+        return $parameters;
+    }
 }

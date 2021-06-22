@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\Apidocs\Annotation\ApiResponse;
@@ -12,11 +14,11 @@ use Psr\Container\ContainerInterface;
 class MakeResponses
 {
     private string $className;
+
     private string $methodName;
-    /**
-     * @var Common
-     */
+
     private Common $common;
+
     /**
      * @var MethodDefinitionCollectorInterface|mixed
      */
@@ -28,7 +30,7 @@ class MakeResponses
 
     private array $apiResponseArr;
 
-    public function __construct(string $className, string $methodName,array $apiResponseArr,array $config)
+    public function __construct(string $className, string $methodName, array $apiResponseArr, array $config)
     {
         $this->container = ApplicationContext::getContainer();
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
@@ -38,7 +40,6 @@ class MakeResponses
         $this->apiResponseArr = $apiResponseArr;
         $this->common = new Common();
     }
-
 
     public function make()
     {
@@ -65,23 +66,25 @@ class MakeResponses
                 $schema['schema']['items'] = (object)[];
             }
             $schema['schema']['type'] = $type;
-        } else if ($this->container->has($returnTypeClassName)) {
+        } elseif ($this->container->has($returnTypeClassName)) {
             $this->common->class2schema($returnTypeClassName);
             $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
         }
         return $schema;
     }
 
-    private function makeGlobalResp(){
+    private function makeGlobalResp()
+    {
         $resp = [];
-        foreach ($this->config['responses'] as $code=>$value) {
+        foreach ($this->config['responses'] as $code => $value) {
             isset($value['className']) && $resp[$code] = $this->makeSchema($value['className']);
             $resp[$code]['description'] = $value['description'];
         }
         return $resp;
     }
 
-    private function makeAnnotationResp(){
+    private function makeAnnotationResp()
+    {
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -14,7 +16,6 @@ use Throwable;
 
 class Common
 {
-
     public function getDefinitions($className)
     {
         return '#/definitions/' . $this->getSimpleClassName($className);
@@ -70,7 +71,6 @@ class Common
         }
         return $parameters;
     }
-
 
     public function getTypeName(ReflectionProperty $rp)
     {
@@ -131,7 +131,6 @@ class Common
         }
         return $type;
     }
-
 
     public function class2schema($className)
     {
@@ -200,6 +199,14 @@ class Common
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
     }
 
+    public function isSimpleType($type)
+    {
+        return $type == 'string'
+            || $type == 'boolean' || $type == 'bool'
+            || $type == 'integer' || $type == 'int'
+            || $type == 'double' || $type == 'float'
+            || $type == 'array' || $type == 'object';
+    }
 
     protected function emptySchema($className)
     {
@@ -210,21 +217,9 @@ class Common
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
     }
 
-
     protected function makeModelSchema(object $model)
     {
         //$reflect = new ReflectionObject($model);
         //$docComment = $reflect->getDocComment();
     }
-
-
-    public function isSimpleType($type)
-    {
-        return $type == 'string'
-            || $type == 'boolean' || $type == 'bool'
-            || $type == 'integer' || $type == 'int'
-            || $type == 'double' || $type == 'float'
-            || $type == 'array' || $type == 'object';
-    }
-
 }

@@ -4,26 +4,21 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use Hyperf\ApiDocs\Annotation\ApiHeader;
-use Hyperf\ApiDocs\Annotation\ApiFormData;
-use Hyperf\Apidocs\Annotation\ApiResponse;
-use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Annotation\ApiFormData;
+use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiOperation;
+use Hyperf\Apidocs\Annotation\ApiResponse;
 use Hyperf\ApiDocs\ApiAnnotation;
 use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
+use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
 
 class SwaggerJson
 {
-
-    private static array $className;
-
-    private static array $simpleClassName;
-
     public $config;
 
     public static $swagger = [];
@@ -31,13 +26,17 @@ class SwaggerJson
     public $stdoutLogger;
 
     public string $serverName;
+
+    private static array $className;
+
+    private static array $simpleClassName;
+
     /**
      * @var MethodDefinitionCollectorInterface|mixed
      */
     private $methodDefinitionCollector;
 
     private ContainerInterface $container;
-
 
     public function __construct(string $serverName)
     {
@@ -48,39 +47,6 @@ class SwaggerJson
         $this->serverName = $serverName;
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
         $this->securityKey();
-    }
-
-    /**
-     * security
-     */
-    private function securityKey(){
-        $securityKeyArr = $this->config->get('apidocs.security_api_key',[]);
-        if(empty($securityKeyArr)){
-            return;
-        }
-        $securityDefinitions = [];
-        foreach ($securityKeyArr as $value) {
-            $securityDefinitions[$value] = [
-                    "type" => "apiKey",
-                    "name" => $value,
-                    "in" => "header",
-            ];
-        }
-        self::$swagger['securityDefinitions'] = $securityDefinitions;
-    }
-
-    private function securityMethod(){
-        $securityKeyArr = $this->config->get('apidocs.security_api_key',[]);
-        if(empty($securityKeyArr)){
-            return;
-        }
-        $security = [];
-        foreach ($securityKeyArr as $value) {
-            $security[] = [
-                $value=>[]
-            ];
-        }
-        return $security;
     }
 
     public function addPath($methods, $route, $className, $methodName)
@@ -101,7 +67,7 @@ class SwaggerJson
         $apiFormDataArr = [];
         $apiResponseArr = [];
         foreach ($methodAnnotations as $option) {
-            /** @var ApiOperation $apiOperationAnnotation */
+            /* @var ApiOperation $apiOperationAnnotation */
             if ($option instanceof ApiOperation) {
                 $apiOperation = $option;
             }
@@ -126,8 +92,8 @@ class SwaggerJson
         }
 
         $method = strtolower($methods);
-        $makeParameters = new MakeParameters($route, $method, $className, $methodName,$apiHeaderArr,$apiFormDataArr);
-        $makeResponses = new MakeResponses($className, $methodName,$apiResponseArr,$this->config->get('apidocs'));
+        $makeParameters = new MakeParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
+        $makeResponses = new MakeResponses($className, $methodName, $apiResponseArr, $this->config->get('apidocs'));
         self::$swagger['paths'][$route][$method] = [
             'tags' => $tags,
             'summary' => $apiOperation->summary ?? '',
@@ -138,15 +104,13 @@ class SwaggerJson
                 'application/json',
             ],
             'responses' => $makeResponses->make(),
-            'security'=> $this->securityMethod(),
+            'security' => $this->securityMethod(),
         ];
-
     }
-
 
     public static function getSimpleClassName($className)
     {
-        $className = '\\' . trim($className,'\\');
+        $className = '\\' . trim($className, '\\');
         if (isset(self::$className[$className])) {
             return self::$className[$className];
         }
@@ -158,29 +122,6 @@ class SwaggerJson
         }
         self::$className[$className] = $simpleClassName;
         return $simpleClassName;
-    }
-
-    private function putFile(string $file, string $content)
-    {
-        $pathInfo = pathinfo($file);
-        if (!empty($pathInfo['dirname'])) {
-            if (file_exists($pathInfo['dirname']) === false) {
-                if (mkdir($pathInfo['dirname'], 0644, true) === false) {
-                    return false;
-                }
-            }
-        }
-        return file_put_contents($file, $content);
-    }
-
-    private function sortByDesc(array $data){
-        return  collect($data)
-                ->sortByDesc('position')
-                ->map(function ($item) {
-                    return collect($item)->except('position');
-                })
-                ->values()
-                ->toArray();
     }
 
     public function save()
@@ -196,5 +137,64 @@ class SwaggerJson
         self::$swagger = [];
         $this->stdoutLogger->debug('Generate swagger.json success!');
         return $outputFile;
+    }
+
+    /**
+     * security.
+     */
+    private function securityKey()
+    {
+        $securityKeyArr = $this->config->get('apidocs.security_api_key', []);
+        if (empty($securityKeyArr)) {
+            return;
+        }
+        $securityDefinitions = [];
+        foreach ($securityKeyArr as $value) {
+            $securityDefinitions[$value] = [
+                'type' => 'apiKey',
+                'name' => $value,
+                'in' => 'header',
+            ];
+        }
+        self::$swagger['securityDefinitions'] = $securityDefinitions;
+    }
+
+    private function securityMethod()
+    {
+        $securityKeyArr = $this->config->get('apidocs.security_api_key', []);
+        if (empty($securityKeyArr)) {
+            return;
+        }
+        $security = [];
+        foreach ($securityKeyArr as $value) {
+            $security[] = [
+                $value => [],
+            ];
+        }
+        return $security;
+    }
+
+    private function putFile(string $file, string $content)
+    {
+        $pathInfo = pathinfo($file);
+        if (!empty($pathInfo['dirname'])) {
+            if (file_exists($pathInfo['dirname']) === false) {
+                if (mkdir($pathInfo['dirname'], 0644, true) === false) {
+                    return false;
+                }
+            }
+        }
+        return file_put_contents($file, $content);
+    }
+
+    private function sortByDesc(array $data)
+    {
+        return collect($data)
+            ->sortByDesc('position')
+            ->map(function ($item) {
+                return collect($item)->except('position');
+            })
+            ->values()
+            ->toArray();
     }
 }

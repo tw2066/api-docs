@@ -16,7 +16,7 @@ class ConfigProvider
             ],
             'listeners' => [
                 AfterDTOStartListener::class,
-                BootAppRouteListener::class
+                BootAppRouteListener::class,
             ],
             'annotations' => [
                 'scan' => [

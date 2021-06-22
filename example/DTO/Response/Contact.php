@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTO\Response;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -18,10 +20,9 @@ class Contact extends Response
     public int $age;
 
     /**
-     * 需要绝对路径
+     * 需要绝对路径.
      * @ApiModelProperty(value="地址")
      * @var \App\DTO\Address[]
      */
     public array $addressArr;
-
 }

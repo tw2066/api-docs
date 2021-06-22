@@ -1,14 +1,6 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://doc.hyperf.io
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
 return [
     // enable false 将不会启动 swagger 服务
     'enable' => env('APP_ENV') !== 'prod',
@@ -17,7 +9,7 @@ return [
     //'security_api_key' => ['Authorization'],
     //全局responses
     'responses' => [
-        401=>['description'=>'Unauthorized']
+        401 => ['description' => 'Unauthorized'],
     ],
     // swagger 的基础配置
     'swagger' => [

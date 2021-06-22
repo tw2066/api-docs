@@ -31,5 +31,4 @@ class ApiResponse extends AbstractAnnotation
      * @var string
      */
     public $type;
-
 }

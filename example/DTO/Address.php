@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tw
- * Date: 2021/2/24 0024
- * Time: 13:55
- */
+
+declare(strict_types=1);
 
 namespace App\DTO;
 
@@ -13,12 +9,11 @@ use Hyperf\DTO\Annotation\Validation\Numeric;
 
 class Address
 {
-
     public string $street;
 
     /**
      * @ApiModelProperty(value="城市")
-     * @Numeric()
+     * @Numeric
      */
     public float $city;
 
@@ -26,6 +21,4 @@ class Address
      * @ApiModelProperty(value="地址2")
      */
     public ?Address2 $address2 = null;
-
-
 }

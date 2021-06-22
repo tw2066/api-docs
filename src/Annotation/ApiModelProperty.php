@@ -12,13 +12,12 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
  */
 class ApiModelProperty extends AbstractAnnotation
 {
-
     /**
      * @var string
      */
     public $value = '';
 
-    public $example = null;
+    public $example;
 
     /**
      * @var bool
@@ -28,6 +27,5 @@ class ApiModelProperty extends AbstractAnnotation
     /**
      * @var bool
      */
-    public $required = null;
-
+    public $required;
 }

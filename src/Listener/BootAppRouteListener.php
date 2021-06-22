@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
+use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Event\Contract\ListenerInterface;
@@ -11,7 +12,6 @@ use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\Server\Server;
 use Hyperf\Utils\ApplicationContext;
-use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 
 class BootAppRouteListener implements ListenerInterface
 {

@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
-use Hyperf\DTO\Event\AfterDTOStart;
+use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\DTO\Event\AfterDTOStart;
 use Hyperf\Event\Contract\ListenerInterface;
-use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Handler;
-use Hyperf\HttpServer\Router\RouteCollector;
-use Hyperf\Server\Server;
 use Hyperf\Utils\ApplicationContext;
-use Hyperf\ApiDocs\Swagger\SwaggerJson;
 
 class AfterDTOStartListener implements ListenerInterface
 {
-
     public function listen(): array
     {
         return [

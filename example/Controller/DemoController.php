@@ -8,18 +8,18 @@ use App\DTO\Request\DemoBodyRequest;
 use App\DTO\Request\DemoFormData;
 use App\DTO\Request\DemoQuery;
 use App\DTO\Response\Contact;
+use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\PostMapping;
-use Hyperf\ApiDocs\Annotation\Api;
-use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\HttpServer\Annotation\PutMapping;
 
 /**
  * @Controller(prefix="/demo")
- * @Api(tags="demo管理",position=1)
+ * @Api(tags="demo管理", position=1)
  */
 class DemoController extends AbstractController
 {
@@ -38,7 +38,7 @@ class DemoController extends AbstractController
      * @ApiOperation(summary="查询单条记录")
      * @GetMapping(path="find/{id}/and/{in}")
      */
-    public function find(int $id,float $in): array
+    public function find(int $id, float $in): array
     {
         return ['$id' => $id, '$in' => $in];
     }
@@ -50,13 +50,13 @@ class DemoController extends AbstractController
     public function add(DemoBodyRequest $request, DemoQuery $request2)
     {
         var_dump($request2);
-        return json_encode($request,JSON_UNESCAPED_UNICODE);
+        return json_encode($request, JSON_UNESCAPED_UNICODE);
     }
 
     /**
      * @ApiOperation(summary="表单提交")
-     * @ApiFormData(name="photo",type="file")
-     * @ApiResponse(code="404",description="Not Found")
+     * @ApiFormData(name="photo", type="file")
+     * @ApiResponse(code="404", description="Not Found")
      * @PostMapping(path="fromData")
      */
     public function fromData(DemoFormData $formData): bool
