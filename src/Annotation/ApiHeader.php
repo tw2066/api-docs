@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Annotation;
 
-/**
- * @Annotation
- * @Target({"METHOD", "CLASS"})
- */
+use Attribute;
+
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ApiHeader extends BaseParam
 {
-    public $in = 'header';
+    protected $in = 'header';
 }

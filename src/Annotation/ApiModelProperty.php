@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Annotation;
 
+use Attribute;
 use Hyperf\Di\Annotation\AbstractAnnotation;
 
-/**
- * @Annotation
- * @Target({"PROPERTY"})
- */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class ApiModelProperty extends AbstractAnnotation
 {
     /**
@@ -28,4 +26,17 @@ class ApiModelProperty extends AbstractAnnotation
      * @var bool
      */
     public $required;
+
+    /**
+     * ApiModelProperty constructor.
+     * @param $example
+     * @param bool $required
+     */
+    public function __construct(string $value = '', $example = null, bool $hidden = false, bool $required = null)
+    {
+        $this->value = $value;
+        $this->example = $example;
+        $this->hidden = $hidden;
+        $this->required = $required;
+    }
 }

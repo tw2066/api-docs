@@ -6,7 +6,7 @@ return [
     'enable' => env('APP_ENV') !== 'prod',
     'output_dir' => BASE_PATH . '/runtime/swagger',
     //认证api key
-    //'security_api_key' => ['Authorization'],
+    'security_api_key' => ['Authorization'],
     //全局responses
     'responses' => [
         401 => ['description' => 'Unauthorized'],

@@ -43,17 +43,12 @@ class Common
             if (!in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
-            $apiModelProperty = new ApiModelProperty();
+
             $requiredAnnotation = null;
-            $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($parameterClassName, $reflectionProperty->getName());
-            foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
-                if ($propertyReflectionProperty instanceof ApiModelProperty) {
-                    $apiModelProperty = $propertyReflectionProperty;
-                }
-                if ($propertyReflectionProperty instanceof Required) {
-                    $requiredAnnotation = $propertyReflectionProperty;
-                }
-            }
+            $apiModelProperty = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
+            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            $requiredAnnotation = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), Required::class);
+
             if ($apiModelProperty->hidden) {
                 continue;
             }
@@ -152,13 +147,9 @@ class Common
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
             $phpType = $propertyClass->type;
             $type = $this->type2SwaggerType($phpType);
-            $apiModelProperty = new ApiModelProperty();
-            $propertyReflectionPropertyArr = ApiAnnotation::propertyMetadata($className, $fieldName);
-            foreach ($propertyReflectionPropertyArr as $propertyReflectionProperty) {
-                if ($propertyReflectionProperty instanceof ApiModelProperty) {
-                    $apiModelProperty = $propertyReflectionProperty;
-                }
-            }
+            $apiModelProperty = ApiAnnotation::property($className, $fieldName, ApiModelProperty::class);
+            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+
             if ($apiModelProperty->hidden) {
                 continue;
             }

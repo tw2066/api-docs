@@ -36,4 +36,35 @@ abstract class BaseParam extends AbstractAnnotation
      * @var bool
      */
     public $hidden = false;
+
+    /**
+     * @var string
+     */
+    protected $in;
+
+
+    /**
+     * BaseParam constructor.
+     * @param bool $required
+     * @param null $default
+     * @param null $example
+     */
+    public function __construct(string $name = '', bool $required = null, string $type = 'string', $default = null, $example = null, string $description = null, bool $hidden = false)
+    {
+        $this->name = $name;
+        $this->required = $required;
+        $this->type = $type;
+        $this->default = $default;
+        $this->example = $example;
+        $this->description = $description;
+        $this->hidden = $hidden;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIn(): string
+    {
+        return $this->in;
+    }
 }

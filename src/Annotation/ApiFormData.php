@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Annotation;
 
-/**
- * @Annotation
- * @Target({"METHOD"})
- */
+use Attribute;
+
+#[Attribute(Attribute::TARGET_METHOD)]
 class ApiFormData extends BaseParam
 {
-    public $in = 'formData';
+    protected $in = 'formData';
 }

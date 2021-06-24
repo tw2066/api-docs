@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Annotation;
 
+use Attribute;
 use Hyperf\Di\Annotation\AbstractAnnotation;
 
-/**
- * @Annotation
- * @Target({"CLASS"})
- */
+#[Attribute(Attribute::TARGET_CLASS)]
 class Api extends AbstractAnnotation
 {
     /**
@@ -18,20 +16,19 @@ class Api extends AbstractAnnotation
     public $tags;
 
     /**
-     * @var int
-     */
-    public $position = 0;
-
-    /**
      * @var string
      */
     public $description = '';
 
-//    public function __construct($value = null)
-//    {
-//        if (isset($value['tags']) && is_string($value['tags'])) {
-//            $value['tags'] = explode(',', str_replace(' ', '', $value['tags']));
-//        }
-//        parent::__construct($value);
-//    }
+    /**
+     * @var int
+     */
+    public $position = 0;
+
+    public function __construct(mixed $tags = null, string $description = '', int $position = 0)
+    {
+        $this->tags = $tags;
+        $this->description = $description;
+        $this->position = $position;
+    }
 }

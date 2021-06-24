@@ -7,9 +7,7 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\BaseParam;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
-use Hyperf\DTO\Contracts\RequestBody;
-use Hyperf\DTO\Contracts\RequestFormData;
-use Hyperf\DTO\Contracts\RequestQuery;
+use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
@@ -75,14 +73,15 @@ class MakeParameters
             $consumes = 'application/x-www-form-urlencoded';
         }
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
-        foreach ($definitions as $k => $definition) {
+        foreach ($definitions as $definition) {
             //query path
             $parameterClassName = $definition->getName();
+            $paramName = $definition->getMeta('name');
             $simpleSwaggerType = $this->common->simpleType2SwaggerType($parameterClassName);
             if ($simpleSwaggerType !== null) {
                 $property = [];
                 $property['in'] = 'path';
-                $property['name'] = $definition->getMeta('name');
+                $property['name'] = $paramName;
                 $property['required'] = true;
                 $property['type'] = $simpleSwaggerType;
                 $parameters[] = $property;
@@ -90,8 +89,8 @@ class MakeParameters
             }
 
             if ($this->container->has($parameterClassName)) {
-                $obj = $this->container->get($parameterClassName);
-                if ($obj instanceof RequestBody) {
+                $methodParameter = MethodParametersManager::getMethodParameter($this->controller, $this->action, $paramName);
+                if ($methodParameter->isRequestBody()) {
                     $this->common->class2schema($parameterClassName);
                     $property = [];
                     $property['in'] = 'body';
@@ -102,13 +101,13 @@ class MakeParameters
                     $parameters[] = $property;
                     $consumes = 'application/json';
                 }
-                if ($obj instanceof RequestQuery) {
+                if ($methodParameter->isRequestQuery()) {
                     $propertyArr = $this->common->makePropertyByClass($parameterClassName, 'query');
                     foreach ($propertyArr as $property) {
                         $parameters[] = $property;
                     }
                 }
-                if ($obj instanceof RequestFormData) {
+                if ($methodParameter->isRequestFormData()) {
                     $propertyArr = $this->common->makePropertyByClass($parameterClassName, 'formData');
                     foreach ($propertyArr as $property) {
                         $parameters[] = $property;
@@ -132,7 +131,7 @@ class MakeParameters
                 continue;
             }
             $property = [];
-            $property['in'] = $param->in;
+            $property['in'] = $param->getIn();
             $property['name'] = $param->name;
             $property['type'] = $param->type;
             $param->example !== null && $property['example'] = $param->example;

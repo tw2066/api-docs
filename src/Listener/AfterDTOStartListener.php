@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
+use Closure;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
@@ -43,11 +44,11 @@ class AfterDTOStartListener implements ListenerInterface
         foreach ($router->getData() ?? [] as $routeData) {
             foreach ($routeData ?? [] as $methods => $handlerArr) {
                 array_walk_recursive($handlerArr, function ($item) use ($swagger, $methods) {
-                    if ($item instanceof Handler && !($item->callback instanceof \Closure)) {
+                    if ($item instanceof Handler && !($item->callback instanceof Closure)) {
                         $prepareHandler = $this->prepareHandler($item->callback);
                         if (count($prepareHandler) > 1) {
-                            [$controller, $action] = $prepareHandler;
-                            $swagger->addPath($methods, $item->route, $controller, $action);
+                            [$controller, $methodName] = $prepareHandler;
+                            $swagger->addPath($controller, $methodName, $item->route, $methods);
                         }
                     }
                 });
