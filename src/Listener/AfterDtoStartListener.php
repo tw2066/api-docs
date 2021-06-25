@@ -8,22 +8,22 @@ use Closure;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\DTO\Event\AfterDTOStart;
+use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
 use Hyperf\Utils\ApplicationContext;
 
-class AfterDTOStartListener implements ListenerInterface
+class AfterDtoStartListener implements ListenerInterface
 {
     public function listen(): array
     {
         return [
-            AfterDTOStart::class,
+            AfterDtoStart::class,
         ];
     }
 
     /**
-     * @param AfterDTOStart $event
+     * @param AfterDtoStart $event
      */
     public function process(object $event)
     {
