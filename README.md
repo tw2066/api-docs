@@ -15,9 +15,9 @@
 
 ## 注意
 
-> php >= 8.0
-> 控制器中方法尽可能返回类,这样会更好的生成文档
-> 当类的结果满足不了时,才用 #[ApiResponse] 注解
+* php >= 8.0
+* 控制器中方法尽可能返回类,这样会更好的生成文档
+* 当返回类的结果满足不了时,用 #[ApiResponse] 注解
 
 ## 安装
 
@@ -62,10 +62,10 @@ return [
 ```shell script
 php bin/hyperf.php start
 
-[INFO] Swagger Url at 0.0.0.0:9531/swagger
+[INFO] Swagger Url at 0.0.0.0:9501/swagger
 [INFO] TaskWorker#1 started.
 [INFO] Worker#0 started.
-[INFO] HTTP Server listening at 0.0.0.0:9531
+[INFO] HTTP Server listening at 0.0.0.0:9501
 ```
 
 > 看到`Swagger Url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
@@ -172,7 +172,7 @@ class DemoController extends AbstractController
 > 安装hyperf框架验证器[hyperf/validation](https://github.com/hyperf/validation), 并配置(已安装忽略)
 
 - 注解
-  `Required` `Between` `Date` `Email` `Image` `Integer` `Nullable` `Numeric`  `Url` `Validation`
+  `Required` `Between` `Date` `Email` `Image` `Integer` `Nullable` `Numeric`  `Url` `Validation` `...`
 - 校验生效
 
 > 只需在控制器方法中加上 #[Valid] 注解
@@ -185,7 +185,17 @@ public function index(#[RequestQuery] #[Valid] DemoQuery $request){}
 class DemoQuery
 {
     #[ApiModelProperty('名称')]
+    #[Required]
+    #[Max(5)]
+    #[In(['qq','aa'])]
     public string $name;
+
+    #[ApiModelProperty('正则')]
+    #[Str]
+    #[Regex('/^.+@.+$/i')]
+    #[StartsWith('aa,bb')]
+    #[Max(10)]
+    public string $email;
 
     #[ApiModelProperty('数量')]
     #[Required]
