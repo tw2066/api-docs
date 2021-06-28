@@ -137,6 +137,7 @@ class Common
             //$this->makeModelSchema($obj);
             return $this->emptySchema($className);
         }
+
         $schema = [
             'type' => 'object',
             'properties' => [],
@@ -162,7 +163,7 @@ class Common
             if ($apiModelProperty->example !== null) {
                 $property['example'] = $apiModelProperty->example;
             }
-            if ($reflectionProperty->isInitialized($obj)) {
+            if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
                 $property['default'] = $reflectionProperty->getValue($obj);
             }
 
@@ -190,7 +191,7 @@ class Common
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
     }
 
-    public function isSimpleType($type)
+    public function isSimpleType($type): bool
     {
         return $type == 'string'
             || $type == 'boolean' || $type == 'bool'

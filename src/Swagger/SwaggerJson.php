@@ -113,19 +113,20 @@ class SwaggerJson
             }
         }
 
+        $simpleClassName = $this->getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
         } elseif (!empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
             $tags = [$apiControllerAnnotation->tags];
         } else {
-            $tags = [$this->getSimpleClassName($className)];
+            $tags = [$simpleClassName];
         }
 
         foreach ($tags as $tag) {
             self::$swagger['tags'][$tag] = [
                 'name' => $tag,
                 'position' => $apiControllerAnnotation->position,
-                'description' => $apiControllerAnnotation->description,
+                'description' => $apiControllerAnnotation->description ?: $simpleClassName,
             ];
         }
 

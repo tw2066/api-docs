@@ -29,7 +29,9 @@ class ApiModelProperty extends AbstractAnnotation
 
     /**
      * ApiModelProperty constructor.
-     * @param $example
+     * @param string $value
+     * @param null $example
+     * @param bool $hidden
      * @param bool $required
      */
     public function __construct(string $value = '', $example = null, bool $hidden = false, bool $required = null)
