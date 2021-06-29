@@ -8,6 +8,7 @@ use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\ApiAnnotation;
 use Hyperf\Database\Model\Model;
 use Hyperf\Di\ReflectionManager;
+use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\Utils\ApplicationContext;
@@ -36,7 +37,7 @@ class Common
             $property['name'] = $reflectionProperty->getName();
             try {
                 $property['default'] = $reflectionProperty->getValue(make($parameterClassName));
-            } catch (Throwable $exception) {
+            } catch (Throwable) {
             }
             $phpType = $this->getTypeName($reflectionProperty);
             $property['type'] = $this->type2SwaggerType($phpType);
@@ -44,13 +45,16 @@ class Common
                 continue;
             }
 
-            $requiredAnnotation = null;
             $apiModelProperty = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
             $requiredAnnotation = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), Required::class);
-
+            /** @var In $inAnnotation */
+            $inAnnotation = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), In::class);
             if ($apiModelProperty->hidden) {
                 continue;
+            }
+            if (!empty($inAnnotation)) {
+                $property['enum'] = $inAnnotation->getValue();
             }
             if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;
@@ -150,12 +154,17 @@ class Common
             $type = $this->type2SwaggerType($phpType);
             $apiModelProperty = ApiAnnotation::property($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            /** @var In $inAnnotation */
+            $inAnnotation = ApiAnnotation::property($className, $reflectionProperty->getName(), In::class);
 
             if ($apiModelProperty->hidden) {
                 continue;
             }
             $property = [];
             $property['type'] = $type;
+            if (!empty($inAnnotation)) {
+                $property['enum'] = $inAnnotation->getValue();
+            }
             $property['description'] = $apiModelProperty->value ?? '';
             if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;
@@ -166,7 +175,6 @@ class Common
             if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
                 $property['default'] = $reflectionProperty->getValue($obj);
             }
-
             if ($phpType == 'array') {
                 if ($propertyClass->className == null) {
                     $property['items'] = (object)[];
