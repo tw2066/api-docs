@@ -124,7 +124,7 @@ public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] Dem
 class DemoController extends AbstractController
 {
     #[ApiOperation(summary: '查询')]
-    #[PostMapping(path: '/index')]
+    #[PostMapping(path: 'index')]
     public function index(#[RequestQuery] #[Valid] DemoQuery $request): Contact
     {
         $contact = new Contact();
@@ -133,7 +133,7 @@ class DemoController extends AbstractController
         return $contact;
     }
 
-    #[PutMapping(path: '/add')]
+    #[PutMapping(path: 'add')]
     #[ApiOperation(summary: '提交body数据和get参数')]
     public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query)
     {
@@ -141,7 +141,7 @@ class DemoController extends AbstractController
         return json_encode($request, JSON_UNESCAPED_UNICODE);
     }
 
-    #[PostMapping(path: '/fromData')]
+    #[PostMapping(path: 'fromData')]
     #[ApiOperation(summary: '表单提交')]
     #[ApiFormData(name: 'photo', type: 'file')]
     #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
@@ -153,7 +153,7 @@ class DemoController extends AbstractController
         return true;
     }
 
-    #[GetMapping(path: '/find/{id}/and/{in}')]
+    #[GetMapping(path: 'find/{id}/and/{in}')]
     #[ApiOperation('查询单体记录')]
     #[ApiHeader(name: 'test')]
     public function find(int $id, float $in): array

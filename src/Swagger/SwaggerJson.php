@@ -112,7 +112,6 @@ class SwaggerJson
                 $apiResponseArr[] = $option;
             }
         }
-
         $simpleClassName = $this->getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
