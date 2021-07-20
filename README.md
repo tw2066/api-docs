@@ -32,6 +32,7 @@ composer require tangwei/apidocs
 ```bash
 php bin/hyperf.php vendor:publish tangwei/apidocs
 ```
+##### 1.1 配置信息
 > config/autoload/apidocs.php
 ```php
 return [
@@ -58,7 +59,23 @@ return [
 ];
 ```
 
+##### 1.2 ignore_annotations 配置 required
+
+> config/autoload/annotations.php
+
+```phpt
+return [
+    'scan' => [
+          ...
+        'ignore_annotations' => [
+            'required',
+        ],
+    ],
+];
+```
+
 ### 2. 直接启动框架(需要有http服务)
+
 ```shell script
 php bin/hyperf.php start
 
