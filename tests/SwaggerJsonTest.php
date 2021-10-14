@@ -1,14 +1,6 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
 
 namespace HyperfTest\ApiDocs;
 
@@ -18,22 +10,14 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
-use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\DTO\Scan\ScanAnnotation;
-use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Reflection\ClassInvoker;
-use Hyperf\XxlJob\Annotation\XxlJob;
-use Hyperf\XxlJob\Config;
-use Hyperf\XxlJob\Dispatcher\XxlJobRoute;
-use Hyperf\XxlJob\JobHandlerManager;
-use Hyperf\XxlJob\Listener\BootAppRouteListener;
 use HyperfTest\ApiDocs\Controller\DemoController;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use HyperfTest\ApiDocs\Request\User;
 use HyperfTest\ApiDocs\Response\Activity;
-use HyperfTest\XxlJob\BarJobClass;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -54,7 +38,6 @@ class SwaggerJsonTest extends TestCase
     {
         $container = m::mock(ContainerInterface::class);
         $container->shouldReceive('has')->andReturn(true);
-
 
         $config = m::mock(ConfigInterface::class);
 
@@ -100,7 +83,6 @@ class SwaggerJsonTest extends TestCase
 
         $swaggerJson = new SwaggerJson('http');
 
-
         /** @var SwaggerJson $swaggerJson */
         $swaggerJson = new ClassInvoker($swaggerJson);
         $swaggerJson->addPath(DemoController::class, 'add', '/add', 'POST');
@@ -111,7 +93,6 @@ class SwaggerJsonTest extends TestCase
         $this->assertSame('添加方法', $swagger['paths']['/add']['post']['summary']);
         $this->assertTrue(isset($swagger['paths']['/add']['post']['parameters']));
         $this->assertTrue(isset($swagger['definitions']));
-
 
         $this->assertSame('object', $swagger['definitions']['User']['type']);
         $this->assertSame('string', $swagger['definitions']['User']['properties']['name']['type']);
@@ -126,6 +107,5 @@ class SwaggerJsonTest extends TestCase
         /** @var ScanAnnotation $scanAnnotation */
         $scanAnnotation = new ClassInvoker($scanAnnotation);
         $scanAnnotation->scan(DemoController::class, 'add');
-
     }
 }

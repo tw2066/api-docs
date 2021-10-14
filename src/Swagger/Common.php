@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
-use Hyperf\DTO\ApiAnnotation;
 use Hyperf\Database\Model\Model;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
+use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\Utils\ApplicationContext;
 use ReflectionProperty;

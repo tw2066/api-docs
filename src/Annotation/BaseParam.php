@@ -44,13 +44,9 @@ abstract class BaseParam extends AbstractAnnotation
 
     /**
      * BaseParam constructor.
-     * @param string $name
      * @param bool $required
-     * @param string $type
      * @param null $default
      * @param null $example
-     * @param string|null $description
-     * @param bool $hidden
      */
     public function __construct(string $name = '', bool $required = null, string $type = 'string', $default = null, $example = null, string $description = null, bool $hidden = false)
     {

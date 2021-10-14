@@ -1,14 +1,6 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
 
 namespace HyperfTest\ApiDocs\Request;
 
@@ -21,19 +13,15 @@ use Hyperf\DTO\Annotation\Validation\StartsWith;
 use Hyperf\DTO\Annotation\Validation\Str;
 use Hyperf\DTO\Annotation\Validation\Validation;
 
-
 class DemoQuery extends PageQuery
 {
     public string $test = 'string';
 
-
     public ?bool $isNew;
-
 
     #[max(5)]
     #[In(['qq', 'aa'])]
     public string $name;
-
 
     #[Str]
     #[Regex('/^.+@.+$/i')]
