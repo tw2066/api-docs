@@ -19,10 +19,7 @@ class MakeResponses
 
     private Common $common;
 
-    /**
-     * @var MethodDefinitionCollectorInterface|mixed
-     */
-    private $methodDefinitionCollector;
+    private MethodDefinitionCollectorInterface $methodDefinitionCollector;
 
     private ContainerInterface $container;
 
@@ -41,7 +38,7 @@ class MakeResponses
         $this->common = new Common();
     }
 
-    public function make()
+    public function make(): array
     {
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
@@ -54,16 +51,16 @@ class MakeResponses
         return $AnnotationResp + $resp + $globalResp;
     }
 
-    private function makeSchema($returnTypeClassName)
+    private function makeSchema($returnTypeClassName): array
     {
         $schema = [];
         if ($this->common->isSimpleType($returnTypeClassName)) {
             $type = $this->common->type2SwaggerType($returnTypeClassName);
             if ($type == 'array') {
-                $schema['schema']['items'] = (object)[];
+                $schema['schema']['items'] = (object) [];
             }
             if ($type == 'object') {
-                $schema['schema']['items'] = (object)[];
+                $schema['schema']['items'] = (object) [];
             }
             $schema['schema']['type'] = $type;
         } elseif ($this->container->has($returnTypeClassName)) {
@@ -73,7 +70,7 @@ class MakeResponses
         return $schema;
     }
 
-    private function makeGlobalResp()
+    private function makeGlobalResp(): array
     {
         $resp = [];
         foreach ($this->config['responses'] as $code => $value) {
@@ -83,7 +80,7 @@ class MakeResponses
         return $resp;
     }
 
-    private function makeAnnotationResp()
+    private function makeAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */
@@ -92,7 +89,7 @@ class MakeResponses
                 $scanAnnotation = $this->container->get(ScanAnnotation::class);
                 $scanAnnotation->scanClass($apiResponse->className);
                 $this->makeSchema($apiResponse->className);
-                if (!empty($apiResponse->type)) {
+                if (! empty($apiResponse->type)) {
                     $schema['schema']['type'] = $apiResponse->type;
                     $schema['schema']['items']['$ref'] = $this->makeSchema($apiResponse->className)['schema']['$ref'];
                     $resp[$apiResponse->code] = $schema;

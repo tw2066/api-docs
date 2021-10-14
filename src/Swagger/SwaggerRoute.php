@@ -16,12 +16,9 @@ class SwaggerRoute
 
     private string $prefix;
 
-    private string $outputDir;
-
-    public function __construct(string $prefix, string $outputDir)
+    public function __construct(string $prefix)
     {
         $this->prefix = $prefix;
-        $this->outputDir = $outputDir;
         $this->path = __DIR__ . '/../swagger-ui';
     }
 

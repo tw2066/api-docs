@@ -10,20 +10,11 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[Attribute(Attribute::TARGET_CLASS)]
 class Api extends AbstractAnnotation
 {
-    /**
-     * @var array
-     */
-    public $tags;
+    public mixed $tags;
 
-    /**
-     * @var string
-     */
-    public $description = '';
+    public string $description = '';
 
-    /**
-     * @var int
-     */
-    public $position = 0;
+    public int $position = 0;
 
     public function __construct(mixed $tags = null, string $description = '', int $position = 0)
     {

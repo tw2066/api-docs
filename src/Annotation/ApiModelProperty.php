@@ -10,28 +10,14 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class ApiModelProperty extends AbstractAnnotation
 {
-    /**
-     * @var string
-     */
-    public $value = '';
+    public string $value = '';
 
-    public $example;
+    public mixed $example;
 
-    /**
-     * @var bool
-     */
-    public $hidden = false;
+    public bool $hidden = false;
 
-    /**
-     * @var bool
-     */
-    public $required;
+    public ?bool $required;
 
-    /**
-     * ApiModelProperty constructor.
-     * @param null $example
-     * @param bool $required
-     */
     public function __construct(string $value = '', $example = null, bool $hidden = false, bool $required = null)
     {
         $this->value = $value;

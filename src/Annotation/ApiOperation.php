@@ -10,21 +10,10 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 #[Attribute(Attribute::TARGET_METHOD)]
 class ApiOperation extends AbstractAnnotation
 {
-    /**
-     * @var string
-     */
-    public $summary = '';
+    public string $summary = '';
 
-    /**
-     * @var string
-     */
-    public $description = '';
+    public string $description = '';
 
-    /**
-     * ApiOperation constructor.
-     * @param string $summary
-     * @param string $description
-     */
     public function __construct($summary = '', $description = '')
     {
         $this->summary = $summary;

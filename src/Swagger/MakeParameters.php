@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\ApiDocs\Annotation\ApiFormData;
+use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\BaseParam;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
@@ -14,12 +16,9 @@ use Psr\Container\ContainerInterface;
 
 class MakeParameters
 {
-    public $config;
+    public mixed $config;
 
-    /**
-     * @var MethodDefinitionCollectorInterface|mixed
-     */
-    private $methodDefinitionCollector;
+    private MethodDefinitionCollectorInterface $methodDefinitionCollector;
 
     private ContainerInterface $container;
 
@@ -34,12 +33,12 @@ class MakeParameters
     private Common $common;
 
     /**
-     * @var \Hyperf\ApiDocs\Annotation\ApiHeader[]
+     * @var ApiHeader[]
      */
     private array $apiHeaderArr;
 
     /**
-     * @var \Hyperf\ApiDocs\Annotation\ApiFormData[]
+     * @var ApiFormData[]
      */
     private array $apiFormDataArr;
 
@@ -50,8 +49,7 @@ class MakeParameters
         string $action,
         array $apiHeaderArr,
         array $apiFormDataArr
-    )
-    {
+    ) {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
@@ -64,11 +62,11 @@ class MakeParameters
         $this->common = new Common();
     }
 
-    public function make()
+    public function make(): array
     {
         $consumes = null;
         $parameters = $this->makeParam($this->apiHeaderArr);
-        if (!empty($this->apiFormDataArr)) {
+        if (! empty($this->apiFormDataArr)) {
             $parameters = Arr::merge($parameters, $this->makeParam($this->apiFormDataArr));
             $consumes = 'application/x-www-form-urlencoded';
         }
@@ -122,7 +120,7 @@ class MakeParameters
         return array_values($parameters);
     }
 
-    private function makeParam($paramArr)
+    private function makeParam($paramArr): array
     {
         $parameters = [];
         /** @var BaseParam $param */

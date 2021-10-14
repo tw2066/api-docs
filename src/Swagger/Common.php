@@ -17,7 +17,7 @@ use Throwable;
 
 class Common
 {
-    public function getDefinitions($className)
+    public function getDefinitions($className): string
     {
         return '#/definitions/' . $this->getSimpleClassName($className);
     }
@@ -27,7 +27,7 @@ class Common
         return SwaggerJson::getSimpleClassName($className);
     }
 
-    public function makePropertyByClass(string $parameterClassName, string $in)
+    public function makePropertyByClass(string $parameterClassName, string $in): array
     {
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
@@ -41,7 +41,7 @@ class Common
             }
             $phpType = $this->getTypeName($reflectionProperty);
             $property['type'] = $this->type2SwaggerType($phpType);
-            if (!in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
+            if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
 
@@ -53,7 +53,7 @@ class Common
             if ($apiModelProperty->hidden) {
                 continue;
             }
-            if (!empty($inAnnotation)) {
+            if (! empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
             if ($apiModelProperty->required !== null) {
@@ -71,17 +71,17 @@ class Common
         return $parameters;
     }
 
-    public function getTypeName(ReflectionProperty $rp)
+    public function getTypeName(ReflectionProperty $rp): string
     {
         try {
             $type = $rp->getType()->getName();
-        } catch (Throwable $throwable) {
+        } catch (Throwable) {
             $type = 'string';
         }
         return $type;
     }
 
-    public function type2SwaggerType($phpType)
+    public function type2SwaggerType($phpType): string
     {
         switch ($phpType) {
             case 'int':
@@ -108,7 +108,7 @@ class Common
         return $type;
     }
 
-    public function simpleType2SwaggerType($phpType)
+    public function simpleType2SwaggerType($phpType): ?string
     {
         $type = null;
         switch ($phpType) {
@@ -131,15 +131,17 @@ class Common
         return $type;
     }
 
-    public function class2schema($className)
+    public function class2schema($className): void
     {
-        if (!ApplicationContext::getContainer()->has($className)) {
-            return $this->emptySchema($className);
+        if (! ApplicationContext::getContainer()->has($className)) {
+            $this->emptySchema($className);
+            return;
         }
         $obj = ApplicationContext::getContainer()->get($className);
         if ($obj instanceof Model) {
             //$this->makeModelSchema($obj);
-            return $this->emptySchema($className);
+            $this->emptySchema($className);
+            return;
         }
 
         $schema = [
@@ -162,7 +164,7 @@ class Common
             }
             $property = [];
             $property['type'] = $type;
-            if (!empty($inAnnotation)) {
+            if (! empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
             $property['description'] = $apiModelProperty->value ?? '';
@@ -177,7 +179,7 @@ class Common
             }
             if ($phpType == 'array') {
                 if ($propertyClass->className == null) {
-                    $property['items'] = (object)[];
+                    $property['items'] = (object) [];
                 } else {
                     if ($propertyClass->isSimpleType) {
                         $property['items']['type'] = $this->type2SwaggerType($propertyClass->className);
@@ -188,9 +190,9 @@ class Common
                 }
             }
             if ($type == 'object') {
-                $property['items'] = (object)[];
+                $property['items'] = (object) [];
             }
-            if (!$propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
+            if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
                 $this->class2schema($propertyClass->className);
                 $property['$ref'] = $this->getDefinitions($propertyClass->className);
             }

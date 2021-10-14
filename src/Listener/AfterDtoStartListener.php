@@ -33,18 +33,18 @@ class AfterDtoStartListener implements ListenerInterface
         $server = $event->serverConfig;
         $router = $event->router;
 
-        if (!$config->get('apidocs.enable', false)) {
+        if (! $config->get('apidocs.enable', false)) {
             return;
         }
         $outputDir = $config->get('apidocs.output_dir');
-        if (!$outputDir) {
+        if (! $outputDir) {
             return;
         }
         $swagger = new SwaggerJson($server['name']);
         foreach ($router->getData() ?? [] as $routeData) {
             foreach ($routeData ?? [] as $methods => $handlerArr) {
                 array_walk_recursive($handlerArr, function ($item) use ($swagger, $methods) {
-                    if ($item instanceof Handler && !($item->callback instanceof Closure)) {
+                    if ($item instanceof Handler && ! ($item->callback instanceof Closure)) {
                         $prepareHandler = $this->prepareHandler($item->callback);
                         if (count($prepareHandler) > 1) {
                             [$controller, $methodName] = $prepareHandler;

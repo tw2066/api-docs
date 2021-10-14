@@ -9,5 +9,5 @@ use Attribute;
 #[Attribute(Attribute::TARGET_METHOD)]
 class ApiFormData extends BaseParam
 {
-    protected $in = 'formData';
+    protected string $in = 'formData';
 }

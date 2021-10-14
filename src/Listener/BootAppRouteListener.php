@@ -27,17 +27,17 @@ class BootAppRouteListener implements ListenerInterface
         $container = ApplicationContext::getContainer();
         $logger = $container->get(StdoutLoggerInterface::class);
         $config = $container->get(ConfigInterface::class);
-        if (!$config->get('apidocs.enable', false)) {
+        if (! $config->get('apidocs.enable', false)) {
             $logger->debug('apidocs not enable');
             return;
         }
         $outputDir = $config->get('apidocs.output_dir');
-        if (!$outputDir) {
+        if (! $outputDir) {
             $logger->error('/config/autoload/apidocs.php need set output_dir');
             return;
         }
         $prefix = $config->get('apidocs.prefix', '/swagger');
-        $swaggerRoute = new SwaggerRoute($prefix, $outputDir);
+        $swaggerRoute = new SwaggerRoute($prefix);
         $servers = $config->get('server.servers');
         $httpServerRouter = null;
         $httpServer = null;

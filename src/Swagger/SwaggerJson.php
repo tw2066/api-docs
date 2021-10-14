@@ -11,7 +11,6 @@ use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
@@ -19,11 +18,11 @@ use Psr\Container\ContainerInterface;
 
 class SwaggerJson
 {
-    public $config;
+    public mixed $config;
 
-    public static $swagger = [];
+    public static mixed $swagger = [];
 
-    public $stdoutLogger;
+    public StdoutLoggerInterface $stdoutLogger;
 
     public string $serverName;
 
@@ -37,11 +36,6 @@ class SwaggerJson
 
     private static array $simpleClassName;
 
-    /**
-     * @var MethodDefinitionCollectorInterface|mixed
-     */
-    private $methodDefinitionCollector;
-
     private ContainerInterface $container;
 
     public function __construct(string $serverName)
@@ -51,7 +45,6 @@ class SwaggerJson
         $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
         self::$swagger = $this->config->get('apidocs.swagger');
         $this->serverName = $serverName;
-        $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
         $this->securityKey();
     }
 
@@ -81,7 +74,7 @@ class SwaggerJson
     public function addPath($className, $methodName, $route, $methods)
     {
         //获取当前方法位置
-        $position = $this->getMethodNamePosition($className, $methodName, $route);
+        $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
         $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
@@ -115,7 +108,7 @@ class SwaggerJson
         $simpleClassName = $this->getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
-        } elseif (!empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
+        } elseif (! empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
             $tags = [$apiControllerAnnotation->tags];
         } else {
             $tags = [$simpleClassName];
@@ -155,7 +148,7 @@ class SwaggerJson
     {
         self::$swagger = $this->sort(self::$swagger);
         $outputDir = $this->config->get('apidocs.output_dir');
-        if (!$outputDir) {
+        if (! $outputDir) {
             $this->stdoutLogger->error('/config/autoload/apidocs.php need set output_dir');
             return;
         }
@@ -229,10 +222,10 @@ class SwaggerJson
      * json文件写入.
      * @return false|int
      */
-    private function putFile(string $file, string $content)
+    private function putFile(string $file, string $content): bool|int
     {
         $pathInfo = pathinfo($file);
-        if (!empty($pathInfo['dirname'])) {
+        if (! empty($pathInfo['dirname'])) {
             if (file_exists($pathInfo['dirname']) === false) {
                 if (mkdir($pathInfo['dirname'], 0644, true) === false) {
                     return false;

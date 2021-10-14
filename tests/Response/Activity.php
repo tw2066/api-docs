@@ -9,5 +9,4 @@ class Activity
     public string $id;
 
     public string $activityName;
-
 }

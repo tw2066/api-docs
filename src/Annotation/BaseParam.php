@@ -8,46 +8,22 @@ use Hyperf\Di\Annotation\AbstractAnnotation;
 
 abstract class BaseParam extends AbstractAnnotation
 {
-    /**
-     * @var string
-     */
-    public $name = '';
+    public string $name = '';
 
-    /**
-     * @var bool
-     */
-    public $required;
+    public ?bool $required;
 
-    /**
-     * @var string
-     */
-    public $type = 'string';
+    public string $type = 'string';
 
-    public $default;
+    public mixed $default;
 
-    public $example;
+    public mixed $example;
 
-    /**
-     * @var string
-     */
-    public $description;
+    public ?string $description;
 
-    /**
-     * @var bool
-     */
-    public $hidden = false;
+    public bool $hidden = false;
 
-    /**
-     * @var string
-     */
-    protected $in;
+    protected string $in;
 
-    /**
-     * BaseParam constructor.
-     * @param bool $required
-     * @param null $default
-     * @param null $example
-     */
     public function __construct(string $name = '', bool $required = null, string $type = 'string', $default = null, $example = null, string $description = null, bool $hidden = false)
     {
         $this->name = $name;
