@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use Hyperf\Apidocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Scan\ScanAnnotation;
