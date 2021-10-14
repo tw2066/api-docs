@@ -9,15 +9,12 @@
 - 支持api token认证
 - 支持PHP8原生注解
 
-##### 缺点
-
-- 模型类需要手工编写
-
-## 注意
+## 使用须知
 
 * php >= 8.0
 * 控制器中方法尽可能返回类,这样会更好的生成文档
 * 当返回类的结果满足不了时,用 #[ApiResponse] 注解
+* 模型类需要手工编写
 
 ## 安装
 
@@ -55,21 +52,6 @@ return [
         ],
         'host' => '',
         'schemes' => [],
-    ],
-];
-```
-
-##### 1.2 ignore_annotations 配置 required
-
-> config/autoload/annotations.php
-
-```phpt
-return [
-    'scan' => [
-          ...
-        'ignore_annotations' => [
-            'required',
-        ],
     ],
 ];
 ```
