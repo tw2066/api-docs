@@ -19,7 +19,7 @@
   ],
   "require": {
     "php": ">=8.0",
-    "tangwei/dto": "dev-master"
+    "tangwei/dto": "^2.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.0",
@@ -44,16 +44,6 @@
     },
     "branch-alias": {
       "dev-master": "2.0.x-dev"
-    }
-  },
-  "repositories": {
-    "tangwei": {
-      "type": "path",
-      "url": "/mnt/d/WWW/tang/*"
-    },
-    "packagist": {
-      "type": "composer",
-      "url": "https://mirrors.aliyun.com/composer"
     }
   },
   "config": {
