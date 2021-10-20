@@ -41,9 +41,9 @@ class SwaggerJsonTest extends TestCase
 
         $config = m::mock(ConfigInterface::class);
 
-        $config->shouldReceive('get')->with('apidocs.swagger')->andReturn([]);
-        $config->shouldReceive('get')->with('apidocs.security_api_key', [])->andReturn([]);
-        $config->shouldReceive('get')->with('apidocs')->andReturn(
+        $config->shouldReceive('get')->with('api_docs.swagger')->andReturn([]);
+        $config->shouldReceive('get')->with('api_docs.security_api_key', [])->andReturn([]);
+        $config->shouldReceive('get')->with('api_docs')->andReturn(
             [
                 // enable false 将不会启动 swagger 服务
                 'enable' => true,
