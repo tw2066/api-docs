@@ -64,13 +64,7 @@ class SwaggerJson
         return $simpleClassName;
     }
 
-    /**
-     * @param string $className
-     * @param string $methodName
-     * @param string $route
-     * @param string $methods
-     */
-    public function addPath(string $className,string  $methodName,string  $route, string $methods)
+    public function addPath(string $className, string $methodName, string $route, string $methods)
     {
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
@@ -138,7 +132,6 @@ class SwaggerJson
         ];
     }
 
-
     public function save(): string
     {
         self::$swagger = $this->sort(self::$swagger);
@@ -154,7 +147,7 @@ class SwaggerJson
         return $outputFile;
     }
 
-    private function getMethodNamePosition(string $className,string $methodName)
+    private function getMethodNamePosition(string $className, string $methodName)
     {
         $methodArray = $this->makeMethodIndex($className);
         return $methodArray[$methodName] ?? 0;
@@ -195,8 +188,7 @@ class SwaggerJson
     }
 
     /**
-     * security_api_key
-     * @return array
+     * security_api_key.
      */
     private function securityMethod(): array
     {
@@ -212,7 +204,6 @@ class SwaggerJson
         }
         return $security;
     }
-
 
     private function putFile(string $file, string $content): void
     {
