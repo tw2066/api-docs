@@ -12,6 +12,7 @@ use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
 use Hyperf\Utils\ApplicationContext;
+use RuntimeException;
 
 class AfterDtoStartListener implements ListenerInterface
 {
@@ -33,10 +34,10 @@ class AfterDtoStartListener implements ListenerInterface
         $server = $event->serverConfig;
         $router = $event->router;
 
-        if (! $config->get('apidocs.enable', false)) {
+        if (! $config->get('api_docs.enable', false)) {
             return;
         }
-        $outputDir = $config->get('apidocs.output_dir');
+        $outputDir = $config->get('api_docs.output_dir');
         if (! $outputDir) {
             return;
         }
@@ -61,7 +62,7 @@ class AfterDtoStartListener implements ListenerInterface
     protected function prepareHandler($handler): array
     {
         if (is_string($handler)) {
-            if (strpos($handler, '@') !== false) {
+            if (str_contains($handler, '@')) {
                 return explode('@', $handler);
             }
             return explode('::', $handler);
@@ -69,6 +70,6 @@ class AfterDtoStartListener implements ListenerInterface
         if (is_array($handler) && isset($handler[0], $handler[1])) {
             return $handler;
         }
-        throw new \RuntimeException('Handler not exist.');
+        throw new RuntimeException('Handler not exist.');
     }
 }

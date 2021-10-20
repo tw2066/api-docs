@@ -19,7 +19,7 @@ class SwaggerRoute
     public function __construct(string $prefix)
     {
         $this->prefix = $prefix;
-        $this->path = __DIR__ . '/../swagger-ui';
+        $this->path = __DIR__ . '/../../swagger-ui';
     }
 
     public function add(RouteCollector $route, $serverName)

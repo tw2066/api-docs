@@ -17,12 +17,12 @@ use Throwable;
 
 class Common
 {
-    public function getDefinitions($className): string
+    public function getDefinitions(string $className): string
     {
         return '#/definitions/' . $this->getSimpleClassName($className);
     }
 
-    public function getSimpleClassName($className)
+    public function getSimpleClassName(string $className)
     {
         return SwaggerJson::getSimpleClassName($className);
     }
@@ -83,55 +83,28 @@ class Common
 
     public function type2SwaggerType($phpType): string
     {
-        switch ($phpType) {
-            case 'int':
-            case 'integer':
-                $type = 'integer';
-                break;
-            case 'boolean':
-            case 'bool':
-                $type = 'boolean';
-                break;
-            case 'double':
-            case 'float':
-                $type = 'number';
-                break;
-            case 'array':
-                $type = 'array';
-                break;
-            case 'object':
-                $type = 'object';
-                break;
-            default:
-                $type = 'string';
-        }
-        return $type;
+        return match ($phpType) {
+            'int', 'integer' => 'integer',
+            'boolean', 'bool' => 'boolean',
+            'double', 'float' => 'number',
+            'array' => 'array',
+            'object' => 'object',
+            default => 'string',
+        };
     }
 
-    public function simpleType2SwaggerType($phpType): ?string
+    public function simpleType2SwaggerType(string $phpType): ?string
     {
-        $type = null;
-        switch ($phpType) {
-            case 'int':
-            case 'integer':
-                $type = 'integer';
-                break;
-            case 'boolean':
-            case 'bool':
-                $type = 'boolean';
-                break;
-            case 'double':
-            case 'float':
-                $type = 'number';
-                break;
-            case 'string':
-            case 'mixed':
-                $type = 'string';
-        }
-        return $type;
+        return match ($phpType) {
+            'int', 'integer' => 'integer',
+            'boolean', 'bool' => 'boolean',
+            'double', 'float' => 'number',
+            'string', 'mixed' => 'string',
+            default => null,
+        };
     }
 
-    public function class2schema($className): void
+    public function class2schema(string $className): void
     {
         if (! ApplicationContext::getContainer()->has($className)) {
             $this->emptySchema($className);
@@ -210,7 +183,7 @@ class Common
             || $type == 'array' || $type == 'object';
     }
 
-    protected function emptySchema($className)
+    protected function emptySchema(string $className)
     {
         $schema = [
             'type' => 'object',

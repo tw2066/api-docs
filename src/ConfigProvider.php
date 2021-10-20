@@ -29,8 +29,8 @@ class ConfigProvider
                 [
                     'id' => 'config',
                     'description' => 'The config for api-docs.',
-                    'source' => __DIR__ . '/../publish/apidocs.php',
-                    'destination' => BASE_PATH . '/config/autoload/apidocs.php',
+                    'source' => __DIR__ . '/../publish/api_docs.php',
+                    'destination' => BASE_PATH . '/config/autoload/api_docs.php',
                 ],
             ],
         ];

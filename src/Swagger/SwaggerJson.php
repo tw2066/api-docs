@@ -43,12 +43,12 @@ class SwaggerJson
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
         $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
-        self::$swagger = $this->config->get('apidocs.swagger');
+        self::$swagger = $this->config->get('api_docs.swagger');
         $this->serverName = $serverName;
         $this->securityKey();
     }
 
-    public static function getSimpleClassName($className)
+    public static function getSimpleClassName(string $className)
     {
         $className = '\\' . trim($className, '\\');
         if (isset(self::$className[$className])) {
@@ -65,15 +65,13 @@ class SwaggerJson
     }
 
     /**
-     * 增加路由路径.
-     * @param $methods
-     * @param $route
-     * @param $className
-     * @param $methodName
+     * @param string $className
+     * @param string $methodName
+     * @param string $route
+     * @param string $methods
      */
-    public function addPath($className, $methodName, $route, $methods)
+    public function addPath(string $className,string  $methodName,string  $route, string $methods)
     {
-        //获取当前方法位置
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
@@ -105,7 +103,7 @@ class SwaggerJson
                 $apiResponseArr[] = $option;
             }
         }
-        $simpleClassName = $this->getSimpleClassName($className);
+        $simpleClassName = static::getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
         } elseif (! empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
@@ -124,7 +122,7 @@ class SwaggerJson
 
         $method = strtolower($methods);
         $makeParameters = new MakeParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-        $makeResponses = new MakeResponses($className, $methodName, $apiResponseArr, $this->config->get('apidocs'));
+        $makeResponses = new MakeResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
         self::$swagger['paths'][$route]['position'] = $position;
         self::$swagger['paths'][$route][$method] = [
             'tags' => $tags,
@@ -140,32 +138,29 @@ class SwaggerJson
         ];
     }
 
-    /**
-     * 保存到文件.
-     * @return string|void
-     */
-    public function save()
+
+    public function save(): string
     {
         self::$swagger = $this->sort(self::$swagger);
-        $outputDir = $this->config->get('apidocs.output_dir');
+        $outputDir = $this->config->get('api_docs.output_dir');
         if (! $outputDir) {
-            $this->stdoutLogger->error('/config/autoload/apidocs.php need set output_dir');
-            return;
+            $this->stdoutLogger->error('/config/autoload/api_docs.php need set output_dir');
+            return '';
         }
         $outputFile = $outputDir . '/' . $this->serverName . '.json';
         $this->putFile($outputFile, json_encode(self::$swagger, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         self::$swagger = [];
-        $this->stdoutLogger->debug('Generate swagger.json success!');
+        $this->stdoutLogger->debug("swagger generate {$outputFile} success!");
         return $outputFile;
     }
 
-    private function getMethodNamePosition($className, $methodName)
+    private function getMethodNamePosition(string $className,string $methodName)
     {
         $methodArray = $this->makeMethodIndex($className);
         return $methodArray[$methodName] ?? 0;
     }
 
-    private function makeMethodIndex($className)
+    private function makeMethodIndex(string $className)
     {
         if (isset($this->classMethodArray[$className])) {
             return $this->classMethodArray[$className];
@@ -184,7 +179,7 @@ class SwaggerJson
      */
     private function securityKey()
     {
-        $securityKeyArr = $this->config->get('apidocs.security_api_key', []);
+        $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
         if (empty($securityKeyArr)) {
             return;
         }
@@ -200,14 +195,14 @@ class SwaggerJson
     }
 
     /**
-     * 授权key.
-     * @return array|void
+     * security_api_key
+     * @return array
      */
-    private function securityMethod()
+    private function securityMethod(): array
     {
-        $securityKeyArr = $this->config->get('apidocs.security_api_key', []);
+        $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
         if (empty($securityKeyArr)) {
-            return;
+            return [];
         }
         $security = [];
         foreach ($securityKeyArr as $value) {
@@ -218,25 +213,22 @@ class SwaggerJson
         return $security;
     }
 
-    /**
-     * json文件写入.
-     * @return false|int
-     */
-    private function putFile(string $file, string $content): bool|int
+
+    private function putFile(string $file, string $content): void
     {
         $pathInfo = pathinfo($file);
         if (! empty($pathInfo['dirname'])) {
             if (file_exists($pathInfo['dirname']) === false) {
                 if (mkdir($pathInfo['dirname'], 0644, true) === false) {
-                    return false;
+                    return;
                 }
             }
         }
-        return file_put_contents($file, $content);
+        file_put_contents($file, $content);
     }
 
     /**
-     * 排序处理.
+     * sort.
      */
     private function sort(array $data): array
     {

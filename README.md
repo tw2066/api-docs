@@ -30,7 +30,7 @@ composer require tangwei/apidocs
 php bin/hyperf.php vendor:publish tangwei/apidocs
 ```
 ##### 1.1 配置信息
-> config/autoload/apidocs.php
+> config/autoload/api_docs.php
 ```php
 return [
     // enable false 将不会启动 swagger 服务
