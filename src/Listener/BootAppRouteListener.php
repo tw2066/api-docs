@@ -36,15 +36,12 @@ class BootAppRouteListener implements ListenerInterface
             $logger->error('/config/autoload/api_docs.php need set output_dir');
             return;
         }
-        $prefix = $config->get('api_docs.prefix', '/swagger');
-        $swaggerRoute = new SwaggerRoute($prefix);
+        $prefix = $config->get('api_docs.prefix_url', '/swagger');
         $servers = $config->get('server.servers');
         $httpServerRouter = null;
         $httpServer = null;
-        $outputFileArr = [];
         foreach ($servers as $server) {
             $router = $container->get(DispatcherFactory::class)->getRouter($server['name']);
-            $outputFileArr[$server['name']] = $outputDir . '/' . $server['name'] . '.json';
             if (empty($httpServerRouter) && $server['type'] == Server::SERVER_HTTP) {
                 $httpServerRouter = $router;
                 $httpServer = $server;
@@ -54,11 +51,8 @@ class BootAppRouteListener implements ListenerInterface
             $logger->warning('Swagger: http Service not started');
             return;
         }
-
-        $swaggerRoute->add($httpServerRouter, $httpServer['name']);
+        $swaggerRoute = new SwaggerRoute($prefix, $httpServer['name']);
+        $swaggerRoute->add($httpServerRouter);
         $logger->info('Swagger Url at ' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix);
-        foreach ($outputFileArr as $serverName => $outputFile) {
-            $swaggerRoute->addJson($httpServerRouter, $serverName, $outputFile);
-        }
     }
 }

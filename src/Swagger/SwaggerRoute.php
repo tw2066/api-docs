@@ -4,63 +4,49 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use Hyperf\HttpMessage\Stream\SwooleFileStream;
-use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Router\RouteCollector;
-use Hyperf\Utils\Context;
-use Psr\Http\Message\ResponseInterface;
 
 class SwaggerRoute
 {
-    private string $path;
+    private static string $path = __DIR__ . '/../../swagger-ui';
 
-    private string $prefix;
+    private static string $prefix;
 
-    public function __construct(string $prefix)
+    private static string $httpServerName;
+
+    public function __construct(string $prefix, string $httpServerName)
     {
-        $this->prefix = $prefix;
-        $this->path = __DIR__ . '/../../swagger-ui';
+        static::$prefix = '/' . trim($prefix, '//');
+        static::$httpServerName = $httpServerName;
     }
 
-    public function add(RouteCollector $route, $serverName)
+    public static function getPath(): string
     {
-        $route->addRoute(['GET'], $this->prefix, function () use ($serverName) {
-            $file = $this->path . '/index.html';
-            $contents = file_get_contents($file);
-            $contents = str_replace('{{$path}}', $this->prefix, $contents);
-            $contents = str_replace('{{$url}}', $this->makeJsonUrl($serverName), $contents);
-            $response = Context::get(ResponseInterface::class);
-            return $response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
-        });
-
-        $fileArray = [
-            '/swagger-ui.css',
-            '/swagger-ui-bundle.js',
-            '/swagger-ui-standalone-preset.js',
-            '/favicon-32x32.png',
-            '/favicon-16x16.png',
-        ];
-        foreach ($fileArray as $file) {
-            $route->addRoute(['GET'], $this->prefix . $file, function () use ($file) {
-                $file = $this->path . $file;
-                $response = Context::get(ResponseInterface::class);
-                return $response->withBody(new SwooleFileStream($file));
-            });
-            $route->addRoute(['GET'], $this->prefix . $file . '.map', function () {
-            });
-        }
+        return static::$path;
     }
 
-    public function addJson(RouteCollector $route, string $serverName, string $outputFile)
+    public static function getPrefix(): string
     {
-        $route->addRoute(['GET'], $this->makeJsonUrl($serverName), function () use ($outputFile) {
-            $response = Context::get(ResponseInterface::class);
-            return $response->withAddedHeader('Content-Type', 'application/json')->withBody(new SwooleFileStream($outputFile));
+        return static::$prefix;
+    }
+
+    public static function getHttpServerName(): string
+    {
+        return static::$httpServerName;
+    }
+
+    public function add(RouteCollector $route)
+    {
+        $route->addGroup(static::getPrefix(), function ($route) {
+            $route->get('', [SwaggerController::class, 'index']);
+            $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
+            $route->get('/{file}.map', [SwaggerController::class, 'map']);
+            $route->get('/{file}', [SwaggerController::class, 'getFile']);
         });
     }
 
-    private function makeJsonUrl($serverName): string
+    public static function getJsonUrl($serverName): string
     {
-        return $this->prefix . '/' . $serverName . '.json';
+        return static::getPrefix() . '/' . $serverName . '.json';
     }
 }

@@ -5,6 +5,7 @@ return [
     // enable false 将不会启动 swagger 服务
     'enable' => env('APP_ENV') !== 'prod',
     'output_dir' => BASE_PATH . '/runtime/swagger',
+    'prefix_url' => env('API_DOCS_PREFIX_URL','/swagger'),
     //认证api key
     'security_api_key' => ['Authorization'],
     //全局responses
