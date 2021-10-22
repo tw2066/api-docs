@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use App\Controller\DemoController;
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
@@ -14,6 +15,7 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
+use JetBrains\PhpStorm\Deprecated;
 use Psr\Container\ContainerInterface;
 
 class SwaggerJson
@@ -66,10 +68,16 @@ class SwaggerJson
 
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
+        if ($className != DemoController::class) {
+            return;
+        }
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
         $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
+        if ($apiControllerAnnotation->hidden) {
+            return;
+        }
         /** @var Api $apiHeaderControllerAnnotation */
         $apiHeaderControllerAnnotation = $classAnnotation[ApiHeader::class] ?? null;
         //AutoController Validation POST
@@ -82,6 +90,7 @@ class SwaggerJson
         $apiOperation = new ApiOperation();
         $apiFormDataArr = [];
         $apiResponseArr = [];
+        $isDeprecated = false;
         foreach ($methodAnnotations as $option) {
             /* @var ApiOperation $apiOperationAnnotation */
             if ($option instanceof ApiOperation) {
@@ -96,6 +105,12 @@ class SwaggerJson
             if ($option instanceof ApiResponse) {
                 $apiResponseArr[] = $option;
             }
+            if ($option instanceof Deprecated) {
+                $isDeprecated = true;
+            }
+        }
+        if ($apiOperation->hidden) {
+            return;
         }
         $simpleClassName = static::getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
@@ -122,6 +137,7 @@ class SwaggerJson
             'tags' => $tags,
             'summary' => $apiOperation->summary ?? '',
             'description' => $apiOperation->description ?? '',
+            'deprecated' => $isDeprecated,
             'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
             'parameters' => $makeParameters->make(),
             'produces' => [

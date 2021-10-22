@@ -16,10 +16,13 @@ class Api extends AbstractAnnotation
 
     public int $position = 0;
 
-    public function __construct(mixed $tags = null, string $description = '', int $position = 0)
+    public bool $hidden = false;
+
+    public function __construct(mixed $tags = null, string $description = '', int $position = 0, bool $hidden = false)
     {
         $this->tags = $tags;
         $this->description = $description;
         $this->position = $position;
+        $this->hidden = $hidden;
     }
 }

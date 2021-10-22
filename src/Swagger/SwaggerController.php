@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
@@ -11,6 +12,7 @@ use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\Utils\Context;
 use Psr\Http\Message\ResponseInterface;
 
+#[Api(hidden: true)]
 class SwaggerController
 {
     private ConfigInterface $config;
