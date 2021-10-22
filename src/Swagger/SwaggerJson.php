@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use App\Controller\DemoController;
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
@@ -68,9 +67,6 @@ class SwaggerJson
 
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
-        if ($className != DemoController::class) {
-            return;
-        }
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
