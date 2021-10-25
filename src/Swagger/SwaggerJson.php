@@ -50,13 +50,8 @@ class SwaggerJson
         $this->securityKey();
     }
 
-
     /**
-     * 增加一条路由
-     * @param string $className
-     * @param string $methodName
-     * @param string $route
-     * @param string $methods
+     * 增加一条路由.
      */
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
@@ -74,14 +69,14 @@ class SwaggerJson
         if ($autoControllerAnnotation && $methods != 'POST') {
             return;
         }
-        $methodAnnotations = AnnotationCollector::getClassMethodAnnotation($className,$methodName);
+        $methodAnnotations = AnnotationCollector::getClassMethodAnnotation($className, $methodName);
         $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
         if ($apiOperation->hidden) {
             return;
         }
 
         $apiHeaderArr = isset($methodAnnotations[ApiHeader::class]) ? $methodAnnotations[ApiHeader::class]->toAnnotations() : [];
-        $apiHeaderArr = array_merge($apiHeaderControllerAnnotation,$apiHeaderArr);
+        $apiHeaderArr = array_merge($apiHeaderControllerAnnotation, $apiHeaderArr);
         $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
         $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
         $isDeprecated = isset($methodAnnotations[Deprecated::class]);
@@ -122,11 +117,8 @@ class SwaggerJson
         ];
     }
 
-
     /**
-     * 获得简单类名
-     * @param string $className
-     * @return string
+     * 获得简单类名.
      */
     public static function getSimpleClassName(string $className): string
     {
@@ -145,8 +137,7 @@ class SwaggerJson
     }
 
     /**
-     * 保存
-     * @return string
+     * 保存.
      */
     public function save(): string
     {
@@ -164,10 +155,7 @@ class SwaggerJson
     }
 
     /**
-     * 获取方法在类中的位置
-     * @param string $className
-     * @param string $methodName
-     * @return int
+     * 获取方法在类中的位置.
      */
     private function getMethodNamePosition(string $className, string $methodName): int
     {
@@ -176,9 +164,7 @@ class SwaggerJson
     }
 
     /**
-     * 设置位置并获取类位置数组
-     * @param string $className
-     * @return array
+     * 设置位置并获取类位置数组.
      */
     private function makeMethodIndex(string $className): array
     {
@@ -233,9 +219,7 @@ class SwaggerJson
     }
 
     /**
-     * put file
-     * @param string $file
-     * @param string $content
+     * put file.
      */
     private function putFile(string $file, string $content): void
     {

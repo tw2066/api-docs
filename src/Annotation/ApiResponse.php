@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Annotation;
 
 use Attribute;
-use Hyperf\Di\Annotation\AbstractAnnotation;
 use Hyperf\Di\Annotation\AbstractMultipleAnnotation;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
