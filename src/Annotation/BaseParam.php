@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Annotation;
 
 use Hyperf\Di\Annotation\AbstractAnnotation;
+use Hyperf\Di\Annotation\AbstractMultipleAnnotation;
 
-abstract class BaseParam extends AbstractAnnotation
+abstract class BaseParam extends AbstractMultipleAnnotation
 {
     public string $name = '';
 

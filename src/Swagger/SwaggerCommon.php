@@ -15,19 +15,19 @@ use Hyperf\Utils\ApplicationContext;
 use ReflectionProperty;
 use Throwable;
 
-class Common
+class SwaggerCommon
 {
     public function getDefinitions(string $className): string
     {
         return '#/definitions/' . $this->getSimpleClassName($className);
     }
 
-    public function getSimpleClassName(string $className)
+    public function getSimpleClassName(string $className): string
     {
         return SwaggerJson::getSimpleClassName($className);
     }
 
-    public function makePropertyByClass(string $parameterClassName, string $in): array
+    public function getParameterClassProperty(string $parameterClassName, string $in): array
     {
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
@@ -40,16 +40,16 @@ class Common
             } catch (Throwable) {
             }
             $phpType = $this->getTypeName($reflectionProperty);
-            $property['type'] = $this->type2SwaggerType($phpType);
+            $property['type'] = $this->getType2SwaggerType($phpType);
             if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
 
-            $apiModelProperty = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
+            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            $requiredAnnotation = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), Required::class);
+            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), Required::class);
             /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::property($parameterClassName, $reflectionProperty->getName(), In::class);
+            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), In::class);
             if ($apiModelProperty->hidden) {
                 continue;
             }
@@ -81,7 +81,7 @@ class Common
         return $type;
     }
 
-    public function type2SwaggerType($phpType): string
+    public function getType2SwaggerType($phpType): string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
@@ -93,7 +93,7 @@ class Common
         };
     }
 
-    public function simpleType2SwaggerType(string $phpType): ?string
+    public function getSimpleType2SwaggerType(string $phpType): ?string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
@@ -104,16 +104,16 @@ class Common
         };
     }
 
-    public function class2schema(string $className): void
+    public function generateClass2schema(string $className): void
     {
         if (! ApplicationContext::getContainer()->has($className)) {
-            $this->emptySchema($className);
+            $this->generateEmptySchema($className);
             return;
         }
         $obj = ApplicationContext::getContainer()->get($className);
         if ($obj instanceof Model) {
-            //$this->makeModelSchema($obj);
-            $this->emptySchema($className);
+            //$this->getModelSchema($obj);
+            $this->generateEmptySchema($className);
             return;
         }
 
@@ -126,11 +126,11 @@ class Common
             $fieldName = $reflectionProperty->getName();
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
             $phpType = $propertyClass->type;
-            $type = $this->type2SwaggerType($phpType);
-            $apiModelProperty = ApiAnnotation::property($className, $fieldName, ApiModelProperty::class);
+            $type = $this->getType2SwaggerType($phpType);
+            $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
             /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::property($className, $reflectionProperty->getName(), In::class);
+            $inAnnotation = ApiAnnotation::getProperty($className, $reflectionProperty->getName(), In::class);
 
             if ($apiModelProperty->hidden) {
                 continue;
@@ -155,9 +155,9 @@ class Common
                     $property['items'] = (object) [];
                 } else {
                     if ($propertyClass->isSimpleType) {
-                        $property['items']['type'] = $this->type2SwaggerType($propertyClass->className);
+                        $property['items']['type'] = $this->getType2SwaggerType($propertyClass->className);
                     } else {
-                        $this->class2schema($propertyClass->className);
+                        $this->generateClass2schema($propertyClass->className);
                         $property['items']['$ref'] = $this->getDefinitions($propertyClass->className);
                     }
                 }
@@ -166,7 +166,7 @@ class Common
                 $property['items'] = (object) [];
             }
             if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
-                $this->class2schema($propertyClass->className);
+                $this->generateClass2schema($propertyClass->className);
                 $property['$ref'] = $this->getDefinitions($propertyClass->className);
             }
             $schema['properties'][$fieldName] = $property;
@@ -183,7 +183,7 @@ class Common
             || $type == 'array' || $type == 'object';
     }
 
-    protected function emptySchema(string $className)
+    protected function generateEmptySchema(string $className)
     {
         $schema = [
             'type' => 'object',
@@ -192,7 +192,7 @@ class Common
         SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
     }
 
-    protected function makeModelSchema(object $model)
+    protected function getModelSchema(object $model)
     {
         //$reflect = new ReflectionObject($model);
         //$docComment = $reflect->getDocComment();

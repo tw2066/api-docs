@@ -11,6 +11,7 @@ use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
@@ -49,22 +50,14 @@ class SwaggerJson
         $this->securityKey();
     }
 
-    public static function getSimpleClassName(string $className)
-    {
-        $className = '\\' . trim($className, '\\');
-        if (isset(self::$className[$className])) {
-            return self::$className[$className];
-        }
-        $simpleClassName = substr($className, strrpos($className, '\\') + 1);
-        if (isset(self::$simpleClassName[$simpleClassName])) {
-            $simpleClassName .= ++self::$simpleClassName[$simpleClassName];
-        } else {
-            self::$simpleClassName[$simpleClassName] = 0;
-        }
-        self::$className[$className] = $simpleClassName;
-        return $simpleClassName;
-    }
 
+    /**
+     * 增加一条路由
+     * @param string $className
+     * @param string $methodName
+     * @param string $route
+     * @param string $methods
+     */
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
         $position = $this->getMethodNamePosition($className, $methodName);
@@ -74,40 +67,25 @@ class SwaggerJson
         if ($apiControllerAnnotation->hidden) {
             return;
         }
-        /** @var Api $apiHeaderControllerAnnotation */
-        $apiHeaderControllerAnnotation = $classAnnotation[ApiHeader::class] ?? null;
+
+        $apiHeaderControllerAnnotation = isset($classAnnotation[ApiHeader::class]) ? $classAnnotation[ApiHeader::class]->toAnnotations() : [];
         //AutoController Validation POST
         $autoControllerAnnotation = $classAnnotation[AutoController::class] ?? null;
         if ($autoControllerAnnotation && $methods != 'POST') {
             return;
         }
-        $methodAnnotations = ApiAnnotation::methodArray($className, $methodName);
-        $apiHeaderArr = $apiHeaderControllerAnnotation ? [$apiHeaderControllerAnnotation] : [];
-        $apiOperation = new ApiOperation();
-        $apiFormDataArr = [];
-        $apiResponseArr = [];
-        $isDeprecated = false;
-        foreach ($methodAnnotations as $option) {
-            /* @var ApiOperation $apiOperationAnnotation */
-            if ($option instanceof ApiOperation) {
-                $apiOperation = $option;
-            }
-            if ($option instanceof ApiHeader) {
-                $apiHeaderArr[] = $option;
-            }
-            if ($option instanceof ApiFormData) {
-                $apiFormDataArr[] = $option;
-            }
-            if ($option instanceof ApiResponse) {
-                $apiResponseArr[] = $option;
-            }
-            if ($option instanceof Deprecated) {
-                $isDeprecated = true;
-            }
-        }
+        $methodAnnotations = AnnotationCollector::getClassMethodAnnotation($className,$methodName);
+        $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
         if ($apiOperation->hidden) {
             return;
         }
+
+        $apiHeaderArr = isset($methodAnnotations[ApiHeader::class]) ? $methodAnnotations[ApiHeader::class]->toAnnotations() : [];
+        $apiHeaderArr = array_merge($apiHeaderControllerAnnotation,$apiHeaderArr);
+        $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
+        $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
+        $isDeprecated = isset($methodAnnotations[Deprecated::class]);
+
         $simpleClassName = static::getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
@@ -126,8 +104,8 @@ class SwaggerJson
         }
 
         $method = strtolower($methods);
-        $makeParameters = new MakeParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-        $makeResponses = new MakeResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
+        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
+        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
         self::$swagger['paths'][$route]['position'] = $position;
         self::$swagger['paths'][$route][$method] = [
             'tags' => $tags,
@@ -135,15 +113,41 @@ class SwaggerJson
             'description' => $apiOperation->description ?? '',
             'deprecated' => $isDeprecated,
             'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
-            'parameters' => $makeParameters->make(),
+            'parameters' => $makeParameters->generate(),
             'produces' => [
                 'application/json',
             ],
-            'responses' => $makeResponses->make(),
+            'responses' => $makeResponses->generate(),
             'security' => $this->securityMethod(),
         ];
     }
 
+
+    /**
+     * 获得简单类名
+     * @param string $className
+     * @return string
+     */
+    public static function getSimpleClassName(string $className): string
+    {
+        $className = '\\' . trim($className, '\\');
+        if (isset(self::$className[$className])) {
+            return self::$className[$className];
+        }
+        $simpleClassName = substr($className, strrpos($className, '\\') + 1);
+        if (isset(self::$simpleClassName[$simpleClassName])) {
+            $simpleClassName .= ++self::$simpleClassName[$simpleClassName];
+        } else {
+            self::$simpleClassName[$simpleClassName] = 0;
+        }
+        self::$className[$className] = $simpleClassName;
+        return $simpleClassName;
+    }
+
+    /**
+     * 保存
+     * @return string
+     */
     public function save(): string
     {
         self::$swagger = $this->sort(self::$swagger);
@@ -159,13 +163,24 @@ class SwaggerJson
         return $outputFile;
     }
 
-    private function getMethodNamePosition(string $className, string $methodName)
+    /**
+     * 获取方法在类中的位置
+     * @param string $className
+     * @param string $methodName
+     * @return int
+     */
+    private function getMethodNamePosition(string $className, string $methodName): int
     {
         $methodArray = $this->makeMethodIndex($className);
         return $methodArray[$methodName] ?? 0;
     }
 
-    private function makeMethodIndex(string $className)
+    /**
+     * 设置位置并获取类位置数组
+     * @param string $className
+     * @return array
+     */
+    private function makeMethodIndex(string $className): array
     {
         if (isset($this->classMethodArray[$className])) {
             return $this->classMethodArray[$className];
@@ -180,7 +195,7 @@ class SwaggerJson
     }
 
     /**
-     * security.
+     * set security.
      */
     private function securityKey()
     {
@@ -217,6 +232,11 @@ class SwaggerJson
         return $security;
     }
 
+    /**
+     * put file
+     * @param string $file
+     * @param string $content
+     */
     private function putFile(string $file, string $content): void
     {
         $pathInfo = pathinfo($file);

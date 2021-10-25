@@ -11,13 +11,13 @@ use Hyperf\DTO\Scan\ScanAnnotation;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
 
-class MakeResponses
+class GenerateResponses
 {
     private string $className;
 
     private string $methodName;
 
-    private Common $common;
+    private SwaggerCommon $common;
 
     private MethodDefinitionCollectorInterface $methodDefinitionCollector;
 
@@ -35,27 +35,27 @@ class MakeResponses
         $this->methodName = $methodName;
         $this->config = $config;
         $this->apiResponseArr = $apiResponseArr;
-        $this->common = new Common();
+        $this->common = new SwaggerCommon();
     }
 
-    public function make(): array
+    public function generate(): array
     {
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
         $code = $this->config['responses_code'] ?? 200;
-        $resp[$code] = $this->makeSchema($returnTypeClassName);
+        $resp[$code] = $this->getSchema($returnTypeClassName);
         $resp[$code]['description'] = 'OK';
-        $globalResp = $this->makeGlobalResp();
-        $AnnotationResp = $this->makeAnnotationResp();
+        $globalResp = $this->getGlobalResp();
+        $AnnotationResp = $this->getAnnotationResp();
         return $AnnotationResp + $resp + $globalResp;
     }
 
-    private function makeSchema($returnTypeClassName): array
+    private function getSchema($returnTypeClassName): array
     {
         $schema = [];
         if ($this->common->isSimpleType($returnTypeClassName)) {
-            $type = $this->common->type2SwaggerType($returnTypeClassName);
+            $type = $this->common->getType2SwaggerType($returnTypeClassName);
             if ($type == 'array') {
                 $schema['schema']['items'] = (object) [];
             }
@@ -64,23 +64,23 @@ class MakeResponses
             }
             $schema['schema']['type'] = $type;
         } elseif ($this->container->has($returnTypeClassName)) {
-            $this->common->class2schema($returnTypeClassName);
+            $this->common->generateClass2schema($returnTypeClassName);
             $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
         }
         return $schema;
     }
 
-    private function makeGlobalResp(): array
+    private function getGlobalResp(): array
     {
         $resp = [];
         foreach ($this->config['responses'] as $code => $value) {
-            isset($value['className']) && $resp[$code] = $this->makeSchema($value['className']);
+            isset($value['className']) && $resp[$code] = $this->getSchema($value['className']);
             $resp[$code]['description'] = $value['description'];
         }
         return $resp;
     }
 
-    private function makeAnnotationResp(): array
+    private function getAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */
@@ -88,13 +88,13 @@ class MakeResponses
             if ($apiResponse->className) {
                 $scanAnnotation = $this->container->get(ScanAnnotation::class);
                 $scanAnnotation->scanClass($apiResponse->className);
-                $this->makeSchema($apiResponse->className);
+                $this->getSchema($apiResponse->className);
                 if (! empty($apiResponse->type)) {
                     $schema['schema']['type'] = $apiResponse->type;
-                    $schema['schema']['items']['$ref'] = $this->makeSchema($apiResponse->className)['schema']['$ref'];
+                    $schema['schema']['items']['$ref'] = $this->getSchema($apiResponse->className)['schema']['$ref'];
                     $resp[$apiResponse->code] = $schema;
                 } else {
-                    $resp[$apiResponse->code] = $this->makeSchema($apiResponse->className);
+                    $resp[$apiResponse->code] = $this->getSchema($apiResponse->className);
                 }
             }
             $resp[$apiResponse->code]['description'] = $apiResponse->description;

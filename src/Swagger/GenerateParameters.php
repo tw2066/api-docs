@@ -14,7 +14,7 @@ use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
 
-class MakeParameters
+class GenerateParameters
 {
     public mixed $config;
 
@@ -30,7 +30,7 @@ class MakeParameters
 
     private string $action;
 
-    private Common $common;
+    private SwaggerCommon $common;
 
     /**
      * @var ApiHeader[]
@@ -59,15 +59,15 @@ class MakeParameters
         $this->action = $action;
         $this->apiHeaderArr = $apiHeaderArr;
         $this->apiFormDataArr = $apiFormDataArr;
-        $this->common = new Common();
+        $this->common = new SwaggerCommon();
     }
 
-    public function make(): array
+    public function generate(): array
     {
         $consumes = null;
-        $parameters = $this->makeParam($this->apiHeaderArr);
+        $parameters = $this->generateParam($this->apiHeaderArr);
         if (! empty($this->apiFormDataArr)) {
-            $parameters = Arr::merge($parameters, $this->makeParam($this->apiFormDataArr));
+            $parameters = Arr::merge($parameters, $this->generateParam($this->apiFormDataArr));
             $consumes = 'application/x-www-form-urlencoded';
         }
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
@@ -75,7 +75,7 @@ class MakeParameters
             //query path
             $parameterClassName = $definition->getName();
             $paramName = $definition->getMeta('name');
-            $simpleSwaggerType = $this->common->simpleType2SwaggerType($parameterClassName);
+            $simpleSwaggerType = $this->common->getSimpleType2SwaggerType($parameterClassName);
             if ($simpleSwaggerType !== null) {
                 $property = [];
                 $property['in'] = 'path';
@@ -89,7 +89,7 @@ class MakeParameters
             if ($this->container->has($parameterClassName)) {
                 $methodParameter = MethodParametersManager::getMethodParameter($this->controller, $this->action, $paramName);
                 if ($methodParameter->isRequestBody()) {
-                    $this->common->class2schema($parameterClassName);
+                    $this->common->generateClass2schema($parameterClassName);
                     $property = [];
                     $property['in'] = 'body';
                     $property['name'] = $this->common->getSimpleClassName($parameterClassName);
@@ -100,13 +100,13 @@ class MakeParameters
                     $consumes = 'application/json';
                 }
                 if ($methodParameter->isRequestQuery()) {
-                    $propertyArr = $this->common->makePropertyByClass($parameterClassName, 'query');
+                    $propertyArr = $this->common->getParameterClassProperty($parameterClassName, 'query');
                     foreach ($propertyArr as $property) {
                         $parameters[] = $property;
                     }
                 }
                 if ($methodParameter->isRequestFormData()) {
-                    $propertyArr = $this->common->makePropertyByClass($parameterClassName, 'formData');
+                    $propertyArr = $this->common->getParameterClassProperty($parameterClassName, 'formData');
                     foreach ($propertyArr as $property) {
                         $parameters[] = $property;
                     }
@@ -120,7 +120,7 @@ class MakeParameters
         return array_values($parameters);
     }
 
-    private function makeParam($paramArr): array
+    private function generateParam($paramArr): array
     {
         $parameters = [];
         /** @var BaseParam $param */
