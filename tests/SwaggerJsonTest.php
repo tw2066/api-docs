@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace HyperfTest\ApiDocs;
 
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
@@ -79,13 +81,19 @@ class SwaggerJsonTest extends TestCase
 
         ApplicationContext::setContainer($container);
 
-        $this->scan($container);
+        $className = DemoController::class;
+        $method = 'add';
+
+        $this->scan($container, $className, $method);
 
         $swaggerJson = new SwaggerJson('http');
 
         /** @var SwaggerJson $swaggerJson */
         $swaggerJson = new ClassInvoker($swaggerJson);
-        $swaggerJson->addPath(DemoController::class, 'add', '/add', 'POST');
+        AnnotationCollector::collectMethod($className, $method, ApiOperation::class, new ApiOperation('添加方法'));
+        AnnotationCollector::collectProperty(User::class, 'name', ApiModelProperty::class, new ApiModelProperty('名称'));
+        AnnotationCollector::collectProperty(User::class, 'age', ApiModelProperty::class, new ApiModelProperty('年龄'));
+        $swaggerJson->addPath($className, $method, '/add', 'POST');
 
         $swagger = SwaggerJson::$swagger;
         $this->assertTrue(isset($swagger['paths']['/add']));
@@ -101,11 +109,11 @@ class SwaggerJsonTest extends TestCase
         $this->assertSame('年龄', $swagger['definitions']['User']['properties']['age']['description']);
     }
 
-    private function scan($container)
+    private function scan($container, $className, $method)
     {
         $scanAnnotation = new ScanAnnotation($container);
         /** @var ScanAnnotation $scanAnnotation */
         $scanAnnotation = new ClassInvoker($scanAnnotation);
-        $scanAnnotation->scan(DemoController::class, 'add');
+        $scanAnnotation->scan($className, $method);
     }
 }

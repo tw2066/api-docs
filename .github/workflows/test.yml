@@ -3,7 +3,7 @@ name: PHPUnit
 on: [ push, pull_request ]
 
 env:
-  SWOOLE_VERSION: '4.7.1'
+  SWOOLE_VERSION: '4.8.0'
   SWOW_VERSION: 'develop'
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
           sudo sh -c "echo extension=swow > /etc/php/${{ matrix.php-version }}/cli/conf.d/swow.ini"
           php --ri swow
       - name: Setup Packages
-        run: composer update -o && composer require "tangwei/dto:dev-master"
+        run: composer require "tangwei/dto:dev-master" && composer update -o
       - name: Run Test Cases
         run: |
           composer analyse
