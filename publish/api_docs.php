@@ -7,7 +7,7 @@ return [
     'output_dir' => BASE_PATH . '/runtime/swagger',
     'prefix_url' => env('API_DOCS_PREFIX_URL','/swagger'),
     //认证api key
-    // header, query, cookie
+    // type ege: header, query, cookie
     'security_api_key' => ['Authorization', 'query' => 'token'],
     //全局responses
     'responses' => [
@@ -18,7 +18,7 @@ return [
         'openapi' => '3.0.2',
         'servers' => [
             [
-                'url' => 'http://127.0.0.1:9501',
+                'url' => env('API_DOCS_HOST',''),
                 'description' => '本地环境'
             ]
         ],
