@@ -59,9 +59,12 @@ class GenerateResponses
 
     public function generate(): array
     {
-        $resp = $this->getMethodDefinition();
-        $globalResp = $this->getGlobalResp();
+        $resp = [];
         $AnnotationResp = $this->getAnnotationResp();
+        if (empty($AnnotationResp[200])) {
+            $resp = $this->getMethodDefinition();
+        }
+        $globalResp = $this->getGlobalResp();
         return $AnnotationResp + $resp + $globalResp;
     }
 
