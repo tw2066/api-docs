@@ -10,6 +10,7 @@ use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Scan\ScanAnnotation;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
+use stdClass;
 
 class GenerateResponses
 {
@@ -27,7 +28,9 @@ class GenerateResponses
 
     private array $apiResponseArr;
 
-    public function __construct(string $className, string $methodName, array $apiResponseArr, array $config)
+    private int $version;
+
+    public function __construct(string $className, string $methodName, array $apiResponseArr, array $config, int $version)
     {
         $this->container = ApplicationContext::getContainer();
         $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
@@ -35,19 +38,33 @@ class GenerateResponses
         $this->methodName = $methodName;
         $this->config = $config;
         $this->apiResponseArr = $apiResponseArr;
-        $this->common = new SwaggerCommon();
+        $this->common = new SwaggerCommon($version);
+        $this->version = $version;
     }
 
-    public function generate(): array
+    protected function getMethodDefinition()
     {
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
         $code = $this->config['responses_code'] ?? 200;
-        $resp[$code] = $this->getSchema($returnTypeClassName);
+        $schema = $this->getSchema($returnTypeClassName);
+        if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+            $schema = ['content' => ['application/json' => $schema]];
+        }
+        $resp[$code] = $schema;
         $resp[$code]['description'] = 'OK';
-        $globalResp = $this->getGlobalResp();
+        return $resp;
+    }
+
+    public function generate(): array
+    {
+        $resp = [];
         $AnnotationResp = $this->getAnnotationResp();
+        if (empty($AnnotationResp[200])) {
+            $resp = $this->getMethodDefinition();
+        }
+        $globalResp = $this->getGlobalResp();
         return $AnnotationResp + $resp + $globalResp;
     }
 
@@ -57,10 +74,10 @@ class GenerateResponses
         if ($this->common->isSimpleType($returnTypeClassName)) {
             $type = $this->common->getType2SwaggerType($returnTypeClassName);
             if ($type == 'array') {
-                $schema['schema']['items'] = (object) [];
+                $schema['schema']['items'] = new stdClass();
             }
             if ($type == 'object') {
-                $schema['schema']['items'] = (object) [];
+                $schema['schema']['items'] = new stdClass();
             }
             $schema['schema']['type'] = $type;
         } elseif ($this->container->has($returnTypeClassName)) {
@@ -89,13 +106,16 @@ class GenerateResponses
                 $scanAnnotation = $this->container->get(ScanAnnotation::class);
                 $scanAnnotation->scanClass($apiResponse->className);
                 $this->getSchema($apiResponse->className);
-                if (! empty($apiResponse->type)) {
+                if (!empty($apiResponse->type)) {
                     $schema['schema']['type'] = $apiResponse->type;
                     $schema['schema']['items']['$ref'] = $this->getSchema($apiResponse->className)['schema']['$ref'];
-                    $resp[$apiResponse->code] = $schema;
                 } else {
-                    $resp[$apiResponse->code] = $this->getSchema($apiResponse->className);
+                    $schema = $this->getSchema($apiResponse->className);
                 }
+                if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+                    $schema = ['content' => ['application/json' => $schema]];
+                }
+                $resp[$apiResponse->code] = $schema;
             }
             $resp[$apiResponse->code]['description'] = $apiResponse->description;
         }

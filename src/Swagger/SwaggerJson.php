@@ -40,10 +40,18 @@ class SwaggerJson
 
     private ContainerInterface $container;
 
+    private int $version = self::SWAGGER_VERSION2;
+
+    public const SWAGGER_VERSION2 = 2;
+    public const SWAGGER_VERSION3 = 3;
+
     public function __construct(string $serverName)
     {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
+        if (array_key_exists('openapi', $this->config->get('api_docs.swagger', []))) {
+            $this->version = self::SWAGGER_VERSION3;
+        }
         $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
         self::$swagger = $this->config->get('api_docs.swagger');
         $this->serverName = $serverName;
@@ -84,7 +92,7 @@ class SwaggerJson
         $simpleClassName = static::getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
             $tags = $apiControllerAnnotation->tags;
-        } elseif (! empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
+        } elseif (!empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
             $tags = [$apiControllerAnnotation->tags];
         } else {
             $tags = [$simpleClassName];
@@ -92,29 +100,39 @@ class SwaggerJson
 
         foreach ($tags as $tag) {
             self::$swagger['tags'][$tag] = [
-                'name' => $tag,
-                'position' => $apiControllerAnnotation->position,
+                'name'        => $tag,
+                'position'    => $apiControllerAnnotation->position,
                 'description' => $apiControllerAnnotation->description ?: $simpleClassName,
             ];
         }
 
         $method = strtolower($methods);
-        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
+        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr, $this->version);
+        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'), $this->version);
         self::$swagger['paths'][$route]['position'] = $position;
-        self::$swagger['paths'][$route][$method] = [
-            'tags' => $tags,
-            'summary' => $apiOperation->summary ?? '',
+
+        [$parameters, $requestBody] = $makeParameters->generate();
+        $path = [
+            'tags'        => $tags,
+            'summary'     => $apiOperation->summary ?? '',
             'description' => $apiOperation->description ?? '',
-            'deprecated' => $isDeprecated,
+            'deprecated'  => $isDeprecated,
             'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
-            'parameters' => $makeParameters->generate(),
-            'produces' => [
-                'application/json',
-            ],
-            'responses' => $makeResponses->generate(),
-            'security' => $this->securityMethod(),
+            'responses'   => $makeResponses->generate(),
+            'security'    => $this->securityMethod($parameters),
         ];
+        if (!empty($parameters)) {
+            $path['parameters'] = $parameters;
+        }
+        if (!empty($requestBody)) {
+            $path['requestBody'] = $requestBody;
+        }
+        if ($this->version === self::SWAGGER_VERSION2) {
+            $path['produces'] = [
+                'application/json',
+            ];
+        }
+        self::$swagger['paths'][$route][$method] = $path;
     }
 
     /**
@@ -143,7 +161,7 @@ class SwaggerJson
     {
         self::$swagger = $this->sort(self::$swagger);
         $outputDir = $this->config->get('api_docs.output_dir');
-        if (! $outputDir) {
+        if (!$outputDir) {
             $this->stdoutLogger->error('/config/autoload/api_docs.php need set output_dir');
             return '';
         }
@@ -189,31 +207,62 @@ class SwaggerJson
         if (empty($securityKeyArr)) {
             return;
         }
-        $securityDefinitions = [];
-        foreach ($securityKeyArr as $value) {
-            $securityDefinitions[$value] = [
-                'type' => 'apiKey',
-                'name' => $value,
-                'in' => 'header',
+        $swagger = $this->config->get('api_docs.swagger', []);
+        if ($this->version === self::SWAGGER_VERSION2) {
+            $securityDefinitions = [];
+            foreach ($securityKeyArr as $in => $value) {
+                $in = is_int($in) ? 'header' : $in;
+                $securityDefinitions[$value] = [
+                    'type' => 'apiKey',
+                    'name' => $value,
+                    'in'   => $in,
+                ];
+            }
+            self::$swagger['securityDefinitions'] = $securityDefinitions;
+        }
+
+        if ($this->version === self::SWAGGER_VERSION3) {
+            $securitySchemes = [];
+            foreach ($securityKeyArr as $in => $value) {
+                $in = is_int($in) ? 'header' : $in;
+                $securitySchemes[$value] = [
+                    'type' => 'apiKey',
+                    'name' => $value,
+                    'in'   => $in,
+                ];
+            }
+            self::$swagger['components'] = [
+                'securitySchemes' => $securitySchemes,
             ];
         }
-        self::$swagger['securityDefinitions'] = $securityDefinitions;
     }
 
     /**
      * security_api_key.
      */
-    private function securityMethod(): array
+    private function securityMethod(array $parameters): array
     {
         $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
         if (empty($securityKeyArr)) {
             return [];
         }
-        $security = [];
-        foreach ($securityKeyArr as $value) {
-            $security[] = [
-                $value => [],
-            ];
+        $security = $securityKeys = [];
+        foreach ($parameters as $parameter) {
+            if ($parameter['in'] === 'header') {
+                $securityKeys['header'][] = $parameter['name'];
+            }
+            if ($parameter['in'] === 'query') {
+                $securityKeys['query'][] = $parameter['name'];
+            }
+        }
+        foreach ($securityKeyArr as $in => $value) {
+            $in = is_int($in) ? 'header' : $in;
+            $securityKey = $securityKeys[$in] ?? [];
+            if (in_array($value, $securityKey)) {
+                $security[] = [
+                    $value => [],
+                ];
+            }
         }
         return $security;
     }
@@ -224,7 +273,7 @@ class SwaggerJson
     private function putFile(string $file, string $content): void
     {
         $pathInfo = pathinfo($file);
-        if (! empty($pathInfo['dirname'])) {
+        if (!empty($pathInfo['dirname'])) {
             if (file_exists($pathInfo['dirname']) === false) {
                 if (mkdir($pathInfo['dirname'], 0755, true) === false) {
                     return;
@@ -239,19 +288,12 @@ class SwaggerJson
      */
     private function sort(array $data): array
     {
-        $data['tags'] = collect($data['tags'] ?? [])
-            ->sortByDesc('position')
-            ->map(function ($item) {
-                return collect($item)->except('position');
-            })
-            ->values()
-            ->toArray();
-        $data['paths'] = collect($data['paths'] ?? [])
-            ->sortBy('position')
-            ->map(function ($item) {
-                return collect($item)->except('position');
-            })
-            ->toArray();
+        $data['tags'] = collect($data['tags'] ?? [])->sortByDesc('position')->map(function ($item) {
+            return collect($item)->except('position');
+        })->values()->toArray();
+        $data['paths'] = collect($data['paths'] ?? [])->sortBy('position')->map(function ($item) {
+            return collect($item)->except('position');
+        })->toArray();
         return $data;
     }
 }
