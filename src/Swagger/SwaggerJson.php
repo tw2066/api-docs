@@ -40,10 +40,18 @@ class SwaggerJson
 
     private ContainerInterface $container;
 
+    private int $version = self::SWAGGER_VERSION2;
+
+    public const SWAGGER_VERSION2 = 2;
+    public const SWAGGER_VERSION3 = 3;
+
     public function __construct(string $serverName)
     {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
+        if (array_key_exists('openapi', $this->config->get('api_docs.swagger', []))) {
+            $this->version = self::SWAGGER_VERSION3;
+        }
         $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
         self::$swagger = $this->config->get('api_docs.swagger');
         $this->serverName = $serverName;
@@ -99,22 +107,32 @@ class SwaggerJson
         }
 
         $method = strtolower($methods);
-        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
+        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr, $this->version);
+        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'), $this->version);
         self::$swagger['paths'][$route]['position'] = $position;
-        self::$swagger['paths'][$route][$method] = [
+
+        [$parameters, $requestBody] = $makeParameters->generate();
+        $path = [
             'tags'        => $tags,
             'summary'     => $apiOperation->summary ?? '',
             'description' => $apiOperation->description ?? '',
             'deprecated'  => $isDeprecated,
             'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
-            'parameters'  => $makeParameters->generate(),
-            'produces'    => [
-                'application/json',
-            ],
             'responses'   => $makeResponses->generate(),
-            'security'    => $this->securityMethod(),
+            'security'    => $this->securityMethod($parameters),
         ];
+        if (!empty($parameters)) {
+            $path['parameters'] = $parameters;
+        }
+        if (!empty($requestBody)) {
+            $path['requestBody'] = $requestBody;
+        }
+        if ($this->version === self::SWAGGER_VERSION2) {
+            $path['produces'] = [
+                'application/json',
+            ];
+        }
+        self::$swagger['paths'][$route][$method] = $path;
     }
 
     /**
@@ -190,8 +208,7 @@ class SwaggerJson
             return;
         }
         $swagger = $this->config->get('api_docs.swagger', []);
-
-        if (array_key_exists('swagger', $swagger)) {
+        if ($this->version === self::SWAGGER_VERSION2) {
             $securityDefinitions = [];
             foreach ($securityKeyArr as $in => $value) {
                 $in = is_int($in) ? 'header' : $in;
@@ -204,7 +221,7 @@ class SwaggerJson
             self::$swagger['securityDefinitions'] = $securityDefinitions;
         }
 
-        if (array_key_exists('openapi', $swagger)) {
+        if ($this->version === self::SWAGGER_VERSION3) {
             $securitySchemes = [];
             foreach ($securityKeyArr as $in => $value) {
                 $in = is_int($in) ? 'header' : $in;
@@ -215,7 +232,7 @@ class SwaggerJson
                 ];
             }
             self::$swagger['components'] = [
-                'securitySchemes' => $securitySchemes
+                'securitySchemes' => $securitySchemes,
             ];
         }
     }
@@ -223,17 +240,29 @@ class SwaggerJson
     /**
      * security_api_key.
      */
-    private function securityMethod(): array
+    private function securityMethod(array $parameters): array
     {
         $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
         if (empty($securityKeyArr)) {
             return [];
         }
-        $security = [];
-        foreach ($securityKeyArr as $value) {
-            $security[] = [
-                $value => [],
-            ];
+        $security = $securityKeys = [];
+        foreach ($parameters as $parameter) {
+            if ($parameter['in'] === 'header') {
+                $securityKeys['header'][] = $parameter['name'];
+            }
+            if ($parameter['in'] === 'query') {
+                $securityKeys['query'][] = $parameter['name'];
+            }
+        }
+        foreach ($securityKeyArr as $in => $value) {
+            $in = is_int($in) ? 'header' : $in;
+            $securityKey = $securityKeys[$in] ?? [];
+            if (in_array($value, $securityKey)) {
+                $security[] = [
+                    $value => [],
+                ];
+            }
         }
         return $security;
     }

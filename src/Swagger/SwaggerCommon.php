@@ -13,13 +13,43 @@ use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\Utils\ApplicationContext;
 use ReflectionProperty;
+use stdClass;
 use Throwable;
 
 class SwaggerCommon
 {
+    private int $version;
+
+    public function __construct(int $version)
+    {
+        $this->version = $version;
+    }
+
     public function getDefinitions(string $className): string
     {
-        return '#/definitions/' . $this->getSimpleClassName($className);
+        if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+            return '#/components/schemas/' . $this->getSimpleClassName($className);
+        } else {
+            return '#/definitions/' . $this->getSimpleClassName($className);
+        }
+    }
+
+    public function pushDefinitions(string $className, array $schema): void
+    {
+        if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+            SwaggerJson::$swagger['components']['schemas'][$this->getSimpleClassName($className)] = $schema;
+        } else {
+            SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+        }
+    }
+
+    protected function getDefinition(string $className): array
+    {
+        if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+            return SwaggerJson::$swagger['components']['schemas'][$this->getSimpleClassName($className)] ?? [];
+        } else {
+            return SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] ?? [];
+        }
     }
 
     public function getSimpleClassName(string $className): string
@@ -41,7 +71,7 @@ class SwaggerCommon
             }
             $phpType = $this->getTypeName($reflectionProperty);
             $property['type'] = $this->getType2SwaggerType($phpType);
-            if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
+            if (!in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
 
@@ -53,7 +83,7 @@ class SwaggerCommon
             if ($apiModelProperty->hidden) {
                 continue;
             }
-            if (! empty($inAnnotation)) {
+            if (!empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
             if ($apiModelProperty->required !== null) {
@@ -106,7 +136,7 @@ class SwaggerCommon
 
     public function generateClass2schema(string $className): void
     {
-        if (! ApplicationContext::getContainer()->has($className)) {
+        if (!ApplicationContext::getContainer()->has($className)) {
             $this->generateEmptySchema($className);
             return;
         }
@@ -118,7 +148,7 @@ class SwaggerCommon
         }
 
         $schema = [
-            'type' => 'object',
+            'type'       => 'object',
             'properties' => [],
         ];
         $rc = ReflectionManager::reflectClass($className);
@@ -137,7 +167,7 @@ class SwaggerCommon
             }
             $property = [];
             $property['type'] = $type;
-            if (! empty($inAnnotation)) {
+            if (!empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
             $property['description'] = $apiModelProperty->value ?? '';
@@ -152,7 +182,7 @@ class SwaggerCommon
             }
             if ($phpType == 'array') {
                 if ($propertyClass->className == null) {
-                    $property['items'] = (object) [];
+                    $property['items'] = (object)[];
                 } else {
                     if ($propertyClass->isSimpleType) {
                         $property['items']['type'] = $this->getType2SwaggerType($propertyClass->className);
@@ -163,33 +193,36 @@ class SwaggerCommon
                 }
             }
             if ($type == 'object') {
-                $property['items'] = (object) [];
+                $property['items'] = (object)[];
             }
-            if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
+            if (!$propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
                 $this->generateClass2schema($propertyClass->className);
-                $property['$ref'] = $this->getDefinitions($propertyClass->className);
+                if (!empty($property['description'])) {
+                    $definition = $this->getDefinition($propertyClass->className);
+                    $definition['description'] = $property['description'];
+                    $this->pushDefinitions($propertyClass->className, $definition);
+                }
+                $property = ['$ref' => $this->getDefinitions($propertyClass->className)];
             }
             $schema['properties'][$fieldName] = $property;
         }
-        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+        if (empty($schema['properties'])) {
+            $schema['properties'] = new stdClass();
+        }
+        $this->pushDefinitions($className, $schema);
     }
 
     public function isSimpleType($type): bool
     {
-        return $type == 'string'
-            || $type == 'boolean' || $type == 'bool'
-            || $type == 'integer' || $type == 'int'
-            || $type == 'double' || $type == 'float'
-            || $type == 'array' || $type == 'object';
+        return $type == 'string' || $type == 'boolean' || $type == 'bool' || $type == 'integer' || $type == 'int' || $type == 'double' || $type == 'float' || $type == 'array' || $type == 'object';
     }
 
     protected function generateEmptySchema(string $className)
     {
-        $schema = [
-            'type' => 'object',
-            'properties' => [],
-        ];
-        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+        $this->pushDefinitions($className, [
+            'type'       => 'object',
+            'properties' => new stdClass(),
+        ]);
     }
 
     protected function getModelSchema(object $model)

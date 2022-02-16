@@ -42,13 +42,16 @@ class GenerateParameters
      */
     private array $apiFormDataArr;
 
+    private int $version;
+
     public function __construct(
         string $route,
         string $method,
         string $controller,
         string $action,
         array $apiHeaderArr,
-        array $apiFormDataArr
+        array $apiFormDataArr,
+        int $version
     ) {
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
@@ -59,13 +62,15 @@ class GenerateParameters
         $this->action = $action;
         $this->apiHeaderArr = $apiHeaderArr;
         $this->apiFormDataArr = $apiFormDataArr;
-        $this->common = new SwaggerCommon();
+        $this->common = new SwaggerCommon($version);
+        $this->version = $version;
     }
 
     public function generate(): array
     {
         $consumes = null;
         $parameters = $this->generateParam($this->apiHeaderArr);
+        $requestBody = [];
         if (! empty($this->apiFormDataArr)) {
             $parameters = Arr::merge($parameters, $this->generateParam($this->apiFormDataArr));
             $consumes = 'application/x-www-form-urlencoded';
@@ -96,8 +101,14 @@ class GenerateParameters
                     $property['description'] = '';
                     $property['required'] = true;
                     $property['schema']['$ref'] = $this->common->getDefinitions($parameterClassName);
-                    $parameters[] = $property;
                     $consumes = 'application/json';
+                    if ($this->version === SwaggerJson::SWAGGER_VERSION2) {
+                        $parameters[] = $property;
+                    }
+
+                    if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+                        $requestBody['content'][$consumes]['schema']['$ref'] = $this->common->getDefinitions($parameterClassName);
+                    }
                 }
                 if ($methodParameter->isRequestQuery()) {
                     $propertyArr = $this->common->getParameterClassProperty($parameterClassName, 'query');
@@ -114,10 +125,10 @@ class GenerateParameters
                 }
             }
         }
-        if ($consumes != null) {
+        if ($consumes != null && $this->version === SwaggerJson::SWAGGER_VERSION2) {
             SwaggerJson::$swagger['paths'][$this->route][$this->method]['consumes'] = [$consumes];
         }
-        return array_values($parameters);
+        return [array_values($parameters), $requestBody];
     }
 
     private function generateParam($paramArr): array
@@ -131,7 +142,12 @@ class GenerateParameters
             $property = [];
             $property['in'] = $param->getIn();
             $property['name'] = $param->name;
-            $property['type'] = $param->type;
+            if ($this->version === SwaggerJson::SWAGGER_VERSION2) {
+                $property['type'] = $param->type;
+            }
+            if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
+                $property['schema']['type'] = $param->type;
+            }
             $param->example !== null && $property['example'] = $param->example;
             $param->default !== null && $property['default'] = $param->default;
             $param->required !== null && $property['required'] = $param->required;
