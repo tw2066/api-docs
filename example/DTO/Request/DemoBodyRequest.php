@@ -58,7 +58,6 @@ class DemoBodyRequest
     public float $price;
 
     #[ApiModelProperty('电子邮件', example: '1@e.com')]
-
     #[Email(messages: '请输入正确的电子邮件')]
     public string $email;
 

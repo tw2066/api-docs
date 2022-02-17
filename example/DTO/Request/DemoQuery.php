@@ -35,7 +35,7 @@ class DemoQuery extends PageQuery
     #[In(['qq', 'aa'])]
     public string $name;
 
-    #[ApiModelProperty('正则')]
+    #[ApiModelProperty('邮箱')]
     #[Str]
     #[Regex('/^.+@.+$/i')]
     #[StartsWith('aa,bb')]

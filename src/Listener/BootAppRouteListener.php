@@ -7,6 +7,7 @@ namespace Hyperf\ApiDocs\Listener;
 use Hyperf\ApiDocs\Swagger\SwaggerRoute;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\DTO\ValidationDto;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
@@ -35,6 +36,9 @@ class BootAppRouteListener implements ListenerInterface
         if (! $outputDir) {
             $logger->error('/config/autoload/api_docs.php need set output_dir');
             return;
+        }
+        if (! $config->get('api_docs.validation_custom_attributes', false)) {
+            ValidationDto::$isValidationCustomAttributes = true;
         }
         $prefix = $config->get('api_docs.prefix_url', '/swagger');
         $servers = $config->get('server.servers');
