@@ -61,7 +61,7 @@ class SwaggerCommon
     {
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
-        foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
+        foreach ($rc->getProperties(ReflectionProperty::IS_PUBLIC) ?? [] as $reflectionProperty) {
             $property = [];
             $property['in'] = $in;
             $property['name'] = $reflectionProperty->getName();
@@ -152,7 +152,7 @@ class SwaggerCommon
             'properties' => [],
         ];
         $rc = ReflectionManager::reflectClass($className);
-        foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
+        foreach ($rc->getProperties(ReflectionProperty::IS_PUBLIC) ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
             $phpType = $propertyClass->type;
