@@ -20,7 +20,7 @@ class ApiModelProperty extends AbstractAnnotation
 
     public ?bool $required;
 
-    public function __construct(string $value = '', $column = null, $example = null, bool $hidden = false, bool $required = null)
+    public function __construct(string $value = '', $column = true, $example = null, bool $hidden = false, bool $required = null)
     {
         $this->value = $value;
         $this->example = $example;
