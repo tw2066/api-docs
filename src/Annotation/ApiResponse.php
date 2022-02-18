@@ -18,11 +18,14 @@ class ApiResponse extends AbstractMultipleAnnotation
 
     public ?string $type;
 
-    public function __construct(string $code = null, string $description = null, string $className = null, string $type = null)
+    public ?string $template;
+
+    public function __construct(string $code = null, string $description = null, string $template = null, string $className = null, string $type = null)
     {
         $this->code = $code;
         $this->description = $description;
         $this->className = $className;
         $this->type = $type;
+        $this->template = $template;
     }
 }
