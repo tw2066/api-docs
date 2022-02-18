@@ -35,7 +35,7 @@ class DemoQuery extends PageQuery
     #[In(['qq', 'aa'])]
     public string $name;
 
-    #[ApiModelProperty('正则')]
+    #[ApiModelProperty('邮箱')]
     #[Str]
     #[Regex('/^.+@.+$/i')]
     #[StartsWith('aa,bb')]
@@ -46,5 +46,23 @@ class DemoQuery extends PageQuery
     #[Integer]
     #[Between(1, 5)]
     #[Required]
-    public int $num;
+    private int $num;
+
+    /**
+     * @return int
+     */
+    public function getNum(): int
+    {
+        return $this->num;
+    }
+
+    /**
+     * @param int $num
+     */
+    public function setNum(int $num): void
+    {
+        $this->num = $num;
+    }
+
+
 }

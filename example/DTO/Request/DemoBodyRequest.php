@@ -28,15 +28,15 @@ class DemoBodyRequest
 
     public Address $addr1;
 
-    public DTO\Address $addr2;
+    public Address $addr2;
 
     #[ApiModelProperty('地址')]
 
     #[Required]
-    public \HyperfExample\ApiDocs\DTO\Address $addr3;
+    public Address $addr3;
 
     /**
-     * @var \HyperfExample\ApiDocs\DTO\Address[]
+     * @var Address[]
      */
     #[ApiModelProperty('地址数组')]
     #[Required]
@@ -58,7 +58,6 @@ class DemoBodyRequest
     public float $price;
 
     #[ApiModelProperty('电子邮件', example: '1@e.com')]
-
     #[Email(messages: '请输入正确的电子邮件')]
     public string $email;
 

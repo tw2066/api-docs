@@ -10,6 +10,8 @@ return [
     // type ege: header, query, cookie
 //    'security_api_key' => ['Authorization', 'query' => 'token'],
     'security_api_key' => ['Authorization'],
+    //替换验证属性
+    'validation_custom_attributes' => false,
     //全局responses
     'responses'        => [
         401 => ['description' => 'Unauthorized'],
