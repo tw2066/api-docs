@@ -34,6 +34,16 @@ class SwaggerCommon
         }
     }
 
+    public function getEmptyDefinition(string $type): string
+    {
+        $className = 'EmptySchema' . ucfirst($type);
+        $schema = $this->getDefinition($className);
+        if (empty($schema)) {
+            $this->generateEmptySchema($className, $type);
+        }
+        return $this->getDefinitions($className);
+    }
+
     public function pushDefinitions(string $className, array $schema): void
     {
         if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
@@ -217,12 +227,21 @@ class SwaggerCommon
         return $type == 'string' || $type == 'boolean' || $type == 'bool' || $type == 'integer' || $type == 'int' || $type == 'double' || $type == 'float' || $type == 'array' || $type == 'object';
     }
 
-    protected function generateEmptySchema(string $className)
+    protected function generateEmptySchema(string $className, ?string $type = null)
     {
-        $this->pushDefinitions($className, [
-            'type'       => 'object',
-            'properties' => new stdClass(),
-        ]);
+        $type = $type ?? 'object';
+        if ($type === 'object') {
+            $this->pushDefinitions($className, [
+                'type'       => 'object',
+                'properties' => new stdClass(),
+            ]);
+        }
+        if ($type === 'array') {
+            $this->pushDefinitions($className, [
+                'type'  => 'array',
+                'items' => new stdClass(),
+            ]);
+        }
     }
 
     protected function getModelSchema(object $model)

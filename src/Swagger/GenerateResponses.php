@@ -97,21 +97,80 @@ class GenerateResponses
         return $resp;
     }
 
+    protected function getSchemaForTemplate(array $template, ?string $type, string $ref)
+    {
+        $schema = [
+            'type'       => 'object',
+            'properties' => [],
+        ];
+        foreach ($template as $key => $value) {
+            [$filed, $description] = explode('|', $key);
+            $schema['properties'][$filed] = [
+                'type'        => $this->common->getType2SwaggerType(gettype($value)),
+                'description' => $description,
+            ];
+            if ($value === '{template}') {
+                $schema['properties'][$filed] = $type === 'array' ? ['type' => $type, 'items' => $ref ? ['$ref' => $ref] : new stdClass()] : ['$ref' => $ref];
+            }
+            if (is_array($value)) {
+                $item = $this->getSchemaForTemplate($value, $type, $ref);
+                $item['description'] = $description;
+                $templateClassName = implode('', array_map(function ($connect) {
+                    return ucfirst($connect);
+                }, [SwaggerJson::getSimpleClassName($this->className), $this->methodName, $filed]));
+                $this->common->pushDefinitions($templateClassName, $item);
+                $schema['properties'][$filed] = ['$ref' => $this->common->getDefinitions($templateClassName)];
+            }
+        }
+        return $schema;
+    }
+
     private function getAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {
+            $schema = [];
             if ($apiResponse->className) {
                 $scanAnnotation = $this->container->get(ScanAnnotation::class);
                 $scanAnnotation->scanClass($apiResponse->className);
                 $this->getSchema($apiResponse->className);
-                if (!empty($apiResponse->type)) {
+                if (!empty($apiResponse->type) && empty($apiResponse->template)) {
                     $schema['schema']['type'] = $apiResponse->type;
                     $schema['schema']['items']['$ref'] = $this->getSchema($apiResponse->className)['schema']['$ref'];
                 } else {
                     $schema = $this->getSchema($apiResponse->className);
                 }
+            }
+
+            if ($apiResponse->template) {
+                $template = $this->config['templates'][$apiResponse->template] ?? [];
+                if (!empty($template)) {
+                    if (empty($schema)) {
+                        $schema['schema']['$ref'] = $apiResponse->type !== 'array' ? $this->common->getEmptyDefinition('object') : '';
+                    }
+
+                    if (isset($schema['schema']['$ref'])) {
+                        $templateSchema = $this->getSchemaForTemplate($template, $apiResponse->type, $schema['schema']['$ref'] ?? '');
+                        $templateClassName = implode('', array_map(function ($connect) {
+                            return ucfirst($connect);
+                        }, [SwaggerJson::getSimpleClassName($this->className), $this->methodName]));
+                        $this->common->pushDefinitions($templateClassName, $templateSchema);
+                        $schema['schema']['$ref'] = $this->common->getDefinitions($templateClassName);
+                    }
+
+                    if (isset($schema['schema']['items']['$ref'])) {
+                        $templateSchema = $this->getSchemaForTemplate($template, $apiResponse->type, $schema['schema']['items']['$ref'] ?? '');
+                        $templateClassName = implode('', array_map(function ($connect) {
+                            return ucfirst($connect);
+                        }, [SwaggerJson::getSimpleClassName($this->className), $this->methodName]));
+                        $this->common->pushDefinitions($templateClassName, $templateSchema);
+                        $schema['schema']['items']['$ref'] = $this->common->getDefinitions($templateClassName);
+                    }
+                }
+            }
+
+            if (!empty($schema)) {
                 if ($this->version === SwaggerJson::SWAGGER_VERSION3) {
                     $schema = ['content' => ['application/json' => $schema]];
                 }
