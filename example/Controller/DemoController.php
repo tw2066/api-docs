@@ -47,6 +47,7 @@ class DemoController
     #[PostMapping(path: 'query')]
     public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
     {
+        var_dump($request);
         return new Contact();
     }
 

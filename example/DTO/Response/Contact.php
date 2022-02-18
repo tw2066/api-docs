@@ -22,5 +22,23 @@ class Contact
     public array $addressArr;
 
     #[ApiModelProperty('数组')]
-    public ?array $arr;
+    private ?array $arr;
+
+    /**
+     * @return array|null
+     */
+    public function getArr(): ?array
+    {
+        return $this->arr;
+    }
+
+    /**
+     * @param array|null $arr
+     */
+    public function setArr(?array $arr): void
+    {
+        $this->arr = $arr;
+    }
+
+
 }
