@@ -6,6 +6,7 @@ namespace Hyperf\ApiDocs;
 
 use Hyperf\ApiDocs\Listener\AfterDtoStartListener;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
+use Hyperf\DTO\Scan\ScanAnnotation;
 
 class ConfigProvider
 {
@@ -18,10 +19,13 @@ class ConfigProvider
                 AfterDtoStartListener::class,
                 BootAppRouteListener::class,
             ],
-            'annotations' => [
+            'annotations'  => [
                 'scan' => [
                     'paths' => [
                         __DIR__,
+                    ],
+                    'class_map'          => [
+                        ScanAnnotation::class => BASE_PATH . '/vendor/tangwei/apidocs/src/ClassMap/ScanAnnotation.php'
                     ],
                 ],
             ],
