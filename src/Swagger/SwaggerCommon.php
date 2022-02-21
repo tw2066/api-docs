@@ -10,8 +10,10 @@ use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
+use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\Utils\ApplicationContext;
+use MabeEnum\Enum;
 use ReflectionProperty;
 use stdClass;
 use Throwable;
@@ -144,6 +146,16 @@ class SwaggerCommon
         };
     }
 
+    protected function getPropertyByValue($value): Property
+    {
+        $property = new Property();
+        $property->isSimpleType = true;
+        $type = $this->getType2SwaggerType(gettype($value));
+        $property->type = $type;
+        $property->className = $type;
+        return $property;
+    }
+
     public function generateClass2schema(string $className): void
     {
         if (!ApplicationContext::getContainer()->has($className)) {
@@ -165,6 +177,13 @@ class SwaggerCommon
         foreach ($rc->getProperties(ReflectionProperty::IS_PUBLIC) ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
+            if (!$propertyClass->isSimpleType) {
+                $construct = ReflectionManager::reflectClass($propertyClass->className)->getConstructor();
+                if ($construct && $construct->class === Enum::class) {
+                    $propertyClass = $this->getPropertyByValue(current($propertyClass->className::getValues()));
+                }
+            }
+
             $phpType = $propertyClass->type;
             $type = $this->getType2SwaggerType($phpType);
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
