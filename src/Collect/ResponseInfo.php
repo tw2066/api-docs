@@ -23,14 +23,6 @@ class ResponseInfo
     public Property $property;
 
 
-
-    public bool $isSimpleType = true;
-
-    public ?string $phpType= null;
-
-    public ?string $className = null;
-
-
 //    public ?Schema $schema = null;
 
 

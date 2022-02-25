@@ -133,7 +133,7 @@ class Swagger2Parsing implements ParsingInterface
             $tmp['description'] = $responseInfo->description;
 
 
-            $className = $responseInfo->className;
+//            $className = $responseInfo->className;
 //            dd($this->generateDefinitions->getItems($responseInfo->phpType,$className,$responseInfo->isSimpleType));
             $tmp['schema'] = $this->generateDefinitions->getItems($responseInfo->property);
 

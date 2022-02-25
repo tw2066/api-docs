@@ -46,17 +46,8 @@ class ParameterInfo
 
 
 
-//    public ?Schema $schema = null;
-
-
     public ?Property $property = null;
 
-    //类型
-    public bool $isSimpleType;
-
-    public ?string $phpType= null;
-
-    public ?string $className = null;
 
 
 }

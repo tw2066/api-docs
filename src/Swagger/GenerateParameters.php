@@ -94,15 +94,7 @@ class GenerateParameters
                 $parameterInfo->name = $paramName;
                 $parameterInfo->in = 'path';
                 $parameterInfo->required = true;
-
-                $parameterProperty = new Property();
-                $parameterProperty->phpType = $simpleSwaggerType;
-                $parameterProperty->isSimpleType = true;
-                $parameterInfo->property = $parameterProperty;
-//       $parameterInfo->type = $simpleSwaggerType;
-//                $parameterInfo->phpType = $parameterClassName;
-//                $parameterInfo->isSimpleType = true;
-
+                $parameterInfo->type = $simpleSwaggerType;
                 $parameters[] = $parameterInfo;
                 continue;
             }
