@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Listener;
 
 use Closure;
+use Hyperf\ApiDocs\Collect\MainCollect;
+use Hyperf\ApiDocs\Parsing\Swagger2Parsing;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
@@ -55,7 +57,11 @@ class AfterDtoStartListener implements ListenerInterface
                 });
             }
         }
-        $swagger->save();
+        $mainInfo = $config->get('api_docs.swagger');
+        MainCollect::setMainInfo($mainInfo);
+        $parsing = new Swagger2Parsing();
+        $swagger->save($parsing->parsing(MainCollect::getMainInfo(),MainCollect::getRoutes(),MainCollect::getTags(),MainCollect::getDefinitionClass()));
+        MainCollect::clean();
         $logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
     }
 

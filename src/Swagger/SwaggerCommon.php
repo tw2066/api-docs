@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Collect\MainCollect;
+use Hyperf\ApiDocs\Collect\ParameterInfo;
 use Hyperf\Database\Model\Model;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
@@ -17,7 +19,12 @@ use Throwable;
 
 class SwaggerCommon
 {
-    public function getDefinitions(string $className): string
+    /**
+     * 获取并收集Definition
+     * @param string $className
+     * @return string
+     */
+    public function getDefinitionName(string $className): string
     {
         return '#/definitions/' . $this->getSimpleClassName($className);
     }
@@ -32,15 +39,23 @@ class SwaggerCommon
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
-            $property = [];
-            $property['in'] = $in;
-            $property['name'] = $reflectionProperty->getName();
+
+            $parameterInfo = new ParameterInfo();
+            $parameterInfo->name = $reflectionProperty->getName();
+            $parameterInfo->in = $in;
+
+//            $property = [];
+//            $property['in'] = $in;
+//            $property['name'] = $reflectionProperty->getName();
             try {
-                $property['default'] = $reflectionProperty->getValue(make($parameterClassName));
+//                $property['default'] = $reflectionProperty->getValue(make($parameterClassName));
+                $parameterInfo->default  = $reflectionProperty->getValue(make($parameterClassName));
             } catch (Throwable) {
             }
             $phpType = $this->getTypeName($reflectionProperty);
-            $property['type'] = $this->getType2SwaggerType($phpType);
+//            $property['type'] = $this->getType2SwaggerType($phpType);
+            $parameterInfo->type = $this->getType2SwaggerType($phpType);
+            $parameterInfo->phpType = $phpType;
             if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
@@ -54,19 +69,24 @@ class SwaggerCommon
                 continue;
             }
             if (! empty($inAnnotation)) {
-                $property['enum'] = $inAnnotation->getValue();
+//                $property['enum'] = $inAnnotation->getValue();
+                $parameterInfo->enum = $inAnnotation->getValue();
             }
             if ($apiModelProperty->required !== null) {
-                $property['required'] = $apiModelProperty->required;
+//                $property['required'] = $apiModelProperty->required;
+                $parameterInfo->required = $apiModelProperty->required;
             }
             if ($requiredAnnotation !== null) {
-                $property['required'] = true;
+//                $property['required'] = true;
+                $parameterInfo->required = true;
             }
             if ($apiModelProperty->example !== null) {
-                $property['example'] = $apiModelProperty->example;
+//                $property['example'] = $apiModelProperty->example;
+                $parameterInfo->example = $apiModelProperty->example;
             }
-            $property['description'] = $apiModelProperty->value ?? '';
-            $parameters[] = $property;
+//            $property['description'] = $apiModelProperty->value ?? '';
+            $parameterInfo->description = $apiModelProperty->value ?? '';
+            $parameters[] = $parameterInfo;
         }
         return $parameters;
     }
@@ -93,7 +113,7 @@ class SwaggerCommon
         };
     }
 
-    public function getSimpleType2SwaggerType(string $phpType): ?string
+    public function getSimpleType2SwaggerType(?string $phpType): ?string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
@@ -158,7 +178,7 @@ class SwaggerCommon
                         $property['items']['type'] = $this->getType2SwaggerType($propertyClass->className);
                     } else {
                         $this->generateClass2schema($propertyClass->className);
-                        $property['items']['$ref'] = $this->getDefinitions($propertyClass->className);
+                        $property['items']['$ref'] = $this->getDefinitionName($propertyClass->className);
                     }
                 }
             }
@@ -167,7 +187,7 @@ class SwaggerCommon
             }
             if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
                 $this->generateClass2schema($propertyClass->className);
-                $property['$ref'] = $this->getDefinitions($propertyClass->className);
+                $property['$ref'] = $this->getDefinitionName($propertyClass->className);
             }
             $schema['properties'][$fieldName] = $property;
         }
@@ -183,13 +203,13 @@ class SwaggerCommon
             || $type == 'array' || $type == 'object';
     }
 
-    protected function generateEmptySchema(string $className)
+    public function generateEmptySchema(string $className)
     {
-        $schema = [
+        return [
             'type' => 'object',
             'properties' => [],
         ];
-        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
+//        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
     }
 
     protected function getModelSchema(object $model)

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\Collect\ResponseInfo;
+use Hyperf\ApiDocs\Collect\Schema;
+use Hyperf\ApiDocs\Collect\SchemaItems;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Scan\ScanAnnotation;
@@ -44,28 +47,101 @@ class GenerateResponses
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
         $code = $this->config['responses_code'] ?? 200;
-        $resp[$code] = $this->getSchema($returnTypeClassName);
-        $resp[$code]['description'] = 'OK';
-        $globalResp = $this->getGlobalResp();
-        $AnnotationResp = $this->getAnnotationResp();
-        return $AnnotationResp + $resp + $globalResp;
+//        $resp[$code] = $this->getSchema($returnTypeClassName);
+//        $resp[$code]['description'] = 'OK';
+
+        //TODO 处理
+//        $globalResp = $this->getGlobalResp();
+//        $AnnotationResp = $this->getAnnotationResp();
+
+        $arr = [];
+//        $responseInfo = new ResponseInfo();
+//        $responseInfo->httpCode = (string)$code;
+
+//        $responseInfo->schema = $this->getSchema($returnTypeClassName);
+
+        $responseInfo = $this->getResponseInfo($returnTypeClassName);
+        $responseInfo->httpCode = (string)$code;
+        $responseInfo->description = 'OK';
+        $arr[] = $responseInfo;
+//        dd($responseInfo);
+//        $arr[] = $globalResp;
+//        $arr[] = $AnnotationResp;
+
+        return $arr;
+    }
+    private function getResponseInfo(string $returnTypeClassName): ResponseInfo
+    {
+
+        $responseInfo = new ResponseInfo();
+//        $schema = [];
+//        $schema = new Schema();
+//        $schemaItems = new SchemaItems();
+        if ($this->common->isSimpleType($returnTypeClassName)) {
+            $responseInfo->isSimpleType = true;
+
+            $responseInfo->phpType = $returnTypeClassName;
+
+
+//            $type = $this->common->getType2SwaggerType($returnTypeClassName);
+//            if ($type == 'array') {
+//                $responseInfo->type = 'array';
+////                $schema['schema']['items'] = (object) [];
+//            }
+//            if ($type == 'object') {
+//                $responseInfo->type = 'object';
+////                $schema['schema']['items'] = (object) [];
+//            }
+////            $schema['schema']['type'] = $type;
+
+//            $responseInfo->type = $type;
+//            $schemaItems->type = $type;
+//            $schema->items = $schemaItems;
+        } elseif ($this->container->has($returnTypeClassName)) {
+            $responseInfo->isSimpleType = false;
+            $responseInfo->className = $returnTypeClassName;
+//            $this->common->generateClass2schema($returnTypeClassName);
+//            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
+
+//            $schema->type = 'object';
+//
+//
+//            $schemaItems->ref = $this->common->getDefinitions($returnTypeClassName);
+//            $schema->items = $schemaItems;
+        }
+        return $responseInfo;
     }
 
-    private function getSchema($returnTypeClassName): array
+
+    private function getSchema2($returnTypeClassName): Schema
     {
-        $schema = [];
+//        $schema = [];
+        $schema = new Schema();
+        $schemaItems = new SchemaItems();
         if ($this->common->isSimpleType($returnTypeClassName)) {
             $type = $this->common->getType2SwaggerType($returnTypeClassName);
             if ($type == 'array') {
-                $schema['schema']['items'] = (object) [];
+                $schema->type = 'array';
+//                $schema['schema']['items'] = (object) [];
             }
             if ($type == 'object') {
-                $schema['schema']['items'] = (object) [];
+                $schema->type = 'object';
+//                $schema['schema']['items'] = (object) [];
             }
-            $schema['schema']['type'] = $type;
+//            $schema['schema']['type'] = $type;
+            //TODO ???
+            $schema->type = $type;
+//            $schemaItems->type = $type;
+//            $schema->items = $schemaItems;
         } elseif ($this->container->has($returnTypeClassName)) {
-            $this->common->generateClass2schema($returnTypeClassName);
-            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
+//            $this->common->generateClass2schema($returnTypeClassName);
+//            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
+
+            $schema->type = 'object';
+
+
+            $schemaItems->ref = $this->common->getDefinitionName($returnTypeClassName);
+            $schema->items = $schemaItems;
         }
         return $schema;
     }
