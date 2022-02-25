@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Collect;
 
+use Hyperf\DTO\Scan\Property;
+
 class ParameterInfo
 {
 
@@ -46,6 +48,8 @@ class ParameterInfo
 
 //    public ?Schema $schema = null;
 
+
+    public ?Property $property = null;
 
     //类型
     public bool $isSimpleType;

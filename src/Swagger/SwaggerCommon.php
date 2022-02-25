@@ -85,6 +85,7 @@ class SwaggerCommon
                 $parameterInfo->example = $apiModelProperty->example;
             }
 //            $property['description'] = $apiModelProperty->value ?? '';
+            $parameterInfo->summary = $apiModelProperty->summary ?? '';
             $parameterInfo->description = $apiModelProperty->value ?? '';
             $parameters[] = $parameterInfo;
         }
@@ -145,7 +146,7 @@ class SwaggerCommon
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
-            $phpType = $propertyClass->type;
+            $phpType = $propertyClass->phpType;
             $type = $this->getType2SwaggerType($phpType);
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();

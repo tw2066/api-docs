@@ -14,6 +14,7 @@ use Hyperf\ApiDocs\Collect\SchemaItems;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\DTO\Scan\MethodParametersManager;
+use Hyperf\DTO\Scan\Property;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
@@ -93,9 +94,14 @@ class GenerateParameters
                 $parameterInfo->name = $paramName;
                 $parameterInfo->in = 'path';
                 $parameterInfo->required = true;
-                $parameterInfo->type = $simpleSwaggerType;
-                $parameterInfo->phpType = $parameterClassName;
-                $parameterInfo->isSimpleType = true;
+
+                $parameterProperty = new Property();
+                $parameterProperty->phpType = $simpleSwaggerType;
+                $parameterProperty->isSimpleType = true;
+                $parameterInfo->property = $parameterProperty;
+//       $parameterInfo->type = $simpleSwaggerType;
+//                $parameterInfo->phpType = $parameterClassName;
+//                $parameterInfo->isSimpleType = true;
 
                 $parameters[] = $parameterInfo;
                 continue;
@@ -120,9 +126,16 @@ class GenerateParameters
                     $parameterInfo->required = true;
                     $parameterInfo->description = '';
 
-                    $parameterInfo->isSimpleType = false;
+//                    $parameterInfo->isSimpleType = false;
+//
+//                    $parameterInfo->className = $parameterClassName;
 
-                    $parameterInfo->className = $parameterClassName;
+                    $parameterProperty = new Property();
+                    $parameterProperty->isSimpleType = false;
+                    $parameterProperty->className = $parameterClassName;
+//                    dd($parameterProperty);
+
+                    $parameterInfo->property = $parameterProperty;
 
 //                    public bool $isSimpleType;
 //

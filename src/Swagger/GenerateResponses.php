@@ -10,6 +10,7 @@ use Hyperf\ApiDocs\Collect\Schema;
 use Hyperf\ApiDocs\Collect\SchemaItems;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
+use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\ScanAnnotation;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
@@ -77,10 +78,15 @@ class GenerateResponses
 //        $schema = [];
 //        $schema = new Schema();
 //        $schemaItems = new SchemaItems();
-        if ($this->common->isSimpleType($returnTypeClassName)) {
-            $responseInfo->isSimpleType = true;
 
-            $responseInfo->phpType = $returnTypeClassName;
+
+        $property = new Property();
+
+        $property->isSimpleType = true;
+        if ($this->common->isSimpleType($returnTypeClassName)) {
+
+
+            $property->phpType = $returnTypeClassName;
 
 
 //            $type = $this->common->getType2SwaggerType($returnTypeClassName);
@@ -98,8 +104,8 @@ class GenerateResponses
 //            $schemaItems->type = $type;
 //            $schema->items = $schemaItems;
         } elseif ($this->container->has($returnTypeClassName)) {
-            $responseInfo->isSimpleType = false;
-            $responseInfo->className = $returnTypeClassName;
+            $property->isSimpleType = false;
+            $property->className = $returnTypeClassName;
 //            $this->common->generateClass2schema($returnTypeClassName);
 //            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
 
@@ -109,6 +115,7 @@ class GenerateResponses
 //            $schemaItems->ref = $this->common->getDefinitions($returnTypeClassName);
 //            $schema->items = $schemaItems;
         }
+        $responseInfo->property = $property;
         return $responseInfo;
     }
 

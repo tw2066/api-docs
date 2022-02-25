@@ -127,6 +127,7 @@ class SwaggerJson
         $routeCollect->simpleClassName = $simpleClassName;
         $routeCollect->position = $position;
         $routeCollect->tags = $tags;
+        $routeCollect->summary = $apiOperation->summary ?? '';
         $routeCollect->description = $apiOperation->description ?? '';
         $routeCollect->deprecated = $isDeprecated;
         $routeCollect->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;

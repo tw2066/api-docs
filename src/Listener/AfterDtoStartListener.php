@@ -57,6 +57,7 @@ class AfterDtoStartListener implements ListenerInterface
                 });
             }
         }
+//        dd(MainCollect::getRoutes());
         $mainInfo = $config->get('api_docs.swagger');
         MainCollect::setMainInfo($mainInfo);
         $parsing = new Swagger2Parsing();

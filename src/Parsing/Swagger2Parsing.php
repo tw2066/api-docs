@@ -95,9 +95,10 @@ class Swagger2Parsing implements ParsingInterface
 //            if(!empty($swaggerType)){
 //                $property['schema']['type'] = $swaggerType;
 //            }
-            $className = $parameterInfo->className;
-            if ($className){
-                $property['schema'] = $this->generateDefinitions->getItems($parameterInfo->phpType,$className,$parameterInfo->isSimpleType);
+//            $className = $parameterInfo->className;
+            if ($parameterInfo->property){
+//                $property['schema'] = $this->generateDefinitions->getItems($parameterInfo->phpType,$className,$parameterInfo->isSimpleType);
+                $property['schema'] = $this->generateDefinitions->getItems($parameterInfo->property);
             }
 //            if($parameterInfo->phpType == 'array' && !empty($className)){
 //                $this->generateDefinitions->generateClass2Schema($className);
@@ -134,7 +135,7 @@ class Swagger2Parsing implements ParsingInterface
 
             $className = $responseInfo->className;
 //            dd($this->generateDefinitions->getItems($responseInfo->phpType,$className,$responseInfo->isSimpleType));
-            $tmp['schema'] = $this->generateDefinitions->getItems($responseInfo->phpType,$className,$responseInfo->isSimpleType);
+            $tmp['schema'] = $this->generateDefinitions->getItems($responseInfo->property);
 
 
 
