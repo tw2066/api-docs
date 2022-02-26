@@ -59,7 +59,7 @@ class SwaggerJson
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
         //TODO 测试
-        if($className != DemoController::class){
+        if ($className != DemoController::class) {
             return;
         }
 
@@ -99,7 +99,7 @@ class SwaggerJson
         }
 
         foreach ($tags as $tag) {
-            MainCollect::setTags($tag,[
+            MainCollect::setTags($tag, [
                 'name' => $tag,
                 'position' => $apiControllerAnnotation->position,
                 'description' => $apiControllerAnnotation->description ?: $simpleClassName,
@@ -124,10 +124,10 @@ class SwaggerJson
         $routeCollect->deprecated = $isDeprecated;
         $routeCollect->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
         $routeCollect->consumeTypes = [$consumeType];
-        $routeCollect->produces =  ['*/*'];
+        $routeCollect->produces = ['*/*'];
         $routeCollect->parameters = $parameters;
-        $routeCollect->responses =  $makeResponses->generate();
-        $routeCollect->security =  $this->securityMethod();
+        $routeCollect->responses = $makeResponses->generate();
+        $routeCollect->security = $this->securityMethod();
         MainCollect::setRoutes($routeCollect);
     }
 

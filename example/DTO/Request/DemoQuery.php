@@ -1,14 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
+
 namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -48,21 +41,13 @@ class DemoQuery extends PageQuery
     #[Required]
     private int $num;
 
-    /**
-     * @return int
-     */
     public function getNum(): int
     {
         return $this->num;
     }
 
-    /**
-     * @param int $num
-     */
     public function setNum(int $num): void
     {
         $this->num = $num;
     }
-
-
 }

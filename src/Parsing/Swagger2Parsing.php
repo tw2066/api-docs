@@ -9,11 +9,9 @@ use Hyperf\ApiDocs\Collect\ResponseInfo;
 use Hyperf\ApiDocs\Collect\RouteCollect;
 use Hyperf\ApiDocs\Swagger\GenerateParameters;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
-use function Swoole\Coroutine\batch;
 
 class Swagger2Parsing implements ParsingInterface
 {
-
     use SwaggerCommon;
 
     private GenerateDefinitions $generateDefinitions;
@@ -101,16 +99,13 @@ class Swagger2Parsing implements ParsingInterface
             $tmp = [];
             $tmp['description'] = $responseInfo->description;
             $responseInfo->property && $tmp['schema'] = $this->generateDefinitions->getItems($responseInfo->property);
-            $data[(string)$responseInfo->code] = $tmp;
+            $data[(string) $responseInfo->code] = $tmp;
         }
         return $data;
     }
 
-
     /**
-     * 排序
-     * @param array $data
-     * @return array
+     * 排序.
      */
     protected function sort(array $data): array
     {

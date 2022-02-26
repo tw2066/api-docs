@@ -9,7 +9,6 @@ use Hyperf\DTO\Scan\Property;
 
 class ResponseInfo
 {
-
     public mixed $code = '200';
 
     public ?string $description = null;

@@ -19,7 +19,11 @@ use Psr\Container\ContainerInterface;
 class GenerateParameters
 {
     use SwaggerCommon;
- 
+
+    public const CONTENT_TYPE_JSON = 'CONTENT_TYPE_JSON';
+
+    public const CONTENT_TYPE_FORM = 'CONTENT_TYPE_FORM';
+
     public mixed $config;
 
     private MethodDefinitionCollectorInterface $methodDefinitionCollector;
@@ -33,11 +37,6 @@ class GenerateParameters
     private string $controller;
 
     private string $action;
-
-    const CONTENT_TYPE_JSON = 'CONTENT_TYPE_JSON';
-
-    const CONTENT_TYPE_FORM = 'CONTENT_TYPE_FORM';
-
 
     /**
      * @var ApiHeader[]
@@ -125,7 +124,7 @@ class GenerateParameters
                 }
             }
         }
-        return [array_values($parameters),$consumeType];
+        return [array_values($parameters), $consumeType];
     }
 
     /**

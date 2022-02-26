@@ -60,7 +60,7 @@ class AfterDtoStartListener implements ListenerInterface
         $mainInfo = $config->get('api_docs.swagger');
         MainCollect::setMainInfo($mainInfo);
         $parsing = new Swagger2Parsing();
-        $swagger->save($parsing->parsing(MainCollect::getMainInfo(),MainCollect::getRoutes(),MainCollect::getTags()));
+        $swagger->save($parsing->parsing(MainCollect::getMainInfo(), MainCollect::getRoutes(), MainCollect::getTags()));
 //         TODO
 //        MainCollect::clean();
         $logger->debug('swagger server:[' . $server['name'] . '] file has been generated');

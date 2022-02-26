@@ -1,14 +1,7 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of Hyperf.
- *
- * @link     https://www.hyperf.io
- * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
- */
+
 namespace HyperfExample\ApiDocs\Controller;
 
 use App\Model\Activity;
@@ -119,7 +112,7 @@ class DemoController
     #[ApiOperation('返回 obj')]
     #[GetMapping(path: 'obj')]
     #[Deprecated]
-    public function obj() : object
+    public function obj(): object
     {
         return 1;
     }

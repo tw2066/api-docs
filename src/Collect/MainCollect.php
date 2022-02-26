@@ -8,15 +8,12 @@ class MainCollect
 {
     public static array $mainInfo = [];
 
+    public static array $tags = [];
+
     /**
      * @var RouteCollect[]
      */
     private static array $routes = [];
-
-    /**
-     * @var array
-     */
-    public static array $tags = [];
 
     public static function clean(): void
     {
@@ -25,19 +22,11 @@ class MainCollect
         self::$tags = [];
     }
 
-
-
-    /**
-     * @return array
-     */
     public static function getMainInfo(): array
     {
         return self::$mainInfo;
     }
 
-    /**
-     * @param array $mainInfo
-     */
     public static function setMainInfo(array $mainInfo): void
     {
         self::$mainInfo = $mainInfo;
@@ -51,9 +40,6 @@ class MainCollect
         return self::$routes;
     }
 
-    /**
-     * @param RouteCollect $routes
-     */
     public static function setRoutes(RouteCollect $routes): void
     {
         self::$routes[] = $routes;
@@ -70,9 +56,8 @@ class MainCollect
     /**
      * @param string[] $tags
      */
-    public static function setTags(string $tagName , array $tags): void
+    public static function setTags(string $tagName, array $tags): void
     {
         self::$tags[$tagName] = $tags;
     }
-
 }

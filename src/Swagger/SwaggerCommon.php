@@ -16,9 +16,7 @@ use Throwable;
 trait SwaggerCommon
 {
     /**
-     * 获取并收集Definition
-     * @param string $className
-     * @return string
+     * 获取并收集Definition.
      */
     public function getDefinitionName(string $className): string
     {
@@ -26,9 +24,7 @@ trait SwaggerCommon
     }
 
     /**
-     * 获取简单类名
-     * @param string $className
-     * @return string
+     * 获取简单类名.
      */
     public function getSimpleClassName(string $className): string
     {
@@ -44,7 +40,7 @@ trait SwaggerCommon
             $parameterInfo->name = $reflectionProperty->getName();
             $parameterInfo->in = $in;
             try {
-                $parameterInfo->default  = $reflectionProperty->getValue(make($parameterClassName));
+                $parameterInfo->default = $reflectionProperty->getValue(make($parameterClassName));
             } catch (Throwable) {
             }
             $phpType = $this->getTypeName($reflectionProperty);
@@ -81,9 +77,7 @@ trait SwaggerCommon
     }
 
     /**
-     * 获取PHP类型
-     * @param ReflectionProperty $rp
-     * @return string
+     * 获取PHP类型.
      */
     public function getTypeName(ReflectionProperty $rp): string
     {
@@ -96,9 +90,8 @@ trait SwaggerCommon
     }
 
     /**
-     * 获取swagger类型
+     * 获取swagger类型.
      * @param $phpType
-     * @return string
      */
     public function getType2SwaggerType($phpType): string
     {
@@ -113,9 +106,7 @@ trait SwaggerCommon
     }
 
     /**
-     * 获取简单类型
-     * @param string|null $phpType
-     * @return string|null
+     * 获取简单类型.
      */
     public function getSimpleType2SwaggerType(?string $phpType): ?string
     {
@@ -129,9 +120,8 @@ trait SwaggerCommon
     }
 
     /**
-     * 判断是否为监督局类型
+     * 判断是否为监督局类型.
      * @param $type
-     * @return bool
      */
     public function isSimpleType($type): bool
     {
