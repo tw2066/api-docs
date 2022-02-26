@@ -6,34 +6,20 @@ namespace Hyperf\ApiDocs\Collect;
 
 class RouteCollect
 {
-
-    //deprecated: false
-    //description: ""
-    //operationId: "ExampleDemoAddPUT"
-    //parameters: [{in: "header", name: "apiHeader", type: "string"},…]
-    //produces: ["application/json"]
-    //responses: {200: {schema: {$ref: "#/definitions/ActivityResponse"}, description: "OK"},…}
-    //security: [{Authorization: []}, {token: []}]
-    //summary: "提交body数据和get参数"
-    //tags: ["demo管理"]
-
     public string $route;
 
     /**
-     * 请求方法
-     * @var string
+     * 请求方法.
      */
     public string $requestMethod;
 
     /**
-     * 简单类名
-     * @var string
+     * 简单类名.
      */
     public string $simpleClassName;
 
     /**
-     * 位置
-     * @var int
+     * 位置.
      */
     public int $position;
 
@@ -60,13 +46,9 @@ class RouteCollect
      */
     public array $responses = [];
 
-    public array $consumes = [];
+    public array $consumeTypes = [];
 
     public array $produces = [];
 
     public array $security = [];
-
-
-
-
 }

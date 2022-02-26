@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
-use Hyperf\ApiDocs\Collect\MainCollect;
 use Hyperf\ApiDocs\Collect\ParameterInfo;
-use Hyperf\Database\Model\Model;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
-use Hyperf\DTO\Scan\PropertyManager;
-use Hyperf\Utils\ApplicationContext;
 use ReflectionProperty;
 use Throwable;
 
-class SwaggerCommon
+trait SwaggerCommon
 {
     /**
      * 获取并收集Definition
@@ -29,6 +25,11 @@ class SwaggerCommon
         return '#/definitions/' . $this->getSimpleClassName($className);
     }
 
+    /**
+     * 获取简单类名
+     * @param string $className
+     * @return string
+     */
     public function getSimpleClassName(string $className): string
     {
         return SwaggerJson::getSimpleClassName($className);
@@ -39,23 +40,15 @@ class SwaggerCommon
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
-
             $parameterInfo = new ParameterInfo();
             $parameterInfo->name = $reflectionProperty->getName();
             $parameterInfo->in = $in;
-
-//            $property = [];
-//            $property['in'] = $in;
-//            $property['name'] = $reflectionProperty->getName();
             try {
-//                $property['default'] = $reflectionProperty->getValue(make($parameterClassName));
                 $parameterInfo->default  = $reflectionProperty->getValue(make($parameterClassName));
             } catch (Throwable) {
             }
             $phpType = $this->getTypeName($reflectionProperty);
-//            $property['type'] = $this->getType2SwaggerType($phpType);
             $parameterInfo->type = $this->getType2SwaggerType($phpType);
-            $parameterInfo->phpType = $phpType;
             if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
@@ -69,22 +62,17 @@ class SwaggerCommon
                 continue;
             }
             if (! empty($inAnnotation)) {
-//                $property['enum'] = $inAnnotation->getValue();
                 $parameterInfo->enum = $inAnnotation->getValue();
             }
             if ($apiModelProperty->required !== null) {
-//                $property['required'] = $apiModelProperty->required;
                 $parameterInfo->required = $apiModelProperty->required;
             }
             if ($requiredAnnotation !== null) {
-//                $property['required'] = true;
                 $parameterInfo->required = true;
             }
             if ($apiModelProperty->example !== null) {
-//                $property['example'] = $apiModelProperty->example;
                 $parameterInfo->example = $apiModelProperty->example;
             }
-//            $property['description'] = $apiModelProperty->value ?? '';
             $parameterInfo->summary = $apiModelProperty->summary ?? '';
             $parameterInfo->description = $apiModelProperty->value ?? '';
             $parameters[] = $parameterInfo;
@@ -92,6 +80,11 @@ class SwaggerCommon
         return $parameters;
     }
 
+    /**
+     * 获取PHP类型
+     * @param ReflectionProperty $rp
+     * @return string
+     */
     public function getTypeName(ReflectionProperty $rp): string
     {
         try {
@@ -102,6 +95,11 @@ class SwaggerCommon
         return $type;
     }
 
+    /**
+     * 获取swagger类型
+     * @param $phpType
+     * @return string
+     */
     public function getType2SwaggerType($phpType): string
     {
         return match ($phpType) {
@@ -114,6 +112,11 @@ class SwaggerCommon
         };
     }
 
+    /**
+     * 获取简单类型
+     * @param string|null $phpType
+     * @return string|null
+     */
     public function getSimpleType2SwaggerType(?string $phpType): ?string
     {
         return match ($phpType) {
@@ -125,76 +128,11 @@ class SwaggerCommon
         };
     }
 
-    public function generateClass2schema(string $className): void
-    {
-        if (! ApplicationContext::getContainer()->has($className)) {
-            $this->generateEmptySchema($className);
-            return;
-        }
-        $obj = ApplicationContext::getContainer()->get($className);
-        if ($obj instanceof Model) {
-            //$this->getModelSchema($obj);
-            $this->generateEmptySchema($className);
-            return;
-        }
-
-        $schema = [
-            'type' => 'object',
-            'properties' => [],
-        ];
-        $rc = ReflectionManager::reflectClass($className);
-        foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
-            $fieldName = $reflectionProperty->getName();
-            $propertyClass = PropertyManager::getProperty($className, $fieldName);
-            $phpType = $propertyClass->phpType;
-            $type = $this->getType2SwaggerType($phpType);
-            $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
-            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($className, $reflectionProperty->getName(), In::class);
-
-            if ($apiModelProperty->hidden) {
-                continue;
-            }
-            $property = [];
-            $property['type'] = $type;
-            if (! empty($inAnnotation)) {
-                $property['enum'] = $inAnnotation->getValue();
-            }
-            $property['description'] = $apiModelProperty->value ?? '';
-            if ($apiModelProperty->required !== null) {
-                $property['required'] = $apiModelProperty->required;
-            }
-            if ($apiModelProperty->example !== null) {
-                $property['example'] = $apiModelProperty->example;
-            }
-            if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
-                $property['default'] = $reflectionProperty->getValue($obj);
-            }
-            if ($phpType == 'array') {
-                if ($propertyClass->className == null) {
-                    $property['items'] = (object) [];
-                } else {
-                    if ($propertyClass->isSimpleType) {
-                        $property['items']['type'] = $this->getType2SwaggerType($propertyClass->className);
-                    } else {
-                        $this->generateClass2schema($propertyClass->className);
-                        $property['items']['$ref'] = $this->getDefinitionName($propertyClass->className);
-                    }
-                }
-            }
-            if ($type == 'object') {
-                $property['items'] = (object) [];
-            }
-            if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
-                $this->generateClass2schema($propertyClass->className);
-                $property['$ref'] = $this->getDefinitionName($propertyClass->className);
-            }
-            $schema['properties'][$fieldName] = $property;
-        }
-        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
-    }
-
+    /**
+     * 判断是否为监督局类型
+     * @param $type
+     * @return bool
+     */
     public function isSimpleType($type): bool
     {
         return $type == 'string'
@@ -202,20 +140,5 @@ class SwaggerCommon
             || $type == 'integer' || $type == 'int'
             || $type == 'double' || $type == 'float'
             || $type == 'array' || $type == 'object';
-    }
-
-    public function generateEmptySchema(string $className)
-    {
-        return [
-            'type' => 'object',
-            'properties' => [],
-        ];
-//        SwaggerJson::$swagger['definitions'][$this->getSimpleClassName($className)] = $schema;
-    }
-
-    protected function getModelSchema(object $model)
-    {
-        //$reflect = new ReflectionObject($model);
-        //$docComment = $reflect->getDocComment();
     }
 }

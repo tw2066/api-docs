@@ -8,31 +8,13 @@ use Hyperf\DTO\Scan\Property;
 
 class ParameterInfo
 {
-
-    //{
-    //  "name": "token",
-    //  "in": "header",
-    //  "description": "token to be passed as a header",
-    //  "required": true,
-    //  "schema": {
-    //    "type": "array",
-    //    "items": {
-    //      "type": "integer",
-    //      "format": "int64"
-    //    }
-    //  },
-    //  "style": "simple"
-    //}
-
-
-
     public string $name;
 
     public string $in;
 
     public ?string $description = null;
 
-    public ?bool $required= null;
+    public ?bool $required = null;
 
     public ?string $type = null;
 
@@ -44,10 +26,5 @@ class ParameterInfo
 
     public ?array $enum = null;
 
-
-
     public ?Property $property = null;
-
-
-
 }

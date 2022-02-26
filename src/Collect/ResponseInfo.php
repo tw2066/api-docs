@@ -4,27 +4,35 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Collect;
 
+use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\DTO\Scan\Property;
 
 class ResponseInfo
 {
-    //responses: {200: {schema: {$ref: "#/definitions/ActivityResponse"}, description: "OK"},…}
-    //200: {schema: {$ref: "#/definitions/ActivityResponse"}, description: "OK"}
-    //description: "OK"
-    //schema: {$ref: "#/definitions/ActivityResponse"}
-    //$ref: "#/definitions/ActivityResponse"
 
-    public string $httpCode = '200';
+    public mixed $code = '200';
 
     public ?string $description = null;
 
+    public ?Property $property = null;
 
-
-    public Property $property;
-
-
-//    public ?Schema $schema = null;
-
-
-
+    public static function form(ApiResponse $apiResponse): ResponseInfo
+    {
+        $responseInfo = new ResponseInfo();
+        $responseInfo->code = $apiResponse->code;
+        $responseInfo->description = $apiResponse->description;
+        $className = $apiResponse->className;
+        $type = $apiResponse->type;
+        if (! empty($className) || ! empty($type)) {
+            $property = new Property();
+            $property->isSimpleType = true;
+            $property->phpType = $type;
+            $property->className = $className;
+            if (class_exists($className)) {
+                $property->isSimpleType = false;
+            }
+            $responseInfo->property = $property;
+        }
+        return $responseInfo;
+    }
 }

@@ -6,22 +6,20 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\ApiDocs\Collect\ResponseInfo;
-use Hyperf\ApiDocs\Collect\Schema;
-use Hyperf\ApiDocs\Collect\SchemaItems;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Scan\Property;
-use Hyperf\DTO\Scan\ScanAnnotation;
 use Hyperf\Utils\ApplicationContext;
+use Hyperf\Utils\Arr;
 use Psr\Container\ContainerInterface;
 
 class GenerateResponses
 {
+    use SwaggerCommon;
+
     private string $className;
 
     private string $methodName;
-
-    private SwaggerCommon $common;
 
     private MethodDefinitionCollectorInterface $methodDefinitionCollector;
 
@@ -39,7 +37,6 @@ class GenerateResponses
         $this->methodName = $methodName;
         $this->config = $config;
         $this->apiResponseArr = $apiResponseArr;
-        $this->common = new SwaggerCommon();
     }
 
     public function generate(): array
@@ -48,139 +45,57 @@ class GenerateResponses
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
         $code = $this->config['responses_code'] ?? 200;
-//        $resp[$code] = $this->getSchema($returnTypeClassName);
-//        $resp[$code]['description'] = 'OK';
-
-        //TODO 处理
-//        $globalResp = $this->getGlobalResp();
-//        $AnnotationResp = $this->getAnnotationResp();
-
+        $globalResp = $this->getGlobalResp();
+        $annotationResp = $this->getAnnotationResp();
         $arr = [];
-//        $responseInfo = new ResponseInfo();
-//        $responseInfo->httpCode = (string)$code;
-
-//        $responseInfo->schema = $this->getSchema($returnTypeClassName);
-
         $responseInfo = $this->getResponseInfo($returnTypeClassName);
-        $responseInfo->httpCode = (string)$code;
+        $responseInfo->code = $code;
         $responseInfo->description = 'OK';
         $arr[] = $responseInfo;
-//        dd($responseInfo);
-//        $arr[] = $globalResp;
-//        $arr[] = $AnnotationResp;
-
+        $annotationResp && $arr = Arr::merge($arr, $annotationResp);
+        $globalResp && $arr = Arr::merge($arr, $globalResp);
         return $arr;
     }
+
     private function getResponseInfo(string $returnTypeClassName): ResponseInfo
     {
-
         $responseInfo = new ResponseInfo();
-//        $schema = [];
-//        $schema = new Schema();
-//        $schemaItems = new SchemaItems();
-
-
         $property = new Property();
-
         $property->isSimpleType = true;
-        if ($this->common->isSimpleType($returnTypeClassName)) {
-
-
+        if ($this->isSimpleType($returnTypeClassName)) {
             $property->phpType = $returnTypeClassName;
-
-
-//            $type = $this->common->getType2SwaggerType($returnTypeClassName);
-//            if ($type == 'array') {
-//                $responseInfo->type = 'array';
-////                $schema['schema']['items'] = (object) [];
-//            }
-//            if ($type == 'object') {
-//                $responseInfo->type = 'object';
-////                $schema['schema']['items'] = (object) [];
-//            }
-////            $schema['schema']['type'] = $type;
-
-//            $responseInfo->type = $type;
-//            $schemaItems->type = $type;
-//            $schema->items = $schemaItems;
         } elseif ($this->container->has($returnTypeClassName)) {
             $property->isSimpleType = false;
             $property->className = $returnTypeClassName;
-//            $this->common->generateClass2schema($returnTypeClassName);
-//            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
-
-//            $schema->type = 'object';
-//
-//
-//            $schemaItems->ref = $this->common->getDefinitions($returnTypeClassName);
-//            $schema->items = $schemaItems;
         }
         $responseInfo->property = $property;
         return $responseInfo;
-    }
-
-
-    private function getSchema2($returnTypeClassName): Schema
-    {
-//        $schema = [];
-        $schema = new Schema();
-        $schemaItems = new SchemaItems();
-        if ($this->common->isSimpleType($returnTypeClassName)) {
-            $type = $this->common->getType2SwaggerType($returnTypeClassName);
-            if ($type == 'array') {
-                $schema->type = 'array';
-//                $schema['schema']['items'] = (object) [];
-            }
-            if ($type == 'object') {
-                $schema->type = 'object';
-//                $schema['schema']['items'] = (object) [];
-            }
-//            $schema['schema']['type'] = $type;
-            //TODO ???
-            $schema->type = $type;
-//            $schemaItems->type = $type;
-//            $schema->items = $schemaItems;
-        } elseif ($this->container->has($returnTypeClassName)) {
-//            $this->common->generateClass2schema($returnTypeClassName);
-//            $schema['schema']['$ref'] = $this->common->getDefinitions($returnTypeClassName);
-
-            $schema->type = 'object';
-
-
-            $schemaItems->ref = $this->common->getDefinitionName($returnTypeClassName);
-            $schema->items = $schemaItems;
-        }
-        return $schema;
     }
 
     private function getGlobalResp(): array
     {
         $resp = [];
         foreach ($this->config['responses'] as $code => $value) {
-            isset($value['className']) && $resp[$code] = $this->getSchema($value['className']);
-            $resp[$code]['description'] = $value['description'];
+            $apiResponse = new ApiResponse();
+            $apiResponse->code = (string) $code;
+            $apiResponse->description = $value['description'];
+            ! empty($value['type']) && $apiResponse->type = $value['type'];
+            ! empty($value['className']) && $apiResponse->className = $value['className'];
+            $resp[] = ResponseInfo::form($apiResponse);
         }
         return $resp;
     }
 
+    /**
+     * 获取注解上的信息.
+     * @return ResponseInfo[]
+     */
     private function getAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {
-            if ($apiResponse->className) {
-                $scanAnnotation = $this->container->get(ScanAnnotation::class);
-                $scanAnnotation->scanClass($apiResponse->className);
-                $this->getSchema($apiResponse->className);
-                if (! empty($apiResponse->type)) {
-                    $schema['schema']['type'] = $apiResponse->type;
-                    $schema['schema']['items']['$ref'] = $this->getSchema($apiResponse->className)['schema']['$ref'];
-                    $resp[$apiResponse->code] = $schema;
-                } else {
-                    $resp[$apiResponse->code] = $this->getSchema($apiResponse->className);
-                }
-            }
-            $resp[$apiResponse->code]['description'] = $apiResponse->description;
+            $resp[] = ResponseInfo::form($apiResponse);
         }
         return $resp;
     }

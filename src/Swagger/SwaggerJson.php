@@ -63,8 +63,6 @@ class SwaggerJson
             return;
         }
 
-
-
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
@@ -101,11 +99,6 @@ class SwaggerJson
         }
 
         foreach ($tags as $tag) {
-//            self::$swagger['tags'][$tag] = [
-//                'name' => $tag,
-//                'position' => $apiControllerAnnotation->position,
-//                'description' => $apiControllerAnnotation->description ?: $simpleClassName,
-//            ];
             MainCollect::setTags($tag,[
                 'name' => $tag,
                 'position' => $apiControllerAnnotation->position,
@@ -118,8 +111,7 @@ class SwaggerJson
         $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
         self::$swagger['paths'][$route]['position'] = $position;
 
-
-        [$parameters ,$consumes] = $makeParameters->generate();
+        [$parameters ,$consumeType] = $makeParameters->generate();
 
         $routeCollect = new RouteCollect();
         $routeCollect->route = $route;
@@ -131,118 +123,13 @@ class SwaggerJson
         $routeCollect->description = $apiOperation->description ?? '';
         $routeCollect->deprecated = $isDeprecated;
         $routeCollect->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
-        $routeCollect->consumes = $consumes;
+        $routeCollect->consumeTypes = [$consumeType];
         $routeCollect->produces =  ['*/*'];
         $routeCollect->parameters = $parameters;
         $routeCollect->responses =  $makeResponses->generate();
         $routeCollect->security =  $this->securityMethod();
-
-
         MainCollect::setRoutes($routeCollect);
-
-//        dd(MainCollect::getDefinitions(),MainCollect::getRoutes(),MainCollect::getTags());
-//
-//
-//
-//
-//        self::$swagger['paths'][$route][$method] = [
-//            'tags' => $tags,
-//            'summary' => $apiOperation->summary ?? '',
-//            'description' => $apiOperation->description ?? '',
-//            'deprecated' => $isDeprecated,
-//            'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
-//            'parameters' => $parameters,
-//            'consumes' => $consumes,
-//            'produces' => [
-//                '*/*',
-//            ],
-//            'responses' => $makeResponses->generate(),
-//            'security' => $this->securityMethod(),
-//        ];
     }
-
-    /**
-     * 增加一条路由.
-     */
-//    public function addPath2(string $className, string $methodName, string $route, string $methods)
-//    {
-//        //TODO 测试
-//        if($className != DemoController::class){
-//            return;
-//        }
-//
-//        $routeCollect = new RouteCollect();
-//        $routeCollect->route = $route;
-//
-//
-//
-//
-//
-//
-//        $position = $this->getMethodNamePosition($className, $methodName);
-//        $classAnnotation = ApiAnnotation::classMetadata($className);
-//        /** @var Api $apiControllerAnnotation */
-//        $apiControllerAnnotation = $classAnnotation[Api::class] ?? new Api();
-//        if ($apiControllerAnnotation->hidden) {
-//            return;
-//        }
-//
-//        $apiHeaderControllerAnnotation = isset($classAnnotation[ApiHeader::class]) ? $classAnnotation[ApiHeader::class]->toAnnotations() : [];
-//        //AutoController Validation POST
-//        $autoControllerAnnotation = $classAnnotation[AutoController::class] ?? null;
-//        if ($autoControllerAnnotation && $methods != 'POST') {
-//            return;
-//        }
-//        $methodAnnotations = AnnotationCollector::getClassMethodAnnotation($className, $methodName);
-//        $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
-//        if ($apiOperation->hidden) {
-//            return;
-//        }
-//
-//        $apiHeaderArr = isset($methodAnnotations[ApiHeader::class]) ? $methodAnnotations[ApiHeader::class]->toAnnotations() : [];
-//        $apiHeaderArr = array_merge($apiHeaderControllerAnnotation, $apiHeaderArr);
-//        $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
-//        $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
-//        $isDeprecated = isset($methodAnnotations[Deprecated::class]);
-//
-//        $simpleClassName = static::getSimpleClassName($className);
-//        if (is_array($apiControllerAnnotation->tags)) {
-//            $tags = $apiControllerAnnotation->tags;
-//        } elseif (! empty($apiControllerAnnotation->tags) && is_string($apiControllerAnnotation->tags)) {
-//            $tags = [$apiControllerAnnotation->tags];
-//        } else {
-//            $tags = [$simpleClassName];
-//        }
-//
-//        foreach ($tags as $tag) {
-//            self::$swagger['tags'][$tag] = [
-//                'name' => $tag,
-//                'position' => $apiControllerAnnotation->position,
-//                'description' => $apiControllerAnnotation->description ?: $simpleClassName,
-//            ];
-//        }
-//
-//        $method = strtolower($methods);
-//        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-//        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
-//        self::$swagger['paths'][$route]['position'] = $position;
-//
-//        [$parameters ,$consumes] = $makeParameters->generate();
-//        self::$swagger['paths'][$route][$method] = [
-//            'tags' => $tags,
-//            'summary' => $apiOperation->summary ?? '',
-//            'description' => $apiOperation->description ?? '',
-//            'deprecated' => $isDeprecated,
-//            'operationId' => implode('', array_map('ucfirst', explode('/', $route))) . $methods,
-//            'parameters' => $parameters,
-//            'consumes' => $consumes,
-//            'produces' => [
-//                '*/*',
-//            ],
-//            'responses' => $makeResponses->generate(),
-//            'security' => $this->securityMethod(),
-//        ];
-//    }
 
     /**
      * 获得简单类名.
@@ -266,10 +153,10 @@ class SwaggerJson
     /**
      * 保存.
      */
-    public function save($swagger): string
+    public function save(array $swagger): string
     {
         //TODO
-        $swagger = $this->sort($swagger);
+//        $swagger = $this->sort($swagger);
         $outputDir = $this->config->get('api_docs.output_dir');
         if (! $outputDir) {
             $this->stdoutLogger->error('/config/autoload/api_docs.php need set output_dir');
@@ -359,26 +246,5 @@ class SwaggerJson
             }
         }
         file_put_contents($file, $content);
-    }
-
-    /**
-     * sort.
-     */
-    private function sort(array $data): array
-    {
-        $data['tags'] = collect($data['tags'] ?? [])
-            ->sortByDesc('position')
-            ->map(function ($item) {
-                return collect($item)->except('position');
-            })
-            ->values()
-            ->toArray();
-        $data['paths'] = collect($data['paths'] ?? [])
-            ->sortBy('position')
-            ->map(function ($item) {
-                return collect($item)->except('position');
-            })
-            ->toArray();
-        return $data;
     }
 }

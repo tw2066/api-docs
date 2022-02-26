@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hyperf\ApiDocs\Parsing;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -12,19 +14,16 @@ use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
-use HyperfExample\ApiDocs\DTO\Response\ActivityPage;
 
 class GenerateDefinitions
 {
+    use SwaggerCommon;
 
     protected static array $definitions;
 
-    private SwaggerCommon $swaggerCommon;
-
-    public function __construct(SwaggerCommon $swaggerCommon)
+    public function __construct()
     {
         static::$definitions = [];
-        $this->swaggerCommon = $swaggerCommon;
     }
 
     public function getDefinitions(): array
@@ -36,46 +35,43 @@ class GenerateDefinitions
 
     public function getItems(Property $property): array
     {
-//
-//        $phpType = $property->phpType;
         $items = [];
-        $swaggerType = $this->swaggerCommon->getType2SwaggerType($property->phpType);
+        $swaggerType = $this->getType2SwaggerType($property->phpType);
         $className = $property->className;
-
         //简单类型
-        if($property->isSimpleType){
+        if ($property->isSimpleType) {
             $items['type'] = $swaggerType;
-            if($swaggerType == 'array'){
+            if ($swaggerType == 'array') {
                 $items['items']['type'] = 'string';
             }
             return $items;
         }
 
-        if($swaggerType == 'array'){
+        if ($swaggerType == 'array') {
             $items['type'] = 'array';
-            if(!empty($className)){
-                $items['items']['$ref'] = $this->swaggerCommon->getDefinitionName($className);
+            if (! empty($className)) {
+                if (class_exists($className)) {
+                    $items['items']['$ref'] = $this->getDefinitionName($className);
+                    $this->generateClass2Definition($className);
+                } else {
+                    $items['items']['type'] = $this->getType2SwaggerType($className);
+                }
             }
-            if(!empty($property->arrayType)){
-                $items['items']['type'] = $swaggerType;
-            }
-            $this->generateClass2Schema($className);
-        }else if(!empty($className)){
-            $items['$ref'] = $this->swaggerCommon->getDefinitionName($className);
-            $this->generateClass2Schema($className);
+        } elseif (! empty($className) && class_exists($className)) {
+            $items['$ref'] = $this->getDefinitionName($className);
+            $this->generateClass2Definition($className);
         }
-
         return $items;
     }
 
-    public function generateClass2Schema(string $className): void
+    public function generateClass2Definition(string $className): void
     {
         //generateDefinitions
         $schema = [
             'type' => 'object',
             'properties' => [],
         ];
-        $simpleClassName = $this->swaggerCommon->getSimpleClassName($className);
+        $simpleClassName = $this->getSimpleClassName($className);
         if (! ApplicationContext::getContainer()->has($className)) {
             static::$definitions[$simpleClassName] = $schema;
             return;
@@ -89,11 +85,8 @@ class GenerateDefinitions
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
-//            dd(        ActivityPage::class,'content',
-//            PropertyManager::getProperty(ActivityPage::class, 'content')
-//            );
             $phpType = $propertyClass->phpType;
-            $type = $this->swaggerCommon->getType2SwaggerType($phpType);
+            $type = $this->getType2SwaggerType($phpType);
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
             /** @var In $inAnnotation */
@@ -112,45 +105,15 @@ class GenerateDefinitions
                 $property['required'] = $apiModelProperty->required;
             }
             if ($apiModelProperty->example !== null) {
-                //todo delete ???
                 $property['example'] = $apiModelProperty->example;
             }
             if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
                 $property['default'] = $reflectionProperty->getValue($obj);
             }
-
-
-
-//            if ($phpType == 'array') {
-//                if ($propertyClass->className == null) {
-//                    $property['items'] = (object) [];
-//                } else {
-//                    if ($propertyClass->isSimpleType) {
-//                        $property['items']['type'] = $this->swaggerCommon->getType2SwaggerType($propertyClass->className);
-//                    } else {
-//                        $this->generateClass2Schema($propertyClass->className);
-//                        $property['items']['$ref'] = $this->swaggerCommon->getDefinitionName($propertyClass->className);
-//                    }
-//                }
-//            }
-//
-//
-//            if ($type == 'object') {
-//                $property['items'] = (object) [];
-//            }
-//            if (! $propertyClass->isSimpleType && $phpType != 'array' && class_exists($propertyClass->className)) {
-//                $this->generateClass2Schema($propertyClass->className);
-//                $property['$ref'] = $this->swaggerCommon->getDefinitionName($propertyClass->className);
-//            }
-//            if(!$propertyClass->isSimpleType){
-//
-//            }
             $items = $this->getItems($propertyClass);
-            $property = Arr::merge($property,$items);
+            $property = Arr::merge($property, $items);
             $schema['properties'][$fieldName] = $property;
         }
         static::$definitions[$simpleClassName] = $schema;
     }
-
-
 }

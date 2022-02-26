@@ -18,20 +18,12 @@ class MainCollect
      */
     public static array $tags = [];
 
-    private static array $definitionClass = [];
-
-
-
-
     public static function clean(): void
     {
         self::$mainInfo = [];
         self::$routes = [];
         self::$tags = [];
-        self::$definitionClass = [];
     }
-
-
 
 
 
@@ -83,22 +75,4 @@ class MainCollect
         self::$tags[$tagName] = $tags;
     }
 
-
-
-
-    /**
-     * @return array
-     */
-    public static function getDefinitionClass(): array
-    {
-        return self::$definitionClass;
-    }
-
-    /**
-     * @param string
-     */
-    public static function setDefinitionClass(string $classname): void
-    {
-        self::$definitionClass[] = $classname;
-    }
 }

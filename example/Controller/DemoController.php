@@ -43,7 +43,7 @@ use JetBrains\PhpStorm\Deprecated;
 #[ApiHeader('apiHeader')]
 class DemoController
 {
-    #[ApiOperation('查询')]
+    #[ApiOperation('查询:1')]
     #[PostMapping(path: 'query')]
     public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
     {
@@ -51,7 +51,7 @@ class DemoController
         return new Contact();
     }
 
-    #[ApiOperation('提交body数据和get参数')]
+    #[ApiOperation('提交body数据和get参数:2')]
     #[PutMapping(path: 'add')]
     public function add(#[RequestBody] #[Valid] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query): ActivityResponse
     {
@@ -60,7 +60,7 @@ class DemoController
         return new ActivityResponse();
     }
 
-    #[ApiOperation('表单提交')]
+    #[ApiOperation('表单提交:3')]
     #[PostMapping(path: 'fromData')]
     #[ApiFormData(name: 'photo', type: 'file')]
     #[ApiFormData(name: 'photo2', type: 'file')]
@@ -74,7 +74,7 @@ class DemoController
         return [new Address()];
     }
 
-    #[ApiOperation('查询单体记录')]
+    #[ApiOperation('查询单体记录:4')]
     #[GetMapping(path: 'find/{id}/and/{in}')]
     #[ApiHeader('test2')]
     public function find(int $id, float $in): array
@@ -82,7 +82,7 @@ class DemoController
         return ['$id' => $id, '$in' => $in];
     }
 
-    #[ApiOperation('分页')]
+    #[ApiOperation('分页:5')]
     #[GetMapping(path: 'page')]
     public function page(#[RequestQuery] PageQuery $pageQuery): ActivityPage
     {
@@ -94,25 +94,33 @@ class DemoController
         return ActivityPage::from($model);
     }
 
-    #[ApiOperation('更新')]
+    #[ApiOperation('更新:6')]
     #[PutMapping(path: 'update/{id}')]
     public function update(int $id): int
     {
         return $id;
     }
 
-    #[ApiOperation('删除')]
+    #[ApiOperation('删除:7')]
     #[DeleteMapping(path: 'delete/{id}')]
     public function delete(int $id): int
     {
         return $id;
     }
 
-    #[ApiOperation('patch方法')]
+    #[ApiOperation('patch方法:8')]
     #[PatchMapping(path: 'patch/{id}')]
     #[Deprecated]
     public function patch(int $id)
     {
         return 55;
+    }
+
+    #[ApiOperation('返回 obj')]
+    #[GetMapping(path: 'obj')]
+    #[Deprecated]
+    public function obj() : object
+    {
+        return 1;
     }
 }
