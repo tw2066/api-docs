@@ -39,6 +39,9 @@ class GenerateResponses
         $this->apiResponseArr = $apiResponseArr;
     }
 
+    /**
+     * 生成Response.
+     */
     public function generate(): array
     {
         /** @var ReflectionType $definitions */
@@ -57,14 +60,17 @@ class GenerateResponses
         return $arr;
     }
 
-    private function getResponseInfo(string $returnTypeClassName): ResponseInfo
+    /**
+     * 获取返回类型的Response.
+     */
+    protected function getResponseInfo(string $returnTypeClassName): ResponseInfo
     {
         $responseInfo = new ResponseInfo();
         $property = new Property();
         $property->isSimpleType = true;
         if ($this->isSimpleType($returnTypeClassName)) {
-            $property->phpType = $returnTypeClassName;
-        } elseif ($this->container->has($returnTypeClassName)) {
+            $property->phpSimpleType = $returnTypeClassName;
+        } elseif (class_exists($returnTypeClassName)) {
             $property->isSimpleType = false;
             $property->className = $returnTypeClassName;
         }
@@ -72,13 +78,16 @@ class GenerateResponses
         return $responseInfo;
     }
 
-    private function getGlobalResp(): array
+    /**
+     * 获得全局Response.
+     */
+    protected function getGlobalResp(): array
     {
         $resp = [];
         foreach ($this->config['responses'] as $code => $value) {
             $apiResponse = new ApiResponse();
             $apiResponse->code = (string) $code;
-            $apiResponse->description = $value['description'];
+            $apiResponse->description = $value['description'] ?? null;
             ! empty($value['type']) && $apiResponse->type = $value['type'];
             ! empty($value['className']) && $apiResponse->className = $value['className'];
             $resp[] = ResponseInfo::form($apiResponse);
@@ -87,10 +96,10 @@ class GenerateResponses
     }
 
     /**
-     * 获取注解上的信息.
+     * 获取注解上的Response.
      * @return ResponseInfo[]
      */
-    private function getAnnotationResp(): array
+    protected function getAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */

@@ -49,7 +49,7 @@ class DemoController
     public function add(#[RequestBody] #[Valid] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query): ActivityResponse
     {
         dump($request);
-        var_dump($query);
+        dump($query);
         return new ActivityResponse();
     }
 
@@ -58,13 +58,15 @@ class DemoController
     #[ApiFormData(name: 'photo', type: 'file')]
     #[ApiFormData(name: 'photo2', type: 'file')]
     #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
-    #[ApiResponse(code: '201', description: 'success', className: Address::class, type: 'array')]
-    public function fromData(#[RequestFormData] DemoFormData $formData): array
+    #[ApiResponse(code: '201', className: Address::class)]
+    #[ApiResponse(code: '2000', description: 'success', type: 'int')]
+    #[ApiResponse(code: '2001', type: 'bool')]
+    public function fromData(#[RequestFormData] DemoFormData $formData): object
     {
 //        $file = $this->request->file('photo');
 //        var_dump($file);
         var_dump($formData);
-        return [new Address()];
+        return new Address();
     }
 
     #[ApiOperation('查询单体记录:4')]

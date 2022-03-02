@@ -9,6 +9,7 @@ use Hyperf\ApiDocs\Collect\ResponseInfo;
 use Hyperf\ApiDocs\Collect\RouteCollect;
 use Hyperf\ApiDocs\Swagger\GenerateParameters;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
+use Hyperf\ApiDocs\Parsing\Swagger2\GenerateDefinitions;
 
 class Swagger2Parsing implements ParsingInterface
 {
@@ -49,7 +50,7 @@ class Swagger2Parsing implements ParsingInterface
         return $this->sort($swagger);
     }
 
-    protected function getConsumes(array $consumeTypes)
+    protected function getConsumes(array $consumeTypes): array
     {
         $consumes = [];
         foreach ($consumeTypes as $consumeType) {

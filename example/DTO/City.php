@@ -6,5 +6,5 @@ namespace HyperfExample\ApiDocs\DTO;
 
 class City
 {
-    public string $cityName;
+    public string $cityName0;
 }

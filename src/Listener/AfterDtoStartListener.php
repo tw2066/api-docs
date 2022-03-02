@@ -6,6 +6,7 @@ namespace Hyperf\ApiDocs\Listener;
 
 use Closure;
 use Hyperf\ApiDocs\Collect\MainCollect;
+use Hyperf\ApiDocs\Parsing\ParsingInterface;
 use Hyperf\ApiDocs\Parsing\Swagger2Parsing;
 use Hyperf\ApiDocs\Swagger\SwaggerJson;
 use Hyperf\Contract\ConfigInterface;
@@ -59,11 +60,23 @@ class AfterDtoStartListener implements ListenerInterface
         }
         $mainInfo = $config->get('api_docs.swagger');
         MainCollect::setMainInfo($mainInfo);
-        $parsing = new Swagger2Parsing();
+        $parsing = $this->getParsing($config->get('api_docs.default_parsing', ''));
         $swagger->save($parsing->parsing(MainCollect::getMainInfo(), MainCollect::getRoutes(), MainCollect::getTags()));
-//         TODO
-//        MainCollect::clean();
+        if (! $config->get('api_docs.is_debug', false)) {
+            MainCollect::clean();
+        }
         $logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
+    }
+
+    /**
+     * 获取解析器.
+     */
+    public function getParsing(string $defaultParsing = ''): ParsingInterface
+    {
+        if (empty($defaultParsing) || class_exists($defaultParsing)) {
+            $defaultParsing = Swagger2Parsing::class;
+        }
+        return make($defaultParsing);
     }
 
     protected function prepareHandler($handler): array

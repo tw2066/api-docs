@@ -19,7 +19,7 @@
   ],
   "require": {
     "php": ">=8.0",
-    "tangwei/dto": "~1.0.0"
+    "tangwei/dto": "~2.0.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.0",
@@ -43,7 +43,7 @@
       "config": "Hyperf\\ApiDocs\\ConfigProvider"
     },
     "branch-alias": {
-      "dev-master": "1.0.x-dev"
+      "dev-master": "2.0.x-dev"
     }
   },
   "config": {

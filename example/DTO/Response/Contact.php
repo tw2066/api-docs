@@ -14,6 +14,12 @@ class Contact
     #[ApiModelProperty('年龄')]
     public ?int $age = null;
 
+    #[ApiModelProperty('城市')]
+    public ?City $city = null;
+
+    #[ApiModelProperty('城市1')]
+    public ?City1 $city1 = null;
+
     /**
      * 需要绝对路径.
      * @var \HyperfExample\ApiDocs\DTO\Address[]

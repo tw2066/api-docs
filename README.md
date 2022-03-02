@@ -222,13 +222,12 @@ class Image extends BaseValidation
 
 ```php
     /**
-     * 需要绝对路径.
+     * 映射数组.
      * @var \App\DTO\Address[]
      */
     #[ApiModelProperty('地址')]
     public array $addressArr;
 ```
-- 映射数组类时,`@var`需要写绝对路径
 - 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)

@@ -69,7 +69,6 @@ trait SwaggerCommon
             if ($apiModelProperty->example !== null) {
                 $parameterInfo->example = $apiModelProperty->example;
             }
-            $parameterInfo->summary = $apiModelProperty->summary ?? '';
             $parameterInfo->description = $apiModelProperty->value ?? '';
             $parameters[] = $parameterInfo;
         }
@@ -92,6 +91,7 @@ trait SwaggerCommon
     /**
      * 获取swagger类型.
      * @param $phpType
+     * @return string
      */
     public function getType2SwaggerType($phpType): string
     {
@@ -106,7 +106,7 @@ trait SwaggerCommon
     }
 
     /**
-     * 获取简单类型.
+     * 获取SwaggerType类型.
      */
     public function getSimpleType2SwaggerType(?string $phpType): ?string
     {
@@ -120,8 +120,9 @@ trait SwaggerCommon
     }
 
     /**
-     * 判断是否为监督局类型.
+     * 判断是否为简单类型.
      * @param $type
+     * @return bool
      */
     public function isSimpleType($type): bool
     {

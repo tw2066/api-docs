@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Collect;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\DTO\DtoCommon;
 use Hyperf\DTO\Scan\Property;
 
 class ResponseInfo
 {
+    use DtoCommon;
+
     public mixed $code = '200';
 
     public ?string $description = null;
@@ -22,14 +25,26 @@ class ResponseInfo
         $responseInfo->description = $apiResponse->description;
         $className = $apiResponse->className;
         $type = $apiResponse->type;
-        if (! empty($className) || ! empty($type)) {
-            $property = new Property();
-            $property->isSimpleType = true;
-            $property->phpType = $type;
-            $property->className = $className;
-            if (class_exists($className)) {
-                $property->isSimpleType = false;
+
+        $property = new Property();
+        //存在type && 简单类型
+        if (! empty($type) && static::isSimpleType($type)) {
+            $property->phpSimpleType = $type;
+            //判断是数组
+            if ($type == 'array' && ! empty($className)) {
+                if (class_exists($className)) {
+                    $property->isSimpleType = false;
+                    $property->arrClassName = $className;
+                }
+                if (static::isSimpleType($className)) {
+                    $property->isSimpleType = false;
+                    $property->arrSimpleType = $className;
+                }
             }
+            $responseInfo->property = $property;
+        } elseif (! empty($className) && class_exists($className)) {
+            $property->isSimpleType = false;
+            $property->className = $className;
             $responseInfo->property = $property;
         }
         return $responseInfo;

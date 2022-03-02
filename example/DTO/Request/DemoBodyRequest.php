@@ -12,7 +12,6 @@ use Hyperf\DTO\Annotation\Validation\Integer;
 use Hyperf\DTO\Annotation\Validation\Nullable;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
-use HyperfExample\ApiDocs\DTO;
 use HyperfExample\ApiDocs\DTO\Address;
 
 class DemoBodyRequest
@@ -21,15 +20,15 @@ class DemoBodyRequest
 
     public Address $addr1;
 
-    public DTO\Address $addr2;
+    public Address $addr2;
 
     #[ApiModelProperty('地址')]
 
     #[Required]
-    public \HyperfExample\ApiDocs\DTO\Address $addr3;
+    public Address $addr3;
 
     /**
-     * @var \HyperfExample\ApiDocs\DTO\Address[]
+     * @var Address[]
      */
     #[ApiModelProperty('地址数组')]
     #[Required]

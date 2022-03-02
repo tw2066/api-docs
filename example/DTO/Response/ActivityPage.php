@@ -9,7 +9,7 @@ use Hyperf\Contract\LengthAwarePaginatorInterface;
 class ActivityPage extends Page
 {
     /**
-     * @var \HyperfExample\ApiDocs\DTO\Response\ActivityResponse[]
+     * @var ActivityResponse[]
      */
     public array $content;
 

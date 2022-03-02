@@ -123,7 +123,7 @@ class SwaggerJson
         $routeCollect->description = $apiOperation->description ?? '';
         $routeCollect->deprecated = $isDeprecated;
         $routeCollect->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
-        $routeCollect->consumeTypes = [$consumeType];
+        $routeCollect->consumeTypes = $consumeType ? [$consumeType]: [];
         $routeCollect->produces = ['*/*'];
         $routeCollect->parameters = $parameters;
         $routeCollect->responses = $makeResponses->generate();
@@ -142,7 +142,7 @@ class SwaggerJson
         }
         $simpleClassName = substr($className, strrpos($className, '\\') + 1);
         if (isset(self::$simpleClassName[$simpleClassName])) {
-            $simpleClassName .= ++self::$simpleClassName[$simpleClassName];
+            $simpleClassName .= '@'.(++self::$simpleClassName[$simpleClassName]);
         } else {
             self::$simpleClassName[$simpleClassName] = 0;
         }
@@ -155,8 +155,6 @@ class SwaggerJson
      */
     public function save(array $swagger): string
     {
-        //TODO
-//        $swagger = $this->sort($swagger);
         $outputDir = $this->config->get('api_docs.output_dir');
         if (! $outputDir) {
             $this->stdoutLogger->error('/config/autoload/api_docs.php need set output_dir');
