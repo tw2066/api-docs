@@ -14,7 +14,7 @@ class ResponseInfo
 
     public mixed $code = '200';
 
-    public ?string $description = null;
+    public string $description = '';
 
     public ?Property $property = null;
 
@@ -27,10 +27,10 @@ class ResponseInfo
         $type = $apiResponse->type;
 
         $property = new Property();
-        //存在type && 简单类型
+        // 存在type && 简单类型
         if (! empty($type) && static::isSimpleType($type)) {
             $property->phpSimpleType = $type;
-            //判断是数组
+            // 判断是数组
             if ($type == 'array' && ! empty($className)) {
                 if (class_exists($className)) {
                     $property->isSimpleType = false;

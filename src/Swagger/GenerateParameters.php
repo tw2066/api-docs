@@ -78,7 +78,7 @@ class GenerateParameters
         }
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
         foreach ($definitions as $definition) {
-            //query path
+            // query path
             $parameterClassName = $definition->getName();
             $paramName = $definition->getMeta('name');
             $simpleSwaggerType = $this->getSimpleType2SwaggerType($parameterClassName);
@@ -142,7 +142,6 @@ class GenerateParameters
             $parameterInfo->in = $param->getIn();
             $parameterInfo->name = $param->name;
             $parameterInfo->type = $param->type;
-            $param->example !== null && $parameterInfo->example = $param->example;
             $param->default !== null && $parameterInfo->default = $param->default;
             $param->required !== null && $parameterInfo->required = $param->required;
             $param->description !== null && $parameterInfo->description = $param->description;

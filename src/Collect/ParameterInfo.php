@@ -20,8 +20,6 @@ class ParameterInfo
 
     public mixed $default = null;
 
-    public mixed $example = null;
-
     public bool $hidden = false;
 
     public ?array $enum = null;

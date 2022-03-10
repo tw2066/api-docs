@@ -66,9 +66,6 @@ trait SwaggerCommon
             if ($requiredAnnotation !== null) {
                 $parameterInfo->required = true;
             }
-            if ($apiModelProperty->example !== null) {
-                $parameterInfo->example = $apiModelProperty->example;
-            }
             $parameterInfo->description = $apiModelProperty->value ?? '';
             $parameters[] = $parameterInfo;
         }
@@ -91,7 +88,6 @@ trait SwaggerCommon
     /**
      * 获取swagger类型.
      * @param $phpType
-     * @return string
      */
     public function getType2SwaggerType($phpType): string
     {
@@ -122,7 +118,6 @@ trait SwaggerCommon
     /**
      * 判断是否为简单类型.
      * @param $type
-     * @return bool
      */
     public function isSimpleType($type): bool
     {

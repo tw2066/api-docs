@@ -16,10 +16,13 @@ class ApiOperation extends AbstractAnnotation
 
     public bool $hidden = false;
 
-    public function __construct(string $summary = '', string $description = '', bool $hidden = false)
+    public bool $isSecurity = true;
+
+    public function __construct(string $summary = '', string $description = '', bool $security = true, bool $hidden = false)
     {
         $this->summary = $summary;
         $this->description = $description;
+        $this->isSecurity = $security;
         $this->hidden = $hidden;
     }
 }

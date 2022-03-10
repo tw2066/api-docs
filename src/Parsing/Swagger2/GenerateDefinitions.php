@@ -36,7 +36,7 @@ class GenerateDefinitions
         $items = [];
         $swaggerType = $this->getType2SwaggerType($property->phpSimpleType);
         $className = $property->className;
-        //简单类型
+        // 简单类型
         if ($property->isSimpleType) {
             $items['type'] = $swaggerType;
             if ($swaggerType == 'array') {
@@ -63,12 +63,16 @@ class GenerateDefinitions
 
     public function generateClass2Definition(string $className): void
     {
-        //generateDefinitions
+        // generateDefinitions
         $schema = [
             'type' => 'object',
             'properties' => [],
         ];
         $simpleClassName = $this->getSimpleClassName($className);
+
+        if (isset(static::$definitions[$simpleClassName])) {
+            return;
+        }
         if (! class_exists($className)) {
             static::$definitions[$simpleClassName] = $schema;
             return;

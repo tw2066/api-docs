@@ -36,7 +36,7 @@ use JetBrains\PhpStorm\Deprecated;
 #[ApiHeader('apiHeader')]
 class DemoController
 {
-    #[ApiOperation('查询:1')]
+    #[ApiOperation('1:查询')]
     #[PostMapping(path: 'query')]
     public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
     {
@@ -44,7 +44,7 @@ class DemoController
         return new Contact();
     }
 
-    #[ApiOperation('提交body数据和get参数:2')]
+    #[ApiOperation('2:提交body数据和get参数')]
     #[PutMapping(path: 'add')]
     public function add(#[RequestBody] #[Valid] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query): ActivityResponse
     {
@@ -53,14 +53,14 @@ class DemoController
         return new ActivityResponse();
     }
 
-    #[ApiOperation('表单提交:3')]
+    #[ApiOperation('3:表单提交')]
     #[PostMapping(path: 'fromData')]
     #[ApiFormData(name: 'photo', type: 'file')]
     #[ApiFormData(name: 'photo2', type: 'file')]
     #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
     #[ApiResponse(code: '201', className: Address::class)]
-    #[ApiResponse(code: '2000', description: 'success', type: 'int')]
-    #[ApiResponse(code: '2001', type: 'bool')]
+    #[ApiResponse(code: '203', description: 'success', type: 'int')]
+    #[ApiResponse(code: '204', type: 'bool')]
     public function fromData(#[RequestFormData] DemoFormData $formData): object
     {
 //        $file = $this->request->file('photo');
@@ -69,7 +69,7 @@ class DemoController
         return new Address();
     }
 
-    #[ApiOperation('查询单体记录:4')]
+    #[ApiOperation('4:查询单体记录')]
     #[GetMapping(path: 'find/{id}/and/{in}')]
     #[ApiHeader('test2')]
     public function find(int $id, float $in): array
@@ -77,7 +77,7 @@ class DemoController
         return ['$id' => $id, '$in' => $in];
     }
 
-    #[ApiOperation('分页:5')]
+    #[ApiOperation('5:分页')]
     #[GetMapping(path: 'page')]
     public function page(#[RequestQuery] PageQuery $pageQuery): ActivityPage
     {
@@ -89,21 +89,21 @@ class DemoController
         return ActivityPage::from($model);
     }
 
-    #[ApiOperation('更新:6')]
+    #[ApiOperation('6:更新')]
     #[PutMapping(path: 'update/{id}')]
     public function update(int $id): int
     {
         return $id;
     }
 
-    #[ApiOperation('删除:7')]
+    #[ApiOperation('7:删除')]
     #[DeleteMapping(path: 'delete/{id}')]
     public function delete(int $id): int
     {
         return $id;
     }
 
-    #[ApiOperation('patch方法:8')]
+    #[ApiOperation('patch方法')]
     #[PatchMapping(path: 'patch/{id}')]
     #[Deprecated]
     public function patch(int $id)
@@ -116,6 +116,6 @@ class DemoController
     #[Deprecated]
     public function obj(): object
     {
-        return 1;
+        return new self();
     }
 }

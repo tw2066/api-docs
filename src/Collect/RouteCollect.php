@@ -50,5 +50,5 @@ class RouteCollect
 
     public array $produces = [];
 
-    public array $security = [];
+    public bool $isSecurity = true;
 }

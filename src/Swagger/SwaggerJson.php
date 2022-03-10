@@ -18,14 +18,13 @@ use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
 use HyperfExample\ApiDocs\Controller\DemoController;
+use HyperfExample\ApiDocs\Controller\TestController;
 use JetBrains\PhpStorm\Deprecated;
 use Psr\Container\ContainerInterface;
 
 class SwaggerJson
 {
     public mixed $config;
-
-    public static mixed $swagger = [];
 
     public StdoutLoggerInterface $stdoutLogger;
 
@@ -48,9 +47,7 @@ class SwaggerJson
         $this->container = ApplicationContext::getContainer();
         $this->config = $this->container->get(ConfigInterface::class);
         $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
-        self::$swagger = $this->config->get('api_docs.swagger');
         $this->serverName = $serverName;
-        $this->securityKey();
     }
 
     /**
@@ -58,8 +55,8 @@ class SwaggerJson
      */
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
-        //TODO 测试
-        if ($className != DemoController::class) {
+        // TODO 测试
+        if ($className != DemoController::class && $className != TestController::class) {
             return;
         }
 
@@ -72,7 +69,7 @@ class SwaggerJson
         }
 
         $apiHeaderControllerAnnotation = isset($classAnnotation[ApiHeader::class]) ? $classAnnotation[ApiHeader::class]->toAnnotations() : [];
-        //AutoController Validation POST
+        // AutoController Validation POST
         $autoControllerAnnotation = $classAnnotation[AutoController::class] ?? null;
         if ($autoControllerAnnotation && $methods != 'POST') {
             return;
@@ -109,7 +106,6 @@ class SwaggerJson
         $method = strtolower($methods);
         $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
         $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
-        self::$swagger['paths'][$route]['position'] = $position;
 
         [$parameters ,$consumeType] = $makeParameters->generate();
 
@@ -123,11 +119,11 @@ class SwaggerJson
         $routeCollect->description = $apiOperation->description ?? '';
         $routeCollect->deprecated = $isDeprecated;
         $routeCollect->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
-        $routeCollect->consumeTypes = $consumeType ? [$consumeType]: [];
+        $routeCollect->consumeTypes = $consumeType ? [$consumeType] : [];
         $routeCollect->produces = ['*/*'];
         $routeCollect->parameters = $parameters;
         $routeCollect->responses = $makeResponses->generate();
-        $routeCollect->security = $this->securityMethod();
+        $routeCollect->isSecurity = $apiOperation->isSecurity;
         MainCollect::setRoutes($routeCollect);
     }
 
@@ -142,7 +138,7 @@ class SwaggerJson
         }
         $simpleClassName = substr($className, strrpos($className, '\\') + 1);
         if (isset(self::$simpleClassName[$simpleClassName])) {
-            $simpleClassName .= '@'.(++self::$simpleClassName[$simpleClassName]);
+            $simpleClassName .= '-' . (++self::$simpleClassName[$simpleClassName]);
         } else {
             self::$simpleClassName[$simpleClassName] = 0;
         }
@@ -190,44 +186,6 @@ class SwaggerJson
         }
         $this->classMethodArray[$className] = $methodArray;
         return $methodArray;
-    }
-
-    /**
-     * set security.
-     */
-    private function securityKey()
-    {
-        $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
-        if (empty($securityKeyArr)) {
-            return;
-        }
-        $securityDefinitions = [];
-        foreach ($securityKeyArr as $value) {
-            $securityDefinitions[$value] = [
-                'type' => 'apiKey',
-                'name' => $value,
-                'in' => 'header',
-            ];
-        }
-        self::$swagger['securityDefinitions'] = $securityDefinitions;
-    }
-
-    /**
-     * security_api_key.
-     */
-    private function securityMethod(): array
-    {
-        $securityKeyArr = $this->config->get('api_docs.security_api_key', []);
-        if (empty($securityKeyArr)) {
-            return [];
-        }
-        $security = [];
-        foreach ($securityKeyArr as $value) {
-            $security[] = [
-                $value => [],
-            ];
-        }
-        return $security;
     }
 
     /**
