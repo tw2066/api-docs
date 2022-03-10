@@ -55,11 +55,6 @@ class SwaggerJson
      */
     public function addPath(string $className, string $methodName, string $route, string $methods)
     {
-        // TODO 测试
-        if ($className != DemoController::class && $className != TestController::class) {
-            return;
-        }
-
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
         /** @var Api $apiControllerAnnotation */
