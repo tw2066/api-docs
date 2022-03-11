@@ -115,6 +115,12 @@ class GenerateParameters
                         $parameters[] = $property;
                     }
                 }
+                if ($methodParameter->isRequestHeader()) {
+                    $propertyArr = $this->getParameterClassProperty($parameterClassName, 'header');
+                    foreach ($propertyArr as $property) {
+                        $parameters[] = $property;
+                    }
+                }
                 if ($methodParameter->isRequestFormData()) {
                     $propertyArr = $this->getParameterClassProperty($parameterClassName, 'formData');
                     foreach ($propertyArr as $property) {

@@ -13,6 +13,7 @@ use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\Database\Model\Relations\HasOne;
 use Hyperf\DTO\Annotation\Contracts\RequestBody;
 use Hyperf\DTO\Annotation\Contracts\RequestFormData;
+use Hyperf\DTO\Annotation\Contracts\RequestHeader;
 use Hyperf\DTO\Annotation\Contracts\RequestQuery;
 use Hyperf\DTO\Annotation\Contracts\Valid;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -22,6 +23,7 @@ use Hyperf\HttpServer\Annotation\PatchMapping;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use HyperfExample\ApiDocs\DTO\Address;
+use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
 use HyperfExample\ApiDocs\DTO\Request\DemoBodyRequest;
 use HyperfExample\ApiDocs\DTO\Request\DemoFormData;
@@ -109,6 +111,15 @@ class DemoController
     public function patch(int $id)
     {
         return 55;
+    }
+
+    #[ApiOperation('获取请求头')]
+    #[PostMapping(path: 'getHeader/{id}')]
+    #[Deprecated]
+    public function getHeader(#[RequestHeader] #[Valid] DemoToken $header): DemoToken
+    {
+        dump($header);
+        return $header;
     }
 
     #[ApiOperation('返回 obj')]

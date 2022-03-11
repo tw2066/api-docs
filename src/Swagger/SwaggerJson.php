@@ -160,15 +160,13 @@ class SwaggerJson
     /**
      * 获得安全验证
      * @param $methodAnnotations
-     * @return bool
      */
     protected function getSecurity($methodAnnotations): bool
     {
         $isSecurity = $this->config->get('api_docs.enable_default_security', true);
         $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
         $apiOperation->isSecurity !== null && $isSecurity = $apiOperation->isSecurity;
-
-        foreach ($methodAnnotations as $methodAnnotation) {
+        foreach ($methodAnnotations ?? [] as $methodAnnotation) {
             if ($methodAnnotation instanceof MultipleAnnotationInterface) {
                 $toAnnotations = $methodAnnotation->toAnnotations();
                 foreach ($toAnnotations as $annotation) {
