@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Annotation\ArrayType;
 use Hyperf\DTO\Annotation\Validation\Between;
 use Hyperf\DTO\Annotation\Validation\Email;
 use Hyperf\DTO\Annotation\Validation\In;
@@ -59,6 +60,11 @@ class DemoBodyRequest
     #[ApiModelProperty('int数据')]
     #[Validation(rule: 'array')]
     public array $intIdList;
+
+    #[ApiModelProperty('int数据2')]
+    #[Validation(rule: 'array')]
+    #[ArrayType(Address::class)]
+    public array $intIdList2;
 
     public object $obj;
 

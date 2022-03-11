@@ -94,6 +94,9 @@ class GenerateParameters
 
             if ($this->container->has($parameterClassName)) {
                 $methodParameter = MethodParametersManager::getMethodParameter($this->controller, $this->action, $paramName);
+                if ($methodParameter == null) {
+                    continue;
+                }
                 if ($methodParameter->isRequestBody()) {
                     $parameterInfo = new ParameterInfo();
                     $parameterInfo->name = $this->getSimpleClassName($parameterClassName);
