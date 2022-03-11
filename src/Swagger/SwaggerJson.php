@@ -9,16 +9,16 @@ use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\Annotation\NotSecurityInterface;
 use Hyperf\ApiDocs\Collect\MainCollect;
 use Hyperf\ApiDocs\Collect\RouteCollect;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
+use Hyperf\Di\Annotation\MultipleAnnotationInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
 use Hyperf\Utils\ApplicationContext;
-use HyperfExample\ApiDocs\Controller\DemoController;
-use HyperfExample\ApiDocs\Controller\TestController;
 use JetBrains\PhpStorm\Deprecated;
 use Psr\Container\ContainerInterface;
 
@@ -118,7 +118,7 @@ class SwaggerJson
         $routeCollect->produces = ['*/*'];
         $routeCollect->parameters = $parameters;
         $routeCollect->responses = $makeResponses->generate();
-        $routeCollect->isSecurity = $apiOperation->isSecurity;
+        $routeCollect->isSecurity = $this->getSecurity($methodAnnotations);
         MainCollect::setRoutes($routeCollect);
     }
 
@@ -155,6 +155,33 @@ class SwaggerJson
         $this->putFile($outputFile, json_encode($swagger, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
         $this->stdoutLogger->debug("swagger generate {$outputFile} success!");
         return $outputFile;
+    }
+
+    /**
+     * 获得安全验证
+     * @param $methodAnnotations
+     * @return bool
+     */
+    protected function getSecurity($methodAnnotations): bool
+    {
+        $isSecurity = $this->config->get('api_docs.enable_default_security', true);
+        $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
+        $apiOperation->isSecurity !== null && $isSecurity = $apiOperation->isSecurity;
+
+        foreach ($methodAnnotations as $methodAnnotation) {
+            if ($methodAnnotation instanceof MultipleAnnotationInterface) {
+                $toAnnotations = $methodAnnotation->toAnnotations();
+                foreach ($toAnnotations as $annotation) {
+                    if ($annotation instanceof NotSecurityInterface) {
+                        return false;
+                    }
+                }
+            }
+            if ($methodAnnotation instanceof NotSecurityInterface) {
+                return false;
+            }
+        }
+        return $isSecurity;
     }
 
     /**

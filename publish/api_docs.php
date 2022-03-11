@@ -11,6 +11,8 @@ return [
     'default_parsing' => Swagger2Parsing::class,
     'output_dir' => BASE_PATH . '/runtime/swagger',
     'prefix_url' => env('API_DOCS_PREFIX_URL', '/swagger'),
+    // 启用默认安全验证
+    'enable_default_security' => true,
     // 认证api
     'security_api' => [
         'Authorization' => ['in' => 'header', 'type' => 'apiKey'],
