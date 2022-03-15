@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
-use Hyperf\ApiDocs\Annotation\ArrayType;
+use Hyperf\DTO\Annotation\ArrayType;
 use Hyperf\DTO\Annotation\Validation\Between;
 use Hyperf\DTO\Annotation\Validation\Email;
 use Hyperf\DTO\Annotation\Validation\In;
