@@ -36,7 +36,7 @@ class SwaggerController
 
     public function index(): PsrResponseInterface
     {
-        $file = SwaggerRoute::getPath() . '/index.html';
+        $file = __DIR__ . '/../../web/index.html';
         $contents = file_get_contents($file);
         $contents = str_replace('{{$path}}', SwaggerRoute::getPrefix(), $contents);
         $contents = str_replace('{{$url}}', SwaggerRoute::getJsonUrl(SwaggerRoute::getHttpServerName()), $contents);

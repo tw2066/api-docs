@@ -8,7 +8,7 @@ use Hyperf\HttpServer\Router\RouteCollector;
 
 class SwaggerRoute
 {
-    private static string $path = __DIR__ . '/../../swagger-ui';
+    private static string $path = BASE_PATH . '/vendor/tangwei/swagger-ui/dist';
 
     private static string $prefix;
 
@@ -40,7 +40,7 @@ class SwaggerRoute
         $route->addGroup(static::getPrefix(), function ($route) {
             $route->get('', [SwaggerController::class, 'index']);
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
-            $route->get('/{file}.map', [SwaggerController::class, 'map']);
+            //$route->get('/{file}.map', [SwaggerController::class, 'map']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);
         });
     }

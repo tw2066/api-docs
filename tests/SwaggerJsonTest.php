@@ -45,6 +45,7 @@ class SwaggerJsonTest extends TestCase
 
         $config->shouldReceive('get')->with('api_docs.swagger')->andReturn([]);
         $config->shouldReceive('get')->with('api_docs.security_api_key', [])->andReturn([]);
+        $config->shouldReceive('get')->with('api_docs.enable_default_security')->andReturn(true);
         $config->shouldReceive('get')->with('api_docs')->andReturn(
             [
                 // enable false 将不会启动 swagger 服务
