@@ -22,5 +22,6 @@ class SwaggerCommonTest extends TestCase
 
     public function testScan()
     {
+        $this->assertTrue(true);
     }
 }
