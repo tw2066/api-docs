@@ -61,10 +61,10 @@ class DemoBodyRequest
     #[Validation(rule: 'array')]
     public array $intIdList;
 
-    #[ApiModelProperty('int数据2')]
+    #[ApiModelProperty('addArr')]
     #[Validation(rule: 'array')]
     #[ArrayType(Address::class)]
-    public array $intIdList2;
+    public array $addArr;
 
     public object $obj;
 
