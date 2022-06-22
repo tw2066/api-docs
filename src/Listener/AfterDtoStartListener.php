@@ -29,7 +29,7 @@ class AfterDtoStartListener implements ListenerInterface
     /**
      * @param AfterDtoStart $event
      */
-    public function process(object $event)
+    public function process(object $event): void
     {
         $container = ApplicationContext::getContainer();
         $logger = $container->get(StdoutLoggerInterface::class);
