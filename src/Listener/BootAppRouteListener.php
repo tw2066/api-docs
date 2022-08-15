@@ -19,6 +19,8 @@ use Hyperf\Utils\ApplicationContext;
  */
 class BootAppRouteListener implements ListenerInterface
 {
+    public static string $massage;
+
     public function listen(): array
     {
         return [
@@ -60,6 +62,6 @@ class BootAppRouteListener implements ListenerInterface
         }
         $swaggerRoute = new SwaggerRoute($prefix, $httpServer['name']);
         $swaggerRoute->add($httpServerRouter);
-        $logger->info('Swagger Url at ' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix);
+        static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix;
     }
 }
