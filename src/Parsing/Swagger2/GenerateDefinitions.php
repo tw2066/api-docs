@@ -54,6 +54,11 @@ class GenerateDefinitions
             if (! empty($property->arrSimpleType)) {
                 $items['items']['type'] = $this->getType2SwaggerType($property->arrSimpleType);
             }
+        } elseif (! empty($property->enum)) {
+
+//            $items['$ref'] = $this->getDefinitionName($className);
+//            $this->generateClass2Definition($className);
+
         } elseif (! empty($className)) {
             $items['$ref'] = $this->getDefinitionName($className);
             $this->generateClass2Definition($className);
@@ -77,6 +82,7 @@ class GenerateDefinitions
             static::$definitions[$simpleClassName] = $schema;
             return;
         }
+
         $obj = new $className();
         $rc = ReflectionManager::reflectClass($className);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
@@ -97,6 +103,11 @@ class GenerateDefinitions
             if (! empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
+            if($propertyClass->enum){
+                $property['type'] = $propertyClass->enum->backedType;
+                $property['enum'] = $propertyClass->enum->valueList;
+            }
+
             $property['description'] = $apiModelProperty->value ?? '';
             if ($apiModelProperty->required !== null) {
                 $property['required'] = $apiModelProperty->required;

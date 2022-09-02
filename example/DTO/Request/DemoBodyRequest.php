@@ -14,6 +14,7 @@ use Hyperf\DTO\Annotation\Validation\Nullable;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
 use HyperfExample\ApiDocs\DTO\Address;
+use HyperfExample\ApiDocs\Enum\StatusEnum;
 
 class DemoBodyRequest
 {
@@ -39,14 +40,12 @@ class DemoBodyRequest
     public ?string $demoName = 'demo';
 
     #[ApiModelProperty('枚举')]
-    #[In(DemoBodyRequest::IN)]
-
+//    #[In(DemoBodyRequest::IN)]
     #[Nullable]
     #[Required]
-    public ?string $enum;
+    public StatusEnum $enum;
 
     #[ApiModelProperty('价格')]
-
     #[Required]
     public float $price;
 
