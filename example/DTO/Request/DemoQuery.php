@@ -14,9 +14,15 @@ use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\StartsWith;
 use Hyperf\DTO\Annotation\Validation\Str;
 use HyperfExample\ApiDocs\DTO\PageQuery;
+use HyperfExample\ApiDocs\Enum\StatusEnum;
 
 class DemoQuery extends PageQuery
 {
+
+    #[ApiModelProperty('状态')]
+    #[Required]
+    public StatusEnum $statusEnum;
+
     #[ApiModelProperty('测试', 'bb')]
     public string $test = 'tt';
 

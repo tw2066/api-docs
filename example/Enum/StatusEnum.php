@@ -1,14 +1,14 @@
 <?php
 
 namespace HyperfExample\ApiDocs\Enum;
-
-//enum StatusEnum: string
-//{
-//    case SUCCESS = 'success';
-//
-//    case CLOSED = 'closed';
-//}
-class StatusEnum
+// PHP>=8.1
+enum StatusEnum: string
 {
+    case SUCCESS = 'success';
 
+    case CLOSED = 'closed';
 }
+//class StatusEnum
+//{
+//
+//}

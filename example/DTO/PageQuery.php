@@ -9,7 +9,6 @@ use HyperfExample\ApiDocs\Enum\StatusEnum;
 
 class PageQuery
 {
-    public StatusEnum $status;
 
     #[ApiModelProperty('页数')]
     public ?int $page = null;
