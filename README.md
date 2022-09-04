@@ -5,9 +5,11 @@
 
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
 - 代码可维护性好，扩展性好
-- 支持数组，递归，嵌套和数据校验
+- 支持数组，递归，嵌套
+- 支持注解数据校验
 - 支持api token认证
 - 支持PHP8原生注解
+- 支持PHP8.1枚举
 
 ## 使用须知
 
@@ -15,7 +17,8 @@
 * 控制器中方法尽可能返回类,这样会更好的生成文档
 * 当返回类的结果满足不了时,用 #[ApiResponse] 注解
 * 模型类需要手工编写
-
+## 例子
+> 请参考[example目录](https://github.com/tw2066/api-docs/tree/master/example)
 ## 安装
 
 ```
@@ -70,7 +73,7 @@ return [
 ```shell script
 php bin/hyperf.php start
 
-[INFO] Swagger Url at 0.0.0.0:9501/swagger
+[INFO] Swagger docs url at http://0.0.0.0:9501/swagger
 [INFO] TaskWorker#1 started.
 [INFO] Worker#0 started.
 [INFO] HTTP Server listening at 0.0.0.0:9501
@@ -226,7 +229,6 @@ class Image extends BaseValidation
 }
 ```
   
-> 其他例子，请查看example
 ## 注意
 
 ```php

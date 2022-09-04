@@ -13,6 +13,7 @@ use Hyperf\DTO\Annotation\Validation\Integer;
 use Hyperf\DTO\Annotation\Validation\Nullable;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
+use Hyperf\DTO\SimpleType;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\Enum\StatusEnum;
 
@@ -29,12 +30,10 @@ class DemoBodyRequest
     #[Required]
     public Address $addr3;
 
-    /**
-     * @var Address[]
-     */
-    #[ApiModelProperty('地址数组')]
+    #[ApiModelProperty('int数组')]
     #[Required]
-    public array $addrArr;
+    #[ArrayType(SimpleType::INT)]
+    public array $intArr;
 
     #[ApiModelProperty('demo名称')]
     public ?string $demoName = 'demo';
