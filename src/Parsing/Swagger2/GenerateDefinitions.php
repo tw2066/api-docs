@@ -55,10 +55,7 @@ class GenerateDefinitions
                 $items['items']['type'] = $this->getType2SwaggerType($property->arrSimpleType);
             }
         } elseif (! empty($property->enum)) {
-
-//            $items['$ref'] = $this->getDefinitionName($className);
-//            $this->generateClass2Definition($className);
-
+            //
         } elseif (! empty($className)) {
             $items['$ref'] = $this->getDefinitionName($className);
             $this->generateClass2Definition($className);
@@ -71,7 +68,7 @@ class GenerateDefinitions
         // generateDefinitions
         $schema = [
             'type' => 'object',
-            'properties' => [],
+            'properties' => (object) [],
         ];
         $simpleClassName = $this->getSimpleClassName($className);
 
@@ -103,7 +100,7 @@ class GenerateDefinitions
             if (! empty($inAnnotation)) {
                 $property['enum'] = $inAnnotation->getValue();
             }
-            if($propertyClass->enum){
+            if ($propertyClass->enum) {
                 $property['type'] = $propertyClass->enum->backedType;
                 $property['enum'] = $propertyClass->enum->valueList;
             }
@@ -120,7 +117,8 @@ class GenerateDefinitions
             }
             $items = $this->getItems($propertyClass);
             $property = Arr::merge($property, $items);
-            $schema['properties'][$fieldName] = $property;
+            $properties[$fieldName] = $property;
+            $schema['properties'] = $properties;
         }
         static::$definitions[$simpleClassName] = $schema;
     }

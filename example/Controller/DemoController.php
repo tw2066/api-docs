@@ -38,13 +38,13 @@ use JetBrains\PhpStorm\Deprecated;
 #[ApiHeader('apiHeader')]
 class DemoController
 {
-    #[ApiOperation('1:查询')]
-    #[PostMapping(path: 'query')]
-    public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
-    {
-        var_dump($request);
-        return new Contact();
-    }
+//    #[ApiOperation('1:查询')]
+//    #[PostMapping(path: 'query')]
+//    public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
+//    {
+//        var_dump($request);
+//        return new Contact();
+//    }
 
 
 
@@ -57,79 +57,79 @@ class DemoController
         dump($query);
         return new ActivityResponse();
     }
-
-    #[ApiOperation('3:表单提交')]
-    #[PostMapping(path: 'fromData')]
-    #[ApiFormData(name: 'photo', type: 'file')]
-    #[ApiFormData(name: 'photo2', type: 'file')]
-    #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
-    #[ApiResponse(code: '201', className: Address::class)]
-    #[ApiResponse(code: '203', description: 'success', type: 'int')]
-    #[ApiResponse(code: '204', type: 'bool')]
-    public function fromData(#[RequestFormData] DemoFormData $formData): object
-    {
-//        $file = $this->request->file('photo');
-//        var_dump($file);
-        var_dump($formData);
-        return new Address();
-    }
-
-    #[ApiOperation('4:查询单体记录')]
-    #[GetMapping(path: 'find/{id}/and/{in}')]
-    #[ApiHeader('test2')]
-    public function find(int $id, float $in): array
-    {
-        return ['$id' => $id, '$in' => $in];
-    }
-
-    #[ApiOperation('5:分页')]
-    #[GetMapping(path: 'page')]
-    public function page(#[RequestQuery] PageQuery $pageQuery): ActivityPage
-    {
-        $model = Activity::with(['activityUser' => function ($query) {
-            /* @var HasOne $query */
-            $query->orderBy('id', 'desc')->with(['case']);
-        }])
-            ->paginate($pageQuery->getSize());
-        return ActivityPage::from($model);
-    }
-
-    #[ApiOperation('6:更新')]
-    #[PutMapping(path: 'update/{id}')]
-    public function update(int $id): int
-    {
-        return $id;
-    }
-
-    #[ApiOperation('7:删除')]
-    #[DeleteMapping(path: 'delete/{id}')]
-    public function delete(int $id): int
-    {
-        return $id;
-    }
-
-    #[ApiOperation('patch方法')]
-    #[PatchMapping(path: 'patch/{id}')]
-    #[Deprecated]
-    public function patch(int $id)
-    {
-        return 55;
-    }
-
-    #[ApiOperation('获取请求头')]
-    #[PostMapping(path: 'getHeader/{id}')]
-    #[Deprecated]
-    public function getHeader(#[RequestHeader] #[Valid] DemoToken $header): DemoToken
-    {
-        dump($header);
-        return $header;
-    }
-
-    #[ApiOperation('返回 obj')]
-    #[GetMapping(path: 'obj')]
-    #[Deprecated]
-    public function obj(): object
-    {
-        return new self();
-    }
+//
+//    #[ApiOperation('3:表单提交')]
+//    #[PostMapping(path: 'fromData')]
+//    #[ApiFormData(name: 'photo', type: 'file')]
+//    #[ApiFormData(name: 'photo2', type: 'file')]
+//    #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
+//    #[ApiResponse(code: '201', className: Address::class)]
+//    #[ApiResponse(code: '203', description: 'success', type: 'int')]
+//    #[ApiResponse(code: '204', type: 'bool')]
+//    public function fromData(#[RequestFormData] DemoFormData $formData): object
+//    {
+////        $file = $this->request->file('photo');
+////        var_dump($file);
+//        var_dump($formData);
+//        return new Address();
+//    }
+//
+//    #[ApiOperation('4:查询单体记录')]
+//    #[GetMapping(path: 'find/{id}/and/{in}')]
+//    #[ApiHeader('test2')]
+//    public function find(int $id, float $in): array
+//    {
+//        return ['$id' => $id, '$in' => $in];
+//    }
+//
+//    #[ApiOperation('5:分页')]
+//    #[GetMapping(path: 'page')]
+//    public function page(#[RequestQuery] PageQuery $pageQuery): ActivityPage
+//    {
+//        $model = Activity::with(['activityUser' => function ($query) {
+//            /* @var HasOne $query */
+//            $query->orderBy('id', 'desc')->with(['case']);
+//        }])
+//            ->paginate($pageQuery->getSize());
+//        return ActivityPage::from($model);
+//    }
+//
+//    #[ApiOperation('6:更新')]
+//    #[PutMapping(path: 'update/{id}')]
+//    public function update(int $id): int
+//    {
+//        return $id;
+//    }
+//
+//    #[ApiOperation('7:删除')]
+//    #[DeleteMapping(path: 'delete/{id}')]
+//    public function delete(int $id): int
+//    {
+//        return $id;
+//    }
+//
+//    #[ApiOperation('patch方法')]
+//    #[PatchMapping(path: 'patch/{id}')]
+//    #[Deprecated]
+//    public function patch(int $id)
+//    {
+//        return 55;
+//    }
+//
+//    #[ApiOperation('获取请求头')]
+//    #[PostMapping(path: 'getHeader/{id}')]
+//    #[Deprecated]
+//    public function getHeader(#[RequestHeader] #[Valid] DemoToken $header): DemoToken
+//    {
+//        dump($header);
+//        return $header;
+//    }
+//
+//    #[ApiOperation('返回 obj')]
+//    #[GetMapping(path: 'obj')]
+//    #[Deprecated]
+//    public function obj(): object
+//    {
+//        return new self();
+//    }
 }

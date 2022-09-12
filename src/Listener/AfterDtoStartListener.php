@@ -14,11 +14,16 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
-use Hyperf\Utils\ApplicationContext;
 use RuntimeException;
 
 class AfterDtoStartListener implements ListenerInterface
 {
+    public function __construct(
+        private StdoutLoggerInterface $logger,
+        private ConfigInterface $config,
+    ) {
+    }
+
     public function listen(): array
     {
         return [
@@ -31,16 +36,13 @@ class AfterDtoStartListener implements ListenerInterface
      */
     public function process(object $event): void
     {
-        $container = ApplicationContext::getContainer();
-        $logger = $container->get(StdoutLoggerInterface::class);
-        $config = $container->get(ConfigInterface::class);
         $server = $event->serverConfig;
         $router = $event->router;
 
-        if (! $config->get('api_docs.enable', false)) {
+        if (! $this->config->get('api_docs.enable', false)) {
             return;
         }
-        $outputDir = $config->get('api_docs.output_dir');
+        $outputDir = $this->config->get('api_docs.output_dir');
         if (! $outputDir) {
             return;
         }
@@ -58,14 +60,14 @@ class AfterDtoStartListener implements ListenerInterface
                 });
             }
         }
-        $mainInfo = $config->get('api_docs.swagger');
+        $mainInfo = $this->config->get('api_docs.swagger');
         MainCollect::setMainInfo($mainInfo);
-        $parsing = $this->getParsing($config->get('api_docs.default_parsing', ''));
+        $parsing = $this->getParsing($this->config->get('api_docs.default_parsing', ''));
         $swagger->save($parsing->parsing(MainCollect::getMainInfo(), MainCollect::getRoutes(), MainCollect::getTags()));
-        if (! $config->get('api_docs.is_debug', false)) {
+        if (! $this->config->get('api_docs.is_debug', false)) {
             MainCollect::clean();
         }
-        $logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
+        $this->logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
     }
 
     /**

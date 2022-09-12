@@ -11,8 +11,6 @@ use Hyperf\ApiDocs\Parsing\Swagger2\GenerateDefinitions;
 use Hyperf\ApiDocs\Swagger\GenerateParameters;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Utils\ApplicationContext;
-use Psr\Container\ContainerInterface;
 
 class Swagger2Parsing implements ParsingInterface
 {
@@ -20,15 +18,9 @@ class Swagger2Parsing implements ParsingInterface
 
     private GenerateDefinitions $generateDefinitions;
 
-    private ConfigInterface $config;
-
-    private ContainerInterface $container;
-
-    public function __construct()
+    public function __construct(private ConfigInterface $config)
     {
-        $this->container = ApplicationContext::getContainer();
         $this->generateDefinitions = new GenerateDefinitions();
-        $this->config = $this->container->get(ConfigInterface::class);
     }
 
     /**

@@ -8,15 +8,11 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\AfterWorkerStart;
 use Hyperf\Server\Event\MainCoroutineServerStart;
-use Psr\Log\LoggerInterface;
 
 class AfterWorkerStartListener implements ListenerInterface
 {
-    private LoggerInterface $logger;
-
-    public function __construct(StdoutLoggerInterface $logger)
+    public function __construct(private StdoutLoggerInterface $logger)
     {
-        $this->logger = $logger;
     }
 
     /**

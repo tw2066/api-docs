@@ -16,7 +16,7 @@ class SwaggerRoute
 
     public function __construct(string $prefix, string $httpServerName)
     {
-        static::$prefix = '/' . trim($prefix, '//');
+        static::$prefix = '/' . trim($prefix, '/');
         static::$httpServerName = $httpServerName;
     }
 

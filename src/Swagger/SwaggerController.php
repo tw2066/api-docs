@@ -36,8 +36,8 @@ class SwaggerController
 
     public function index(): PsrResponseInterface
     {
-        $file = __DIR__ . '/../../web/index.html';
-        $contents = file_get_contents($file);
+        $filePath = BASE_PATH . '/vendor/tangwei/apidocs/src/web/index.html';
+        $contents = file_get_contents($filePath);
         $contents = str_replace('{{$path}}', SwaggerRoute::getPrefix(), $contents);
         $contents = str_replace('{{$url}}', SwaggerRoute::getJsonUrl(SwaggerRoute::getHttpServerName()), $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));

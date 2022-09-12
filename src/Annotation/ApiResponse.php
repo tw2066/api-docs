@@ -10,19 +10,7 @@ use Hyperf\Di\Annotation\AbstractMultipleAnnotation;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ApiResponse extends AbstractMultipleAnnotation
 {
-    public ?string $code;
-
-    public string $description;
-
-    public ?string $className;
-
-    public ?string $type;
-
-    public function __construct(string $code = null, string $description = '', string $className = null, string $type = null)
+    public function __construct(public ?string $code = null, public string $description = '', public ?string $className = null, public ?string $type = null)
     {
-        $this->code = $code;
-        $this->description = $description;
-        $this->className = $className;
-        $this->type = $type;
     }
 }

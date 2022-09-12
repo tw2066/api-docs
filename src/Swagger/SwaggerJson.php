@@ -34,8 +34,6 @@ class SwaggerJson
 
     public array $classMethodArray = [];
 
-    public array $routeArray = [];
-
     private static array $className;
 
     private static array $simpleClassName;
@@ -53,7 +51,7 @@ class SwaggerJson
     /**
      * 增加一条路由.
      */
-    public function addPath(string $className, string $methodName, string $route, string $methods)
+    public function addPath(string $className, string $methodName, string $route, string $methods): void
     {
         $position = $this->getMethodNamePosition($className, $methodName);
         $classAnnotation = ApiAnnotation::classMetadata($className);
@@ -160,6 +158,7 @@ class SwaggerJson
     /**
      * 获得安全验证
      * @param $methodAnnotations
+     * @return bool
      */
     protected function getSecurity($methodAnnotations): bool
     {
