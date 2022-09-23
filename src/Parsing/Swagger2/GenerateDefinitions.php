@@ -80,7 +80,7 @@ class GenerateDefinitions
             return;
         }
 
-        $obj = new $className();
+        $obj = make($className);
         $rc = ReflectionManager::reflectClass($className);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();

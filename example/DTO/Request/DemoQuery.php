@@ -20,7 +20,7 @@ class DemoQuery extends PageQuery
 {
 
     #[ApiModelProperty('状态')]
-    #[Required]
+    //#[Required]
     public StatusEnum $statusEnum;
 
     #[ApiModelProperty('测试', 'bb')]
@@ -38,7 +38,7 @@ class DemoQuery extends PageQuery
     #[Str]
     #[Regex('/^.+@.+$/i')]
     #[StartsWith('aa,bb')]
-    #[max(10)]
+    #[max(10,'超长啦....')]
     public string $email;
 
     #[ApiModelProperty('数量')]

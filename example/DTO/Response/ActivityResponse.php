@@ -7,6 +7,7 @@ namespace HyperfExample\ApiDocs\DTO\Response;
 use App\Model\Activity;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\DTO\Mapper;
+use HyperfExample\ApiDocs\DTO\ActivityUser;
 
 class ActivityResponse
 {
@@ -17,7 +18,7 @@ class ActivityResponse
     public string $activityName;
 
     /**
-     * @var \HyperfExample\ApiDocs\DTO\ActivityUser[]
+     * @var ActivityUser[]
      */
     public array $activityUser;
 

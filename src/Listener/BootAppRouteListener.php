@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
-use Hyperf\ApiDocs\Swagger\SwaggerRoute;
+use Hyperf\ApiDocs\Swagger\SwaggerConfig;
+use Hyperf\ApiDocs\Swagger\SwaggerConfigFactory;
+use Hyperf\ApiDocs\Swagger\SwaggerController;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\ValidationDto;
@@ -20,10 +22,13 @@ class BootAppRouteListener implements ListenerInterface
 {
     public static string $massage;
 
+    public static string $httpServerName;
+
     public function __construct(
         private StdoutLoggerInterface $logger,
         private ConfigInterface $config,
         private DispatcherFactory $dispatcherFactory,
+        private SwaggerConfig $swaggerConfig,
     ) {
     }
 
@@ -36,19 +41,18 @@ class BootAppRouteListener implements ListenerInterface
 
     public function process(object $event): void
     {
-        if (! $this->config->get('api_docs.enable', false)) {
-            $this->logger->debug('api_docs not enable');
+        if (! $this->swaggerConfig->isEnable()) {
+            $this->logger->debug('api_docs swagger not enable');
             return;
         }
-        $outputDir = $this->config->get('api_docs.output_dir');
-        if (! $outputDir) {
+        if (! $this->swaggerConfig->getOutputDir()) {
             $this->logger->error('/config/autoload/api_docs.php need set output_dir');
             return;
         }
-        if ($this->config->get('api_docs.validation_custom_attributes', false)) {
+        if ($this->swaggerConfig->isValidationCustomAttributes()) {
             ValidationDto::$isValidationCustomAttributes = true;
         }
-        $prefix = $this->config->get('api_docs.prefix_url', '/swagger');
+        $prefix = $this->swaggerConfig->getPrefixUrl();
         $servers = $this->config->get('server.servers');
         $httpServerRouter = null;
         $httpServer = null;
@@ -63,8 +67,15 @@ class BootAppRouteListener implements ListenerInterface
             $this->logger->warning('Swagger: http Service not started');
             return;
         }
-        $swaggerRoute = new SwaggerRoute($prefix, $httpServer['name']);
-        $swaggerRoute->add($httpServerRouter);
+        //添加路由
+        $httpServerRouter->addGroup($prefix, function ($route) {
+            $route->get('', [SwaggerController::class, 'index']);
+            $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
+            //$route->get('/{file}.map', [SwaggerController::class, 'map']);
+            $route->get('/{file}', [SwaggerController::class, 'getFile']);
+        });
+        self::$httpServerName = $httpServer['name'];
+
         static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix;
     }
 }

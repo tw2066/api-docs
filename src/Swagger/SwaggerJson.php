@@ -18,18 +18,11 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\MultipleAnnotationInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
-use Hyperf\Utils\ApplicationContext;
 use JetBrains\PhpStorm\Deprecated;
 use Psr\Container\ContainerInterface;
 
 class SwaggerJson
 {
-    public mixed $config;
-
-    public StdoutLoggerInterface $stdoutLogger;
-
-    public string $serverName;
-
     public int $index = 0;
 
     public array $classMethodArray = [];
@@ -40,12 +33,12 @@ class SwaggerJson
 
     private ContainerInterface $container;
 
-    public function __construct(string $serverName)
+    public function __construct(
+        public string $serverName,
+        public ConfigInterface $config,
+        public StdoutLoggerInterface $stdoutLogger
+    )
     {
-        $this->container = ApplicationContext::getContainer();
-        $this->config = $this->container->get(ConfigInterface::class);
-        $this->stdoutLogger = $this->container->get(StdoutLoggerInterface::class);
-        $this->serverName = $serverName;
     }
 
     /**
@@ -97,10 +90,10 @@ class SwaggerJson
         }
 
         $method = strtolower($methods);
-        $makeParameters = new GenerateParameters($route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr);
-        $makeResponses = new GenerateResponses($className, $methodName, $apiResponseArr, $this->config->get('api_docs'));
+        $makeParameters = make( GenerateParameters::class,[$route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr]);
+        $makeResponses = make(GenerateResponses::class,[$className, $methodName, $apiResponseArr]);
 
-        [$parameters ,$consumeType] = $makeParameters->generate();
+        [$parameters, $consumeType] = $makeParameters->generate();
 
         $routeCollect = new RouteCollect();
         $routeCollect->route = $route;
@@ -158,13 +151,12 @@ class SwaggerJson
     /**
      * 获得安全验证
      * @param $methodAnnotations
-     * @return bool
      */
     protected function getSecurity($methodAnnotations): bool
     {
         $isSecurity = $this->config->get('api_docs.enable_default_security', true);
         $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
-        $apiOperation->isSecurity !== null && $isSecurity = $apiOperation->isSecurity;
+        $apiOperation->security !== null && $isSecurity = $apiOperation->security;
         foreach ($methodAnnotations ?? [] as $methodAnnotation) {
             if ($methodAnnotation instanceof MultipleAnnotationInterface) {
                 $toAnnotations = $methodAnnotation->toAnnotations();

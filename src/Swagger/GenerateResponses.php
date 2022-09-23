@@ -9,34 +9,19 @@ use Hyperf\ApiDocs\Collect\ResponseInfo;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Scan\Property;
-use Hyperf\Utils\ApplicationContext;
 use Hyperf\Utils\Arr;
-use Psr\Container\ContainerInterface;
 
 class GenerateResponses
 {
     use SwaggerCommon;
 
-    private string $className;
-
-    private string $methodName;
-
-    private MethodDefinitionCollectorInterface $methodDefinitionCollector;
-
-    private ContainerInterface $container;
-
-    private array $config;
-
-    private array $apiResponseArr;
-
-    public function __construct(string $className, string $methodName, array $apiResponseArr, array $config)
-    {
-        $this->container = ApplicationContext::getContainer();
-        $this->methodDefinitionCollector = $this->container->get(MethodDefinitionCollectorInterface::class);
-        $this->className = $className;
-        $this->methodName = $methodName;
-        $this->config = $config;
-        $this->apiResponseArr = $apiResponseArr;
+    public function __construct(
+        private string $className,
+        private string $methodName,
+        private array $apiResponseArr,
+        private SwaggerConfig $swaggerConfig,
+        private MethodDefinitionCollectorInterface $methodDefinitionCollector,
+    ) {
     }
 
     /**
@@ -47,7 +32,7 @@ class GenerateResponses
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
-        $code = $this->config['responses_code'] ?? 200;
+        $code = $this->swaggerConfig->getResponsesCode();
         $globalResp = $this->getGlobalResp();
         $annotationResp = $this->getAnnotationResp();
         $arr = [];
@@ -84,7 +69,7 @@ class GenerateResponses
     protected function getGlobalResp(): array
     {
         $resp = [];
-        foreach ($this->config['responses'] as $code => $value) {
+        foreach ($this->swaggerConfig->getResponses() as $code => $value) {
             $apiResponse = new ApiResponse();
             $apiResponse->code = (string) $code;
             $apiResponse->description = $value['description'] ?? null;

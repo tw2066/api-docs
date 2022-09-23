@@ -46,7 +46,8 @@ class AfterDtoStartListener implements ListenerInterface
         if (! $outputDir) {
             return;
         }
-        $swagger = new SwaggerJson($server['name']);
+        //$swagger = new SwaggerJson($server['name']);
+        $swagger = make(SwaggerJson::class,[$server['name']]);
         foreach ($router->getData() ?? [] as $routeData) {
             foreach ($routeData ?? [] as $methods => $handlerArr) {
                 array_walk_recursive($handlerArr, function ($item) use ($swagger, $methods) {

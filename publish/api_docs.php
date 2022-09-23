@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Hyperf\ApiDocs\Parsing\Swagger2Parsing;
 
 return [
-    // enable false 将不会启动 swagger 服务
+    // 是否启动
     'enable' => env('APP_ENV') !== 'prod',
     // 默认解析器
     'default_parsing' => Swagger2Parsing::class,
@@ -19,11 +19,11 @@ return [
     ],
     // 替换验证属性
     'validation_custom_attributes' => false,
-    // 全局responses
+    // global responses
     'responses' => [
         // 500 => ['description' => 'System error'],
     ],
-    // swagger 的基础配置
+    // swagger basic configuration
     'swagger' => [
         'swagger' => '2.0',
         'info' => [
@@ -31,7 +31,11 @@ return [
             'version' => '1.0.0',
             'title' => 'API DOC',
         ],
-        'schemes' => [],
+        'basePath' => '/',
+        'schemes' => [
+            'http',
+            'https',
+        ],
         'host' => env('API_DOCS_HOST', ''),
     ],
 ];
