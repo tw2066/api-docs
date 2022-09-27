@@ -6,7 +6,7 @@ namespace HyperfTest\ApiDocs;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\Annotation\ApiOperation;
-use Hyperf\ApiDocs\Swagger\SwaggerJson;
+use Hyperf\ApiDocs\Swagger\SwaggerPaths;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
@@ -87,7 +87,7 @@ class SwaggerJsonTest extends TestCase
 
         $this->scan($container, $className, $method);
 
-        $swaggerJson = new SwaggerJson('http');
+        $swaggerJson = new SwaggerPaths('http');
 
         /** @var SwaggerJson $swaggerJson */
         $swaggerJson = new ClassInvoker($swaggerJson);

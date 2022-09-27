@@ -12,9 +12,9 @@ class ApiOperation extends AbstractAnnotation
 {
     public function __construct(
         public string $summary = '',
-        public string $description = '',
+        public ?string $description = null,
         public bool $hidden = false,
-        public ?bool $security = null
+        public bool $security = true
     )
     {
     }

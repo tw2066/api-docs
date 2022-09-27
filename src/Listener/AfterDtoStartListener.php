@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Listener;
 
 use Closure;
-use Hyperf\ApiDocs\Collect\MainCollect;
-use Hyperf\ApiDocs\Parsing\ParsingInterface;
-use Hyperf\ApiDocs\Parsing\Swagger2Parsing;
-use Hyperf\ApiDocs\Swagger\SwaggerJson;
+use Hyperf\ApiDocs\Swagger\SwaggerComponents;
+use Hyperf\ApiDocs\Swagger\SwaggerConfig;
+use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
+use Hyperf\ApiDocs\Swagger\SwaggerPaths;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
+use HyperfExample\ApiDocs\Controller\DemoController;
 use RuntimeException;
 
 class AfterDtoStartListener implements ListenerInterface
@@ -21,6 +22,9 @@ class AfterDtoStartListener implements ListenerInterface
     public function __construct(
         private StdoutLoggerInterface $logger,
         private ConfigInterface $config,
+        private SwaggerOpenApi $swaggerOpenApi,
+        private SwaggerComponents $swaggerComponents,
+        private SwaggerConfig $swaggerConfig,
     ) {
     }
 
@@ -39,15 +43,17 @@ class AfterDtoStartListener implements ListenerInterface
         $server = $event->serverConfig;
         $router = $event->router;
 
-        if (! $this->config->get('api_docs.enable', false)) {
+        if (! $this->swaggerConfig->isEnable()) {
             return;
         }
-        $outputDir = $this->config->get('api_docs.output_dir');
-        if (! $outputDir) {
+        if (! $this->swaggerConfig->getOutputDir()) {
             return;
         }
-        //$swagger = new SwaggerJson($server['name']);
-        $swagger = make(SwaggerJson::class,[$server['name']]);
+
+        $this->swaggerOpenApi->init();
+
+        /** @var SwaggerPaths $swagger */
+        $swagger = make(SwaggerPaths::class, [$server['name']]);
         foreach ($router->getData() ?? [] as $routeData) {
             foreach ($routeData ?? [] as $methods => $handlerArr) {
                 array_walk_recursive($handlerArr, function ($item) use ($swagger, $methods) {
@@ -55,32 +61,28 @@ class AfterDtoStartListener implements ListenerInterface
                         $prepareHandler = $this->prepareHandler($item->callback);
                         if (count($prepareHandler) > 1) {
                             [$controller, $methodName] = $prepareHandler;
+                            // todo
+//                            if($controller == DemoController::class){
+//                                dd($controller, $methodName, $item->route, $methods);
                             $swagger->addPath($controller, $methodName, $item->route, $methods);
+//                            }
                         }
                     }
                 });
             }
         }
-        $mainInfo = $this->config->get('api_docs.swagger');
-        MainCollect::setMainInfo($mainInfo);
-        $parsing = $this->getParsing($this->config->get('api_docs.default_parsing', ''));
-        $swagger->save($parsing->parsing(MainCollect::getMainInfo(), MainCollect::getRoutes(), MainCollect::getTags()));
-        if (! $this->config->get('api_docs.is_debug', false)) {
-            MainCollect::clean();
-        }
+        $schemas = $this->swaggerComponents->getSchemas();
+
+        $this->swaggerOpenApi->setComponentsSchemas($schemas);
+        $this->swaggerOpenApi->save($server['name']);
+
+        $this->swaggerOpenApi->clean();
+        $this->swaggerComponents->setSchemas([]);
+
         $this->logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
     }
 
-    /**
-     * 获取解析器.
-     */
-    public function getParsing(string $defaultParsing = ''): ParsingInterface
-    {
-        if (empty($defaultParsing) || class_exists($defaultParsing)) {
-            $defaultParsing = Swagger2Parsing::class;
-        }
-        return make($defaultParsing);
-    }
+
 
     protected function prepareHandler($handler): array
     {

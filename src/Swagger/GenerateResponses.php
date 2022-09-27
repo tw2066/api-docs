@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
-use Hyperf\ApiDocs\Collect\ResponseInfo;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
-use Hyperf\DTO\Scan\Property;
 use Hyperf\Utils\Arr;
+use OpenApi\Attributes as OA;
+use Psr\Container\ContainerInterface;
 
 class GenerateResponses
 {
-    use SwaggerCommon;
-
     public function __construct(
         private string $className,
         private string $methodName,
         private array $apiResponseArr,
         private SwaggerConfig $swaggerConfig,
         private MethodDefinitionCollectorInterface $methodDefinitionCollector,
+        private ContainerInterface $container,
+        private SwaggerComponents $swaggerComponents,
+        private SwaggerCommon $common,
     ) {
     }
 
@@ -32,35 +33,73 @@ class GenerateResponses
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
-        $code = $this->swaggerConfig->getResponsesCode();
         $globalResp = $this->getGlobalResp();
         $annotationResp = $this->getAnnotationResp();
         $arr = [];
-        $responseInfo = $this->getResponseInfo($returnTypeClassName);
-        $responseInfo->code = $code;
-        $responseInfo->description = 'OK';
-        $arr[] = $responseInfo;
+
+        $code = $this->swaggerConfig->getResponsesCode();
+        $response = new OA\Response();
+        $response->response = $code;
+        $response->description = 'successful operation';
+        $content = $this->getContent($returnTypeClassName);
+        $content && $response->content = $content;
+        $arr[$code] = $response;
+
         $annotationResp && $arr = Arr::merge($arr, $annotationResp);
         $globalResp && $arr = Arr::merge($arr, $globalResp);
+        return array_values($arr);
+    }
+
+    protected function getContent(string $returnTypeClassName, bool $isArray = false): array
+    {
+        $arr = [];
+        $mediaType = new OA\MediaType();
+
+        $mediaTypeStr = 'text/plain';
+        // 简单类型
+        if ($this->common->isSimpleType($returnTypeClassName)) {
+            $schema = new OA\Schema();
+            $schema->type = $this->common->getSwaggerType($returnTypeClassName);
+            // 数组
+            if ($isArray) {
+                $mediaTypeStr = 'application/json';
+                $schema->type = 'array';
+                $items = new OA\Items();
+                $items->type = $this->common->getSwaggerType($returnTypeClassName);
+                $schema->items = $items;
+            }
+            $mediaType->schema = $schema;
+        } elseif ($this->container->has($returnTypeClassName)) {
+            $mediaTypeStr = 'application/json';
+            $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
+        } else {
+            // 其他类型数据 eg:mixed
+            return [];
+        }
+
+        $arr[$mediaTypeStr] = $mediaType;
+        $mediaType->mediaType = $mediaTypeStr;
         return $arr;
     }
 
     /**
-     * 获取返回类型的Response.
+     * 获取返回类型的JsonContent.
      */
-    protected function getResponseInfo(string $returnTypeClassName): ResponseInfo
+    protected function getJsonContent(string $returnTypeClassName, bool $isArray): OA\JsonContent
     {
-        $responseInfo = new ResponseInfo();
-        $property = new Property();
-        $property->isSimpleType = true;
-        if ($this->isSimpleType($returnTypeClassName)) {
-            $property->phpSimpleType = $returnTypeClassName;
-        } elseif (class_exists($returnTypeClassName)) {
-            $property->isSimpleType = false;
-            $property->className = $returnTypeClassName;
+        $jsonContent = new OA\JsonContent();
+        $this->swaggerComponents->generateSchemas($returnTypeClassName);
+
+        if ($isArray) {
+            $jsonContent->type = 'array';
+            $items = new OA\Items();
+            $items->ref = $this->common->getComponentsName($returnTypeClassName);
+            $jsonContent->items = $items;
+        } else {
+            $jsonContent->ref = $this->common->getComponentsName($returnTypeClassName);
         }
-        $responseInfo->property = $property;
-        return $responseInfo;
+
+        return $jsonContent;
     }
 
     /**
@@ -69,27 +108,40 @@ class GenerateResponses
     protected function getGlobalResp(): array
     {
         $resp = [];
-        foreach ($this->swaggerConfig->getResponses() as $code => $value) {
+        foreach ($this->swaggerConfig->getResponses() as $value) {
             $apiResponse = new ApiResponse();
-            $apiResponse->code = (string) $code;
+            $apiResponse->code = (string) $value['code'];
             $apiResponse->description = $value['description'] ?? null;
             ! empty($value['type']) && $apiResponse->type = $value['type'];
-            ! empty($value['className']) && $apiResponse->className = $value['className'];
-            $resp[] = ResponseInfo::form($apiResponse);
+            ! empty($value['isArray']) && $apiResponse->isArray = $value['isArray'];
+
+            $resp[$apiResponse->code] = $this->getOAResp($apiResponse);
         }
         return $resp;
     }
 
+    protected function getOAResp(ApiResponse $apiResponse): OA\Response
+    {
+        $response = new OA\Response();
+        $response->response = $apiResponse->code;
+        $response->description = $apiResponse->description;
+        if (! empty($apiResponse->type)) {
+            $content = $this->getContent($apiResponse->type, $apiResponse->isArray);
+            $content && $response->content = $content;
+        }
+        return $response;
+    }
+
     /**
      * 获取注解上的Response.
-     * @return ResponseInfo[]
+     * @return OA\Response[]
      */
     protected function getAnnotationResp(): array
     {
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {
-            $resp[] = ResponseInfo::form($apiResponse);
+            $resp[$apiResponse->code] = $this->getOAResp($apiResponse);
         }
         return $resp;
     }

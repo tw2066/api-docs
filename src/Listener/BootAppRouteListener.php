@@ -7,6 +7,7 @@ namespace Hyperf\ApiDocs\Listener;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerConfigFactory;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
+use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\ValidationDto;
@@ -71,6 +72,7 @@ class BootAppRouteListener implements ListenerInterface
         $httpServerRouter->addGroup($prefix, function ($route) {
             $route->get('', [SwaggerController::class, 'index']);
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
+            $route->get('/{httpName}.yaml', [SwaggerController::class, 'getYamlFile']);
             //$route->get('/{file}.map', [SwaggerController::class, 'map']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);
         });

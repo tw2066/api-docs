@@ -58,10 +58,11 @@ class DemoController
     #[ApiOperation('3:表单提交')]
     #[PostMapping(path: 'fromData')]
     #[ApiFormData(name: 'photo', type: 'file')]
-    #[ApiFormData(name: 'photo2', type: 'file')]
-    #[ApiResponse(code: '200', description: 'success', className: Address::class, type: 'array')]
-    #[ApiResponse(code: '201', className: Address::class)]
-    #[ApiResponse(code: '203', description: 'success', type: 'int')]
+    #[ApiFormData(name: 'photo2', format: 'file')]
+    #[ApiHeader(name: 'testh', type: 'string')]
+    #[ApiResponse(code: '200', description: 'success', type: Address::class)]
+    #[ApiResponse(code: '201', type: Address::class)]
+    #[ApiResponse(code: '203', description: 'success', type: 'int',isArray: true)]
     #[ApiResponse(code: '204', type: 'bool')]
     public function fromData(#[RequestFormData] DemoFormData $formData): object
     {

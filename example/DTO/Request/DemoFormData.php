@@ -15,6 +15,6 @@ class DemoFormData
     #[Between(2, 10)]
     public int $num;
 
-    #[ApiModelProperty(value: '名称', required: true)]
+    #[ApiModelProperty(value: '年龄', required: true)]
     public int $age;
 }

@@ -22,21 +22,21 @@ class SwaggerController
 
     private array $uiFileList;
 
-    private array $jsonFileList;
+    private array $swaggerFileList;
 
-    public function __construct(private SwaggerConfig $swaggerConfig,private ConfigInterface $config,private ResponseInterface $response)
+    public function __construct(private SwaggerConfig $swaggerConfig, private ConfigInterface $config, private ResponseInterface $response)
     {
-        $this->outputDir = $this->config->get('api_docs.output_dir');
+        $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = scandir($this->swaggerUiPath);
-        $this->jsonFileList = scandir($this->outputDir);
+        $this->swaggerFileList = scandir($this->outputDir);
     }
 
     public function index(): PsrResponseInterface
     {
         $filePath = BASE_PATH . '/vendor/tangwei/apidocs/src/web/index.html';
         $contents = file_get_contents($filePath);
-        $contents = str_replace('{{$path}}', '.'.$this->swaggerConfig->getPrefixUrl(), $contents);
-        $contents = str_replace('{{$url}}', '.'.$this->getJsonUrl(BootAppRouteListener::$httpServerName), $contents);
+        $contents = str_replace('{{$path}}', '.' . $this->swaggerConfig->getPrefixUrl(), $contents);
+        $contents = str_replace('{{$url}}', '.' . $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
@@ -52,19 +52,29 @@ class SwaggerController
     public function getJsonFile(string $httpName): PsrResponseInterface
     {
         $file = $httpName . '.json';
-        if (! in_array($file, $this->jsonFileList)) {
+        if (! in_array($file, $this->swaggerFileList)) {
             throw new ApiDocsException('File does not exist');
         }
         $filePath = $this->outputDir . '/' . $file;
         return $this->response->withBody(new SwooleFileStream($filePath));
     }
 
-    private function getJsonUrl($serverName): string
+    public function getYamlFile(string $httpName): PsrResponseInterface
     {
-        return $this->swaggerConfig->getPrefixUrl() . '/' . $serverName . '.json';
+        $file = $httpName . '.yaml';
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw new ApiDocsException('File does not exist');
+        }
+        $filePath = $this->outputDir . '/' . $file;
+        return $this->response->withBody(new SwooleFileStream($filePath));
     }
 
     public function map()
     {
+    }
+
+    private function getSwaggerFileUrl($serverName): string
+    {
+        return $this->swaggerConfig->getPrefixUrl() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
     }
 }

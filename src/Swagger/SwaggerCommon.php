@@ -14,16 +14,17 @@ use Hyperf\DTO\Scan\PropertyManager;
 use ReflectionProperty;
 use Throwable;
 
-trait SwaggerCommon
+class SwaggerCommon
 {
-    /**
-     * 获取并收集Definition
-     * @param string $className
-     * @return string
-     */
-    public function getDefinitionName(string $className): string
+    private static array $className;
+
+    private static array $simpleClassName;
+
+
+
+    public function getComponentsName(string $className): string
     {
-        return '#/definitions/' . $this->getSimpleClassName($className);
+        return '#/components/schemas/' . $this->getSimpleClassName($className);
     }
 
     /**
@@ -33,11 +34,24 @@ trait SwaggerCommon
      */
     public function getSimpleClassName(string $className): string
     {
-        return SwaggerJson::getSimpleClassName($className);
+        $className = '\\' . trim($className, '\\');
+        if (isset(self::$className[$className])) {
+            return self::$className[$className];
+        }
+        $simpleClassName = substr($className, strrpos($className, '\\') + 1);
+        if (isset(self::$simpleClassName[$simpleClassName])) {
+            $simpleClassName .= '-' . (++self::$simpleClassName[$simpleClassName]);
+        } else {
+            self::$simpleClassName[$simpleClassName] = 0;
+        }
+        self::$className[$className] = $simpleClassName;
+        return $simpleClassName;
     }
+
 
     public function getParameterClassProperty(string $parameterClassName, string $in): array
     {
+
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
@@ -54,7 +68,7 @@ trait SwaggerCommon
                 $phpType = $enum->backedType;
             }
 
-            $parameterInfo->type = $this->getType2SwaggerType($phpType);
+            $parameterInfo->type = $this->common->getSwaggerType($phpType);
             if (! in_array($phpType, ['integer', 'int', 'boolean', 'bool', 'string', 'double', 'float'])) {
                 continue;
             }
@@ -105,12 +119,12 @@ trait SwaggerCommon
      * @param $phpType
      * @return string
      */
-    public function getType2SwaggerType($phpType): string
+    public function getSwaggerType($phpType): string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
             'boolean', 'bool' => 'boolean',
-            'double', 'float' => 'number',
+            'double', 'float','number' => 'number',
             'array' => 'array',
             'object' => 'object',
             default => 'string',
