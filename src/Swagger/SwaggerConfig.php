@@ -16,8 +16,6 @@ class SwaggerConfig
 
     private string $prefix_url = '';
 
-    private array $security = [];
-
     private bool $validation_custom_attributes = false;
 
     private array $responses = [];
@@ -27,8 +25,6 @@ class SwaggerConfig
     private string $responses_code = '200';
 
     private string $format = 'json';
-
-    private string $openapi_version = OpenApi::DEFAULT_VERSION;
 
     public function __construct(ConfigInterface $config)
     {
@@ -59,11 +55,6 @@ class SwaggerConfig
         return $this->prefix_url;
     }
 
-    public function getSecurity(): array
-    {
-        return $this->security;
-    }
-
     public function isValidationCustomAttributes(): bool
     {
         return $this->validation_custom_attributes;
@@ -79,6 +70,11 @@ class SwaggerConfig
      *               'info' => [],
      *               'servers' => [],
      *               'externalDocs' => [],
+     *               'components' => [
+     *               'securitySchemes'=>[]
+     *               ],
+     *               'openapi'=>'',
+     *               'security'=>[],
      *               ]
      */
     public function getSwagger(): array
@@ -94,10 +90,5 @@ class SwaggerConfig
     public function getFormat(): string
     {
         return $this->format == 'json' ? 'json' : 'yaml';
-    }
-
-    public function getOpenapiVersion(): string
-    {
-        return $this->openapi_version;
     }
 }

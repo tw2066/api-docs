@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Listener;
 
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
-use Hyperf\ApiDocs\Swagger\SwaggerConfigFactory;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
-use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\ValidationDto;
@@ -42,6 +40,11 @@ class BootAppRouteListener implements ListenerInterface
 
     public function process(object $event): void
     {
+        // 提前设置
+        if ($this->swaggerConfig->isValidationCustomAttributes()) {
+            ValidationDto::$isValidationCustomAttributes = true;
+        }
+
         if (! $this->swaggerConfig->isEnable()) {
             $this->logger->debug('api_docs swagger not enable');
             return;
@@ -49,9 +52,6 @@ class BootAppRouteListener implements ListenerInterface
         if (! $this->swaggerConfig->getOutputDir()) {
             $this->logger->error('/config/autoload/api_docs.php need set output_dir');
             return;
-        }
-        if ($this->swaggerConfig->isValidationCustomAttributes()) {
-            ValidationDto::$isValidationCustomAttributes = true;
         }
         $prefix = $this->swaggerConfig->getPrefixUrl();
         $servers = $this->config->get('server.servers');
@@ -68,12 +68,11 @@ class BootAppRouteListener implements ListenerInterface
             $this->logger->warning('Swagger: http Service not started');
             return;
         }
-        //添加路由
+        // 添加路由
         $httpServerRouter->addGroup($prefix, function ($route) {
             $route->get('', [SwaggerController::class, 'index']);
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
             $route->get('/{httpName}.yaml', [SwaggerController::class, 'getYamlFile']);
-            //$route->get('/{file}.map', [SwaggerController::class, 'map']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);
         });
         self::$httpServerName = $httpServer['name'];

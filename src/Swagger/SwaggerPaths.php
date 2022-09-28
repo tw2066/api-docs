@@ -33,7 +33,6 @@ class SwaggerPaths
         public StdoutLoggerInterface $stdoutLogger,
         private SwaggerOpenApi $swaggerOpenApi,
         private SwaggerCommon $common,
-        private SwaggerConfig $swaggerConfig,
     ) {
     }
 
@@ -89,12 +88,10 @@ class SwaggerPaths
 
         $method = strtolower($methods);
         /** @var GenerateParameters $generateParameters */
-        $generateParameters = make(GenerateParameters::class, [$route, $method, $className, $methodName, $apiHeaderArr, $apiFormDataArr]);
+        $generateParameters = make(GenerateParameters::class, [$className, $methodName, $apiHeaderArr, $apiFormDataArr]);
         /** @var GenerateResponses $generateResponses */
         $generateResponses = make(GenerateResponses::class, [$className, $methodName, $apiResponseArr]);
-
         $parameters = $generateParameters->generate();
-
         $pathItem->path = $route;
 
         $OAClass = 'OpenApi\Attributes\\' . ucfirst($method);
@@ -102,8 +99,10 @@ class SwaggerPaths
         $operation = new $OAClass();
         $operation->path = $route;
         $operation->tags = $tags;
-        $operation->summary = $apiOperation->summary ?? '';
-        $apiOperation->description !== null && $operation->description = $apiOperation->description;
+        $operation->summary = $apiOperation->summary;
+        $operation->description = $apiOperation->description;
+        $operation->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
+
         $isDeprecated && $operation->deprecated = true;
 
         $parameters['requestBody'] && $operation->requestBody = $parameters['requestBody'];
@@ -113,13 +112,13 @@ class SwaggerPaths
 
         // 安全验证
         $securityArr = $this->getSecurity($classAnnotation, $methodAnnotations);
-        if ($securityArr) {
+        if ($securityArr !== false) {
             $operation->security = $securityArr;
         }
 
         $pathItem->{$method} = $operation;
         // 将$pathItem insert
-        $this->swaggerOpenApi->getQueuePaths()->insert($pathItem, 100000 - $position);
+        $this->swaggerOpenApi->getQueuePaths()->insert($pathItem, 0 - $position);
     }
 
     /**
@@ -127,55 +126,63 @@ class SwaggerPaths
      * @param $classAnnotation
      * @param $methodAnnotations
      */
-    protected function getSecurity($classAnnotation, $methodAnnotations): array
+    protected function getSecurity($classAnnotation, $methodAnnotations): array|false
     {
         $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
         if (! $apiOperation->security) {
             return [];
         }
-        // 获取全局配置
-        $securityArr = $this->swaggerConfig->getSecurity();
-        $tempArr = [];
 
-        foreach ($securityArr as $item) {
-            $tempArr += $item;
+        // 方法设置了
+        $isMethodSetApiSecurity = $this->isSetApiSecurity($methodAnnotations);
+        if ($isMethodSetApiSecurity) {
+            return $this->setSecurity($methodAnnotations);
         }
-        $tempArr = $this->setAndFilterSecurity($classAnnotation, $tempArr);
-        $tempArr = $this->setAndFilterSecurity($methodAnnotations, $tempArr);
-        $arr = [];
-        foreach ($tempArr as $key => $temp) {
-            $arr[][$key] = $temp;
+
+        // 类上设置了
+        $isClassSetApiSecurity = $this->isSetApiSecurity($classAnnotation);
+        if ($isClassSetApiSecurity) {
+            return $this->setSecurity($classAnnotation);
         }
-        return $arr;
+
+        return false;
     }
 
-    /**
-     * 设置和过滤安全验证
-     */
-    private function setAndFilterSecurity(?array $annotations, array $tempArr): array
+    private function isSetApiSecurity(?array $annotations): bool
     {
         foreach ($annotations ?? [] as $item) {
             if ($item instanceof MultipleAnnotationInterface) {
                 $toAnnotations = $item->toAnnotations();
                 foreach ($toAnnotations as $annotation) {
                     if ($annotation instanceof ApiSecurity) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 设置安全验证
+     */
+    private function setSecurity(?array $annotations): array
+    {
+        $result = [];
+        foreach ($annotations ?? [] as $item) {
+            if ($item instanceof MultipleAnnotationInterface) {
+                $toAnnotations = $item->toAnnotations();
+                foreach ($toAnnotations as $annotation) {
+                    if ($annotation instanceof ApiSecurity) {
                         // 存在需要设置的security
-                        if ($annotation->name) {
-                            $tempArr[$annotation->name] = $annotation->value;
-                        }
-                        // 存在需要过滤的security
-                        if ($annotation->filter) {
-                            foreach ($annotation->filter as $filter) {
-                                if (isset($tempArr[$filter])) {
-                                    unset($tempArr[$filter]);
-                                }
-                            }
+                        if (! empty($annotation->name)) {
+                            $result[][$annotation->name] = $annotation->value;
                         }
                     }
                 }
             }
         }
-        return $tempArr;
+        return $result;
     }
 
     /**

@@ -33,7 +33,9 @@ class GenerateResponses
         /** @var ReflectionType $definitions */
         $definition = $this->methodDefinitionCollector->getReturnType($this->className, $this->methodName);
         $returnTypeClassName = $definition->getName();
+        // 全局
         $globalResp = $this->getGlobalResp();
+        // 注解
         $annotationResp = $this->getAnnotationResp();
         $arr = [];
 
@@ -47,6 +49,7 @@ class GenerateResponses
 
         $annotationResp && $arr = Arr::merge($arr, $annotationResp);
         $globalResp && $arr = Arr::merge($arr, $globalResp);
+
         return array_values($arr);
     }
 
@@ -110,12 +113,12 @@ class GenerateResponses
         $resp = [];
         foreach ($this->swaggerConfig->getResponses() as $value) {
             $apiResponse = new ApiResponse();
-            $apiResponse->code = (string) $value['code'];
+            $apiResponse->response = $value['response'];
             $apiResponse->description = $value['description'] ?? null;
             ! empty($value['type']) && $apiResponse->type = $value['type'];
             ! empty($value['isArray']) && $apiResponse->isArray = $value['isArray'];
 
-            $resp[$apiResponse->code] = $this->getOAResp($apiResponse);
+            $resp[$apiResponse->response] = $this->getOAResp($apiResponse);
         }
         return $resp;
     }
@@ -123,7 +126,7 @@ class GenerateResponses
     protected function getOAResp(ApiResponse $apiResponse): OA\Response
     {
         $response = new OA\Response();
-        $response->response = $apiResponse->code;
+        $response->response = $apiResponse->response;
         $response->description = $apiResponse->description;
         if (! empty($apiResponse->type)) {
             $content = $this->getContent($apiResponse->type, $apiResponse->isArray);
@@ -141,7 +144,7 @@ class GenerateResponses
         $resp = [];
         /** @var ApiResponse $apiResponse */
         foreach ($this->apiResponseArr as $apiResponse) {
-            $resp[$apiResponse->code] = $this->getOAResp($apiResponse);
+            $resp[$apiResponse->response] = $this->getOAResp($apiResponse);
         }
         return $resp;
     }

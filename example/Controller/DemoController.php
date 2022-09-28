@@ -10,6 +10,7 @@ use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\Annotation\ApiSecurity;
 use Hyperf\Database\Model\Relations\HasOne;
 use Hyperf\DTO\Annotation\Contracts\RequestBody;
 use Hyperf\DTO\Annotation\Contracts\RequestFormData;
@@ -22,6 +23,7 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\PatchMapping;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
+use Hyperf\HttpServer\Contract\RequestInterface;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
@@ -32,12 +34,18 @@ use HyperfExample\ApiDocs\DTO\Response\ActivityPage;
 use HyperfExample\ApiDocs\DTO\Response\ActivityResponse;
 use HyperfExample\ApiDocs\DTO\Response\Contact;
 use JetBrains\PhpStorm\Deprecated;
+use OpenApi\Attributes as OA;
+use OpenApi\Attributes\Response;
 
 #[Controller(prefix: '/exampleDemo')]
 #[Api(tags: 'demo管理', position: 1)]
 #[ApiHeader('apiHeader')]
 class DemoController
 {
+    public function __construct(protected RequestInterface $request)
+    {
+    }
+
     #[ApiOperation('1:查询')]
     #[PostMapping(path: 'query')]
     public function query(#[RequestBody] #[Valid] DemoQuery $request): Contact
@@ -57,17 +65,17 @@ class DemoController
 
     #[ApiOperation('3:表单提交')]
     #[PostMapping(path: 'fromData')]
-    #[ApiFormData(name: 'photo', type: 'file')]
-    #[ApiFormData(name: 'photo2', format: 'file')]
-    #[ApiHeader(name: 'testh', type: 'string')]
-    #[ApiResponse(code: '200', description: 'success', type: Address::class)]
-    #[ApiResponse(code: '201', type: Address::class)]
-    #[ApiResponse(code: '203', description: 'success', type: 'int',isArray: true)]
-    #[ApiResponse(code: '204', type: 'bool')]
+    #[ApiFormData(name: 'photo', format: 'binary')]
+    #[ApiFormData(name: 'photo2',format: 'binary')]
+    #[ApiResponse(response: '200', description: 'success', type: Address::class)]
+    #[ApiResponse(response: '201', type: Address::class)]
+    #[ApiResponse(response: '203', description: 'success', type: 'int',isArray: true)]
+    #[ApiResponse(response: '204', type: 'bool')]
+    #[ApiSecurity]
     public function fromData(#[RequestFormData] DemoFormData $formData): object
     {
-//        $file = $this->request->file('photo');
-//        var_dump($file);
+        $file = $this->request->file('photo');
+        dump($file);
         var_dump($formData);
         return new Address();
     }

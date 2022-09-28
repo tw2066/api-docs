@@ -19,8 +19,7 @@ abstract class BaseParam extends AbstractMultipleAnnotation
         public string $description = Generator::UNDEFINED,
         public $format = Generator::UNDEFINED,
         public bool $hidden = false
-    )
-    {
+    ) {
     }
 
     public function getIn(): string

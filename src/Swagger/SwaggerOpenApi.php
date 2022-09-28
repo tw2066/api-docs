@@ -31,17 +31,18 @@ class SwaggerOpenApi
     public function init(): void
     {
         $this->openApi = new OpenApi();
-        $this->openApi->openapi = $this->swaggerConfig->getOpenapiVersion();
         $this->openApi->paths = [];
         $this->openApi->tags = [];
         $this->openApi->components = new OA\Components();
         $this->tags = [];
         $this->queuePaths = new SplPriorityQueue();
         $this->queueTags = new SplPriorityQueue();
+        $this->setOpenapiVersion();
         $this->setInfo();
         $this->setServers();
-        $this->setExternalDocs();
         $this->setComponentsSecuritySchemes();
+        $this->setSecurity();
+        $this->setExternalDocs();
     }
 
     public function clean(): void
@@ -55,6 +56,26 @@ class SwaggerOpenApi
     public function getQueuePaths(): SplPriorityQueue
     {
         return $this->queuePaths;
+    }
+
+    /**
+     * 设置OpenapiVersion.
+     */
+    public function setOpenapiVersion(): void
+    {
+        if (! empty($this->swaggerConfig->getSwagger()['openapi'])) {
+            $this->openApi->openapi = $this->swaggerConfig->getSwagger()['openapi'];
+        }
+    }
+
+    /**
+     * 设置openApi对象 security.
+     */
+    public function setSecurity(): void
+    {
+        if (! empty($this->swaggerConfig->getSwagger()['security'])) {
+            $this->openApi->security = $this->swaggerConfig->getSwagger()['security'];
+        }
     }
 
     /**

@@ -12,16 +12,9 @@ class ApiSecurity extends AbstractMultipleAnnotation
 {
     public array $filter = [];
 
-    /**
-     * @param string[] $filter
-     */
     public function __construct(
-        public ?string $name = null,
+        public string $name = '',
         public array $value = [],
-        array|string $filter = '',
     ) {
-        if ($filter) {
-            $this->filter = is_string($filter) ? [$filter] : $filter;
-        }
     }
 }

@@ -9,7 +9,6 @@ use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\ApiDocs\Swagger\SwaggerPaths;
-use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
@@ -21,7 +20,6 @@ class AfterDtoStartListener implements ListenerInterface
 {
     public function __construct(
         private StdoutLoggerInterface $logger,
-        private ConfigInterface $config,
         private SwaggerOpenApi $swaggerOpenApi,
         private SwaggerComponents $swaggerComponents,
         private SwaggerConfig $swaggerConfig,
@@ -62,10 +60,10 @@ class AfterDtoStartListener implements ListenerInterface
                         if (count($prepareHandler) > 1) {
                             [$controller, $methodName] = $prepareHandler;
                             // todo
-//                            if($controller == DemoController::class){
+                            if ($controller == DemoController::class) {
 //                                dd($controller, $methodName, $item->route, $methods);
-                            $swagger->addPath($controller, $methodName, $item->route, $methods);
-//                            }
+                                $swagger->addPath($controller, $methodName, $item->route, $methods);
+                            }
                         }
                     }
                 });
@@ -81,8 +79,6 @@ class AfterDtoStartListener implements ListenerInterface
 
         $this->logger->debug('swagger server:[' . $server['name'] . '] file has been generated');
     }
-
-
 
     protected function prepareHandler($handler): array
     {

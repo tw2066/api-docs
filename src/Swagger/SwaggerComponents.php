@@ -13,32 +13,22 @@ use OpenApi\Attributes as OA;
 
 class SwaggerComponents
 {
+    protected static array $schemas;
 
     public function __construct(
         private SwaggerCommon $common,
-    )
-    {
+    ) {
     }
 
-    protected static array $schemas;
-
-    /**
-     * @return array
-     */
     public function getSchemas(): array
     {
         return self::$schemas;
     }
 
-    /**
-     * @param array $schemas
-     */
     public function setSchemas(array $schemas): void
     {
         self::$schemas = $schemas;
     }
-
-
 
     public function getProperties(string $className): array
     {
@@ -47,7 +37,7 @@ class SwaggerComponents
         $propertyArr = [];
         $requiredArr = [];
         // 循环类中字段
-        foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
+        foreach ($rc->getProperties() as $reflectionProperty) {
             // 属性
             $property = new OA\Property();
 

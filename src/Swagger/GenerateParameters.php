@@ -8,7 +8,6 @@ use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\ApiDocs\Annotation\BaseParam;
-use Hyperf\Contract\ConfigInterface;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
@@ -28,16 +27,12 @@ class GenerateParameters
      * @param ApiFormData[] $apiFormDataArr
      */
     public function __construct(
-        private string $route,
-        private string $method,
         private string $controller,
         private string $action,
         private array $apiHeaderArr,
         private array $apiFormDataArr,
         private ContainerInterface $container,
-        private ConfigInterface $config,
         private MethodDefinitionCollectorInterface $methodDefinitionCollector,
-        private SwaggerOpenApi $swaggerOpenApi,
         private SwaggerComponents $swaggerComponents,
         private SwaggerCommon $common,
     ) {
@@ -95,7 +90,7 @@ class GenerateParameters
                     $mediaType = new OA\MediaType();
                     $mediaType->mediaType = 'multipart/form-data';
                     // $parameterClassName
-                    $mediaType->schema = $this->generateSchemasByClass($parameterClassName);
+                    $mediaType->schema = $this->generateFormDataSchemas($parameterClassName, $this->apiFormDataArr);
                     $mediaType->schema->type = 'object';
                     $requestBody->content = [];
                     $requestBody->content[$mediaType->mediaType] = $mediaType;
@@ -107,11 +102,11 @@ class GenerateParameters
         return $result;
     }
 
-    public function generateSchemasByClass($className): OA\Schema
+    public function generateFormDataSchemas($className, $apiFormDataArr): OA\Schema
     {
         $schema = new OA\Schema();
         $data = $this->swaggerComponents->getProperties($className);
-        $annotationData = $this->getPropertiesByBaseParam($this->apiFormDataArr);
+        $annotationData = $this->getPropertiesByBaseParam($apiFormDataArr);
         $schema->properties = Arr::merge($data['propertyArr'], $annotationData['propertyArr']);
         $schema->required = Arr::merge($data['requiredArr'], $annotationData['requiredArr']);
         return $schema;
@@ -197,13 +192,11 @@ class GenerateParameters
             $parameter->in = $param->getIn();
             $schema->default = $param->default;
             $schema->type = $this->common->getSwaggerType($param->type);
-
             // 描述
             $parameter->description = $param->description;
             if ($param->required !== null) {
                 $parameter->required = $param->required;
             }
-            $schema->example = $param->example;
             $schema->default = $param->default;
             $schema->format = $param->format;
             $parameters[] = $parameter;
@@ -211,6 +204,9 @@ class GenerateParameters
         return $parameters;
     }
 
+    /**
+     * @param BaseParam[] $baseParam
+     */
     private function getPropertiesByBaseParam(array $baseParam): array
     {
         $propertyArr = [];
@@ -227,10 +223,7 @@ class GenerateParameters
             $property->property = $fieldName;
             // 描述
             $property->description = $param->description;
-            if ($param->required !== null) {
-                $param->required && $requiredArr[] = $fieldName;
-            }
-            $property->example = $param->example;
+            $param->required && $requiredArr[] = $fieldName;
             $property->default = $param->default;
             $property->type = $this->common->getSwaggerType($param->type);
             $property->format = $param->format;

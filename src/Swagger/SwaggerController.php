@@ -7,7 +7,6 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
-use Hyperf\Contract\ConfigInterface;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface;
@@ -24,7 +23,7 @@ class SwaggerController
 
     private array $swaggerFileList;
 
-    public function __construct(private SwaggerConfig $swaggerConfig, private ConfigInterface $config, private ResponseInterface $response)
+    public function __construct(private SwaggerConfig $swaggerConfig, private ResponseInterface $response)
     {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = scandir($this->swaggerUiPath);
@@ -67,10 +66,6 @@ class SwaggerController
         }
         $filePath = $this->outputDir . '/' . $file;
         return $this->response->withBody(new SwooleFileStream($filePath));
-    }
-
-    public function map()
-    {
     }
 
     private function getSwaggerFileUrl($serverName): string
