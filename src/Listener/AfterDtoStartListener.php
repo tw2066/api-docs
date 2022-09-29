@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Listener;
 
 use Closure;
+use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\ApiDocs\Swagger\SwaggerPaths;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
-use HyperfExample\ApiDocs\Controller\DemoController;
 use RuntimeException;
 
 class AfterDtoStartListener implements ListenerInterface
@@ -59,16 +60,18 @@ class AfterDtoStartListener implements ListenerInterface
                         $prepareHandler = $this->prepareHandler($item->callback);
                         if (count($prepareHandler) > 1) {
                             [$controller, $methodName] = $prepareHandler;
-                            // todo
-                            if ($controller == DemoController::class) {
-//                                dd($controller, $methodName, $item->route, $methods);
-                                $swagger->addPath($controller, $methodName, $item->route, $methods);
-                            }
+                            $swagger->addPath($controller, $methodName, $item->route, $methods);
                         }
                     }
                 });
             }
         }
+        //收集swaggerComponents Schemas
+        $apiModels = AnnotationCollector::getClassesByAnnotation(ApiModel::class);
+        array_map(function ($className) {
+            $this->swaggerComponents->generateSchemas($className);
+        }, array_keys($apiModels));
+
         $schemas = $this->swaggerComponents->getSchemas();
 
         $this->swaggerOpenApi->setComponentsSchemas($schemas);

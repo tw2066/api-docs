@@ -15,11 +15,8 @@ return [
         ['response' => 401, 'description' => 'Unauthorized'],
         ['response' => 500, 'description' => 'System error'],
     ],
-    // swagger 的基础配置  OpenAPI 对象
+    // swagger 的基础配置  会映射到OpenAPI对象
     'swagger' => [
-        'security' => [
-            ['Authorization' => []],
-        ],
         'info' => [
             'title' => 'API DOC',
             'version' => '0.1',
@@ -40,6 +37,9 @@ return [
                     'name' => 'Authorization',
                 ],
             ],
+        ],
+        'security' => [
+            ['Authorization' => []],
         ],
         'externalDocs' => [
             'description' => 'Find out more about Swagger',

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\ApiAnnotation;
@@ -59,9 +61,7 @@ class SwaggerComponents
             if ($apiModelProperty->required !== null) {
                 $apiModelProperty->required && $requiredArr[] = $fieldName;
             }
-            if ($apiModelProperty->example !== null) {
-                $property->example = $apiModelProperty->example;
-            }
+            $property->example = $apiModelProperty->example;
             if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
                 $property->default = $reflectionProperty->getValue($obj);
             }
@@ -130,6 +130,11 @@ class SwaggerComponents
 
         $data = $this->getProperties($className);
         $schema->properties = $data['propertyArr'];
+        /** @var ApiModel $apiModel */
+        $apiModel = AnnotationCollector::getClassAnnotation($className, ApiModel::class);
+        if($apiModel){
+            $schema->description = $apiModel->value;
+        }
         $data['requiredArr'] && $schema->required = $data['requiredArr'];
         self::$schemas[$simpleClassName] = $schema;
     }

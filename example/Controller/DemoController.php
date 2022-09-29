@@ -34,8 +34,6 @@ use HyperfExample\ApiDocs\DTO\Response\ActivityPage;
 use HyperfExample\ApiDocs\DTO\Response\ActivityResponse;
 use HyperfExample\ApiDocs\DTO\Response\Contact;
 use JetBrains\PhpStorm\Deprecated;
-use OpenApi\Attributes as OA;
-use OpenApi\Attributes\Response;
 
 #[Controller(prefix: '/exampleDemo')]
 #[Api(tags: 'demo管理', position: 1)]
@@ -66,18 +64,13 @@ class DemoController
     #[ApiOperation('3:表单提交')]
     #[PostMapping(path: 'fromData')]
     #[ApiFormData(name: 'photo', format: 'binary')]
-    #[ApiFormData(name: 'photo2',format: 'binary')]
-    #[ApiResponse(response: '200', description: 'success', type: Address::class)]
-    #[ApiResponse(response: '201', type: Address::class)]
-    #[ApiResponse(response: '203', description: 'success', type: 'int',isArray: true)]
-    #[ApiResponse(response: '204', type: 'bool')]
-    #[ApiSecurity]
-    public function fromData(#[RequestFormData] DemoFormData $formData): object
+    #[ApiResponse(response: '200', description: 'success', type: Address::class, isArray: true)]
+    public function fromData(#[RequestFormData] DemoFormData $formData): array
     {
         $file = $this->request->file('photo');
         dump($file);
         var_dump($formData);
-        return new Address();
+        return [new Address()];
     }
 
     #[ApiOperation('4:查询单体记录')]
@@ -125,18 +118,26 @@ class DemoController
 
     #[ApiOperation('获取请求头')]
     #[PostMapping(path: 'getHeader/{id}')]
-    #[Deprecated]
+    #[ApiSecurity]
     public function getHeader(#[RequestHeader] #[Valid] DemoToken $header): DemoToken
     {
         dump($header);
         return $header;
     }
 
-    #[ApiOperation('返回 obj')]
+    #[ApiOperation('返回 obj(弃用)')]
     #[GetMapping(path: 'obj')]
     #[Deprecated]
     public function obj(): object
     {
-        return new self();
+        return new Address();
+    }
+
+    #[ApiOperation('登录', security: false)]
+    #[PostMapping(path: 'login')]
+    public function login(#[RequestBody] #[Valid] DemoBodyRequest $request): DemoBodyRequest
+    {
+        // dump($header);
+        return $request;
     }
 }

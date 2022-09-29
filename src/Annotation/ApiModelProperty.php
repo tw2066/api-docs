@@ -6,11 +6,16 @@ namespace Hyperf\ApiDocs\Annotation;
 
 use Attribute;
 use Hyperf\Di\Annotation\AbstractAnnotation;
+use OpenApi\Generator;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class ApiModelProperty extends AbstractAnnotation
 {
-    public function __construct(public ?string $value = null, public mixed $example = null, public bool $hidden = false, public ?bool $required = null)
+    public function __construct(
+        public ?string $value = null,
+        public mixed $example = Generator::UNDEFINED,
+        public bool $hidden = false,
+        public ?bool $required = null)
     {
     }
 }

@@ -4,19 +4,19 @@
 ##### 优点
 
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
-- 代码可维护性好，扩展性好
-- 支持数组，递归，嵌套
+- 代码DTO模式，可维护性好，扩展性好
+- 支持数组(类/简单类型)，递归，嵌套
 - 支持注解数据校验
-- 支持api token认证
-- 支持PHP8原生注解
-- 支持PHP8.1枚举
+- 支持api toke/auth2认证
+- 支持PHP8原生注解，PHP8.1枚举
+- 支持openapi 3.0
 
 ## 使用须知
 
 * php >= 8.0
 * 控制器中方法尽可能返回类,这样会更好的生成文档
-* 当返回类的结果满足不了时,用 #[ApiResponse] 注解
-* 模型类需要手工编写
+* 当返回类的结果满足不了时,可以使用 #[ApiResponse] 注解
+
 ## 例子
 > 请参考[example目录](https://github.com/tw2066/api-docs/tree/master/example)
 ## 安装
@@ -38,32 +38,46 @@ php bin/hyperf.php vendor:publish tangwei/apidocs
 return [
     // enable false 将不会启动 swagger 服务
     'enable' => env('APP_ENV') !== 'prod',
-    // 默认解析器
-    'default_parsing' => Swagger2Parsing::class,
+    'format' => 'json',
     'output_dir' => BASE_PATH . '/runtime/swagger',
     'prefix_url' => env('API_DOCS_PREFIX_URL', '/swagger'),
-    // 启用默认安全验证
-    'enable_default_security' => true,
-    // 认证api
-    'security_api' => [
-        'Authorization' => ['in' => 'header', 'type' => 'apiKey'],
-    ],
     // 替换验证属性
-    'validation_custom_attributes' => false,
+    'validation_custom_attributes' => true,
     // 全局responses
     'responses' => [
-        // 500 => ['description' => 'System error'],
+        ['response' => 401, 'description' => 'Unauthorized'],
+        ['response' => 500, 'description' => 'System error'],
     ],
-    // swagger 的基础配置
+    // swagger 的基础配置  OpenAPI 对象
     'swagger' => [
-        'swagger' => '2.0',
         'info' => [
-            'description' => 'swagger api desc',
-            'version' => '1.0.0',
             'title' => 'API DOC',
+            'version' => '0.1',
+            'description' => 'swagger api desc',
         ],
-        'schemes' => [],
-        'host' => env('API_DOCS_HOST', ''),
+        'servers' => [
+            [
+                'url' => 'http://127.0.0.1:9501',
+                'description' => 'OpenApi host',
+            ],
+        ],
+        'components' => [
+            'securitySchemes' => [
+                [
+                    'securityScheme' => 'Authorization',
+                    'type' => 'apiKey',
+                    'in' => 'header',
+                    'name' => 'Authorization',
+                ],
+            ],
+        ],
+        'security' => [
+            ['Authorization' => []],
+        ],
+        'externalDocs' => [
+            'description' => 'Find out more about Swagger',
+            'url' => 'https://github.com/tw2066/api-docs',
+        ],
     ],
 ];
 ```
@@ -87,7 +101,7 @@ php bin/hyperf.php start
 
 > 命名空间:`Hyperf\DTO\Annotation\Contracts`
 
-#### RequestBody
+#### #[RequestBody]
 
 - 获取Body参数
 
@@ -95,7 +109,7 @@ php bin/hyperf.php start
 public function add(#[RequestBody] DemoBodyRequest $request){}
 ```
 
-### RequestQuery
+#### #[RequestQuery]
 
 - 获取GET参数
 
@@ -103,7 +117,7 @@ public function add(#[RequestBody] DemoBodyRequest $request){}
 public function add(#[RequestQuery] DemoQuery $request){}
 ```
 
-### RequestFormData
+#### #[RequestFormData]
 
 - 获取表单请求
 
@@ -114,13 +128,20 @@ public function fromData(#[RequestFormData] DemoFormData $formData){}
 - 获取文件(和表单一起使用)
 
 ```php
-#[ApiFormData(name: 'photo', type: 'file')]
+#[ApiFormData(name: 'photo', format: 'binary')]
 ```
 
 - 获取Body参数和GET参数
 
 ```php
 public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query){}
+```
+
+#### #[ApiSecurity] 注解
+- 优先级: 方法 > 类 > 全局
+```php
+    #[ApiSecurity('Authorization')]
+    public function getUserInfo(DemoToken $header){}
 ```
 
 > 注意: 一个方法，不能同时注入RequestBody和RequestFormData
