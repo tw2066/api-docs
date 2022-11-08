@@ -260,6 +260,21 @@ class Image extends BaseValidation
     #[ApiModelProperty('地址')]
     public array $addressArr;
 ```
+### hyperf 2.2版本
+> @required注解会提示报错,请忽略required
+> 
+> 修改文件config/autoload/annotations.php
+```php
+return [
+    'scan' => [
+        //...
+        'ignore_annotations' => [
+            //...
+           'required'
+        ],
+    ],
+];
+```
 - 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
