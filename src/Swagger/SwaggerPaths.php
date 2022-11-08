@@ -68,6 +68,8 @@ class SwaggerPaths
 
         $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
         $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
+
+        $isDeprecated = false;
         class_exists(Deprecated::class) && $isDeprecated = isset($methodAnnotations[Deprecated::class]);
 
         $simpleClassName = $this->common->getSimpleClassName($className);
@@ -123,8 +125,6 @@ class SwaggerPaths
 
     /**
      * 获取安全认证
-     * @param $classAnnotation
-     * @param $methodAnnotations
      */
     protected function getSecurity($classAnnotation, $methodAnnotations): array|false
     {

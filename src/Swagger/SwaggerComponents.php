@@ -15,7 +15,7 @@ use OpenApi\Attributes as OA;
 
 class SwaggerComponents
 {
-    protected static array $schemas;
+    protected static array $schemas = [];
 
     public function __construct(
         private SwaggerCommon $common,
