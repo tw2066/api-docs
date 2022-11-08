@@ -66,14 +66,13 @@ class AfterDtoStartListener implements ListenerInterface
                 });
             }
         }
-        //收集swaggerComponents Schemas
+        // 收集swaggerComponents Schemas
         $apiModels = AnnotationCollector::getClassesByAnnotation(ApiModel::class);
         array_map(function ($className) {
             $this->swaggerComponents->generateSchemas($className);
         }, array_keys($apiModels));
 
         $schemas = $this->swaggerComponents->getSchemas();
-
         $this->swaggerOpenApi->setComponentsSchemas($schemas);
         $this->swaggerOpenApi->save($server['name']);
 

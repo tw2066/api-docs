@@ -103,9 +103,9 @@ class SwaggerComponents
 
                         $this->generateSchemas($propertyClass->arrClassName);
                     }
-                    if (! empty($property->arrSimpleType)) {
+                    if (! empty($propertyClass->arrSimpleType)) {
                         $items = new OA\Items();
-                        $items->type = $this->common->getSwaggerType($property->arrSimpleType);
+                        $items->type = $this->common->getSwaggerType($propertyClass->arrSimpleType);
                         $property->items = $items;
                     }
                 } else {
@@ -118,12 +118,11 @@ class SwaggerComponents
         return ['propertyArr' => $propertyArr, 'requiredArr' => $requiredArr];
     }
 
-    public function generateSchemas(string $className): void
+    public function generateSchemas(string $className)
     {
         $simpleClassName = $this->common->getSimpleClassName($className);
-
         if (isset(static::$schemas[$simpleClassName])) {
-            return;
+            return static::$schemas[$simpleClassName];
         }
         $schema = new OA\Schema();
         $schema->schema = $simpleClassName;
@@ -132,10 +131,11 @@ class SwaggerComponents
         $schema->properties = $data['propertyArr'];
         /** @var ApiModel $apiModel */
         $apiModel = AnnotationCollector::getClassAnnotation($className, ApiModel::class);
-        if($apiModel){
+        if ($apiModel) {
             $schema->description = $apiModel->value;
         }
         $data['requiredArr'] && $schema->required = $data['requiredArr'];
         self::$schemas[$simpleClassName] = $schema;
+        return self::$schemas[$simpleClassName];
     }
 }

@@ -19,16 +19,16 @@ use HyperfExample\ApiDocs\Enum\StatusEnum;
 
 class DemoBodyRequest
 {
-    public const IN = ['A', 'B', 'C'];
-
-    public Address $addr1;
-
-    public Address $addr2;
-
-    #[ApiModelProperty('地址')]
-
-    #[Required]
-    public Address $addr3;
+//    public const IN = ['A', 'B', 'C'];
+//
+//    public Address $addr1;
+//
+//    public Address $addr2;
+//
+//    #[ApiModelProperty('地址')]
+//
+//    #[Required]
+//    public Address $addr3;
 
     #[ApiModelProperty('int数组')]
     #[Required]
@@ -41,7 +41,6 @@ class DemoBodyRequest
     #[ApiModelProperty('枚举')]
 //    #[In(DemoBodyRequest::IN)]
     #[Nullable]
-    #[Required]
     public StatusEnum $enum;
 
     #[ApiModelProperty('价格')]
@@ -68,5 +67,5 @@ class DemoBodyRequest
 
     #[Integer]
     #[Between(min: 2, max: 10)]
-    public int $num = 5;
+    public int $num = 6;
 }

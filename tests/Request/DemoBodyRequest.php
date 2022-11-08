@@ -4,18 +4,40 @@ declare(strict_types=1);
 
 namespace HyperfTest\ApiDocs\Request;
 
+use Hyperf\DTO\Annotation\ArrayType;
+
 class DemoBodyRequest
 {
-    public const IN = ['A', 'B', 'C'];
 
-    private int $int = 5;
+    public int $int = 12345;
 
-    private string $string = 'string';
+    public string $str = 'hi';
+
+    public bool $bo = true;
+
+    public Address $address;
 
     /**
      * @var \HyperfTest\ApiDocs\Request\Address[]
      */
-    private array $arr;
+    private array $addressList1;
 
-    private object $obj;
+    /**
+     * @var Address[]
+     */
+    private array $addressList2;
+
+
+    #[ArrayType(Address::class)]
+    private array $addressList3;
+
+    /**
+     * @var int[]
+     */
+    private array $intList1;
+
+    #[ArrayType('int')]
+    private array $intList2;
+
+
 }

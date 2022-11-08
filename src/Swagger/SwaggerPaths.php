@@ -68,7 +68,7 @@ class SwaggerPaths
 
         $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
         $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
-        $isDeprecated = isset($methodAnnotations[Deprecated::class]);
+        class_exists(Deprecated::class) && $isDeprecated = isset($methodAnnotations[Deprecated::class]);
 
         $simpleClassName = $this->common->getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
