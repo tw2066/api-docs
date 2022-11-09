@@ -28,7 +28,7 @@ class SwaggerConfig
 
     public function __construct(ConfigInterface $config)
     {
-        $data = $config->get('api_docs');
+        $data = $config->get('api_docs', []);
         $jsonMapper = Mapper::getJsonMapper('bIgnoreVisibility');
         // 私有属性和函数
         $jsonMapper->bIgnoreVisibility = true;
