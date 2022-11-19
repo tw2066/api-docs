@@ -19,7 +19,7 @@ use Hyperf\Server\Server;
  */
 class BootAppRouteListener implements ListenerInterface
 {
-    public static string $massage;
+    public static string $massage = '';
 
     public static string $httpServerName;
 
