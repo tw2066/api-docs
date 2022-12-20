@@ -45,7 +45,7 @@ class SwaggerController
             throw new ApiDocsException('File does not exist');
         }
         $file = $this->swaggerUiPath . '/' . $file;
-        return $this->response->withBody(new SwooleFileStream($file));
+        return $this->response->withBody(new SwooleFileStream($file))->withAddedHeader('cache-control','max-age=43200');
     }
 
     public function getJsonFile(string $httpName): PsrResponseInterface
