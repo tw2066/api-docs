@@ -113,7 +113,7 @@ class GenerateResponses
         $resp = [];
         foreach ($this->swaggerConfig->getResponses() as $value) {
             $apiResponse = new ApiResponse();
-            $apiResponse->response = $value['response'];
+            $apiResponse->response = $value['response'] ?? 'response';
             $apiResponse->description = $value['description'] ?? null;
             ! empty($value['type']) && $apiResponse->type = $value['type'];
             ! empty($value['isArray']) && $apiResponse->isArray = $value['isArray'];
