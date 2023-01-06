@@ -83,7 +83,7 @@ class GenerateParameters
                 if ($methodParameter->isRequestHeader()) {
                     $result['parameter'] += $this->getParameterArrByClass($parameterClassName, 'header');
                 }
-                if ($methodParameter->isRequestFormData()) {
+                if ($methodParameter->isRequestFormData() || ! empty($this->apiFormDataArr)) {
                     $requestBody = new OA\RequestBody();
                     $requestBody->required = true;
                     // $requestBody->description = '';
