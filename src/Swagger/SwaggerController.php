@@ -7,10 +7,12 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
+use Hyperf\Engine\Constant;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Swow\Psr7\Message\BufferStream;
 
 #[Api(hidden: true)]
 class SwaggerController
@@ -45,7 +47,7 @@ class SwaggerController
             throw new ApiDocsException('File does not exist');
         }
         $file = $this->swaggerUiPath . '/' . $file;
-        return $this->response->withBody(new SwooleFileStream($file))->withAddedHeader('cache-control','max-age=43200');
+        return $this->fileResponse($file);
     }
 
     public function getJsonFile(string $httpName): PsrResponseInterface
@@ -55,7 +57,7 @@ class SwaggerController
             throw new ApiDocsException('File does not exist');
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->response->withBody(new SwooleFileStream($filePath));
+        return $this->fileResponse($filePath);
     }
 
     public function getYamlFile(string $httpName): PsrResponseInterface
@@ -65,11 +67,35 @@ class SwaggerController
             throw new ApiDocsException('File does not exist');
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->response->withBody(new SwooleFileStream($filePath));
+        return $this->fileResponse($filePath);
     }
 
     private function getSwaggerFileUrl($serverName): string
     {
         return $this->swaggerConfig->getPrefixUrl() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
+    }
+
+    protected function fileResponse(string $filePath)
+    {
+        if (Constant::ENGINE == 'Swoole') {
+            $stream = new SwooleFileStream($filePath);
+        } elseif (Constant::ENGINE == 'Swow') {
+            $stream = new BufferStream(file_get_contents($filePath));
+        } else {
+            $stream = new SwooleStream(file_get_contents($filePath));
+        }
+        $response = $this->response->withBody($stream);
+
+        $pathinfo = pathinfo($filePath);
+        switch ($pathinfo['extension']) {
+            case 'js':
+            case 'map':
+                $response = $response->withAddedHeader('content-type', 'application/javascript')->withAddedHeader('cache-control', 'max-age=43200');
+                break;
+            case 'css':
+                $response = $response->withAddedHeader('content-type', 'text/css')->withAddedHeader('cache-control', 'max-age=43200');
+                break;
+        }
+        return $response;
     }
 }
