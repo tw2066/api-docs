@@ -41,10 +41,9 @@ class GenerateParameters
     public function generate(): array
     {
         $result = [
-            'parameter' => [],
             'requestBody' => [],
         ];
-        $result['parameter'] += $this->getParameterArrByBaseParam($this->apiHeaderArr);
+        $parameterArr = $this->getParameterArrByBaseParam($this->apiHeaderArr);
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
         foreach ($definitions as $definition) {
             // query path
@@ -60,7 +59,7 @@ class GenerateParameters
                 $schema = new OA\Schema();
                 $schema->type = $simpleSwaggerType;
                 $parameter->schema = $schema;
-                $result['parameter'][] = $parameter;
+                $parameterArr[] = $parameter;
                 continue;
             }
 
@@ -78,10 +77,10 @@ class GenerateParameters
                     $result['requestBody'] = $requestBody;
                 }
                 if ($methodParameter->isRequestQuery()) {
-                    $result['parameter'] += $this->getParameterArrByClass($parameterClassName, 'query');
+                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($parameterClassName, 'query'));
                 }
                 if ($methodParameter->isRequestHeader()) {
-                    $result['parameter'] += $this->getParameterArrByClass($parameterClassName, 'header');
+                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($parameterClassName, 'header'));
                 }
                 if ($methodParameter->isRequestFormData() || ! empty($this->apiFormDataArr)) {
                     $requestBody = new OA\RequestBody();
@@ -99,6 +98,7 @@ class GenerateParameters
                 }
             }
         }
+        $result['parameter'] = $parameterArr;
         return $result;
     }
 
