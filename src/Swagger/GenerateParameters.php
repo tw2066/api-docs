@@ -43,6 +43,8 @@ class GenerateParameters
         $result = [
             'requestBody' => [],
         ];
+        // FormData类名
+        $requestFormDataclass = '';
         $parameterArr = $this->getParameterArrByBaseParam($this->apiHeaderArr);
         $definitions = $this->methodDefinitionCollector->getParameters($this->controller, $this->action);
         foreach ($definitions as $definition) {
@@ -82,22 +84,26 @@ class GenerateParameters
                 if ($methodParameter->isRequestHeader()) {
                     $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($parameterClassName, 'header'));
                 }
-                if ($methodParameter->isRequestFormData() || ! empty($this->apiFormDataArr)) {
-                    $requestBody = new OA\RequestBody();
-                    $requestBody->required = true;
-                    // $requestBody->description = '';
-                    $mediaType = new OA\MediaType();
-                    $mediaType->mediaType = 'multipart/form-data';
-                    // $parameterClassName
-                    $mediaType->schema = $this->generateFormDataSchemas($parameterClassName, $this->apiFormDataArr);
-                    $mediaType->schema->type = 'object';
-                    $requestBody->content = [];
-                    $requestBody->content[$mediaType->mediaType] = $mediaType;
-
-                    $result['requestBody'] = $requestBody;
+                if ($methodParameter->isRequestFormData()) {
+                    $requestFormDataclass = $parameterClassName;
                 }
             }
         }
+        //Form表单
+        if (! empty($requestFormDataclass) || ! empty($this->apiFormDataArr)) {
+            $requestBody = new OA\RequestBody();
+            $requestBody->required = true;
+            // $requestBody->description = '';
+            $mediaType = new OA\MediaType();
+            $mediaType->mediaType = 'multipart/form-data';
+            // $parameterClassName
+            $mediaType->schema = $this->generateFormDataSchemas($requestFormDataclass, $this->apiFormDataArr);
+            $mediaType->schema->type = 'object';
+            $requestBody->content = [];
+            $requestBody->content[$mediaType->mediaType] = $mediaType;
+            $result['requestBody'] = $requestBody;
+        }
+
         $result['parameter'] = $parameterArr;
         return $result;
     }

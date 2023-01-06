@@ -34,6 +34,10 @@ class SwaggerComponents
 
     public function getProperties(string $className): array
     {
+        if (empty($className)) {
+            return ['propertyArr' => [], 'requiredArr' => []];
+        }
+
         $obj = make($className);
         $rc = ReflectionManager::reflectClass($className);
         $propertyArr = [];
