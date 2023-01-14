@@ -80,6 +80,7 @@ class SwaggerController
         if (Constant::ENGINE == 'Swoole') {
             $stream = new SwooleFileStream($filePath);
         } elseif (Constant::ENGINE == 'Swow') {
+            /* @phpstan-ignore-next-line */
             $stream = new BufferStream(file_get_contents($filePath));
         } else {
             $stream = new SwooleStream(file_get_contents($filePath));
