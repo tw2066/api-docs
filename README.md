@@ -7,7 +7,7 @@
 - 代码DTO模式，可维护性好，扩展性好
 - 支持数组(类/简单类型)，递归，嵌套
 - 支持注解数据校验
-- 支持api toke/auth2认证
+- 支持api toke
 - 支持PHP8原生注解，PHP8.1枚举
 - 支持openapi 3.0
 
@@ -251,15 +251,30 @@ class Image extends BaseValidation
 ```
   
 ## 注意
-
+> PHP原生不支持int[]或Class[]类型, 使用示例
 ```php
     /**
-     * 映射数组.
+     * class类型映射数组.
      * @var \App\DTO\Address[]
      */
     #[ApiModelProperty('地址')]
     public array $addressArr;
+
+    /**
+     * 简单类型映射数组.
+     * @var int[]
+     */
+    #[ApiModelProperty('int类型的数组')]
+    public array $intArr;
+
+    /**
+     * 通过注解映射数组.
+     */
+    #[ApiModelProperty('string类型的数组')]
+    #[ArrayType('string')]
+    public array $stringArr;
 ```
+
 ### hyperf 2.2版本
 > @required注解会提示报错,请忽略required
 > 
