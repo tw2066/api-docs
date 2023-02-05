@@ -1,5 +1,5 @@
 ## PHP Swagger Api Docs
- 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件
+ 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件，支持swoole/swow驱动
 
 ##### 优点
 
@@ -140,8 +140,8 @@ public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] Dem
 #### #[ApiSecurity] 注解
 - 优先级: 方法 > 类 > 全局
 ```php
-    #[ApiSecurity('Authorization')]
-    public function getUserInfo(DemoToken $header){}
+#[ApiSecurity('Authorization')]
+public function getUserInfo(DemoToken $header){}
 ```
 
 > 注意: 一个方法，不能同时注入RequestBody和RequestFormData
@@ -237,12 +237,14 @@ class DemoQuery
 }
 ```
 
-- Validation
+### 自定义验证注解
 
-> rule 支持框架所有验证
-- 自定义验证注解
-> 只需继承`Hyperf\DTO\Annotation\Validation\BaseValidation`即可
+> 注解的验证支持框架所有验证, 组件提供了常用的注解用于验证
+> 
+> 使用自定义验证注解, 只需继承`Hyperf\DTO\Annotation\Validation\BaseValidation`
+> 重写`$rule`属性或重写`BaseValidation`中的`getRule`方法即可
 ```php
+//示例
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class Image extends BaseValidation
 {
@@ -251,7 +253,8 @@ class Image extends BaseValidation
 ```
   
 ## 注意
-> PHP原生不支持int[]或Class[]类型, 使用示例
+### 数组类型的问题
+> PHP原生暂不支持`int[]`或`Class[]`类型, 使用示例
 ```php
     /**
      * class类型映射数组.
@@ -275,7 +278,7 @@ class Image extends BaseValidation
     public array $stringArr;
 ```
 
-### hyperf 2.2版本
+### hyperf 2.2版本报错
 > @required注解会提示报错,请忽略required
 > 
 > 修改文件config/autoload/annotations.php
@@ -290,7 +293,8 @@ return [
     ],
 ];
 ```
-- 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
+### `AutoController`注解
+> 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
 
