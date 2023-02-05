@@ -7,13 +7,13 @@
 - 代码DTO模式，可维护性好，扩展性好
 - 支持数组(类/简单类型)，递归，嵌套
 - 支持注解数据校验
-- 支持api toke
+- 支持api token
 - 支持PHP8原生注解，PHP8.1枚举
 - 支持openapi 3.0
 
 ## 使用须知
 
-* php >= 8.0
+* php版本 >= 8.0
 * 控制器中方法尽可能返回类,这样会更好的生成文档
 * 当返回类的结果满足不了时,可以使用 #[ApiResponse] 注解
 
@@ -237,12 +237,12 @@ class DemoQuery
 }
 ```
 
-### 自定义验证注解
+### 自定义注解验证
 
 > 注解的验证支持框架所有验证, 组件提供了常用的注解用于验证
-> 
-> 使用自定义验证注解, 只需继承`Hyperf\DTO\Annotation\Validation\BaseValidation`
-> 重写`$rule`属性或重写`BaseValidation`中的`getRule`方法即可
+
+1. 使用自定义验证注解, 创建注解类继承`Hyperf\DTO\Annotation\Validation\BaseValidation`
+2. 重写`$rule`属性或`getRule`方法
 ```php
 //示例
 #[Attribute(Attribute::TARGET_PROPERTY)]
@@ -294,7 +294,7 @@ return [
 ];
 ```
 ### `AutoController`注解
-> 控制器中使用了框架`AutoController`注解,只收集了`POST`方法
+> 控制器中使用`AutoController`注解,只收集了`POST`方法
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
 
