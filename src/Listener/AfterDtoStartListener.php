@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Listener;
 
 use Closure;
-use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
@@ -66,11 +65,6 @@ class AfterDtoStartListener implements ListenerInterface
                 });
             }
         }
-        // 收集swaggerComponents Schemas
-        $apiModels = AnnotationCollector::getClassesByAnnotation(ApiModel::class);
-        array_map(function ($className) {
-            $this->swaggerComponents->generateSchemas($className);
-        }, array_keys($apiModels));
 
         $schemas = $this->swaggerComponents->getSchemas();
         $this->swaggerOpenApi->setComponentsSchemas($schemas);
