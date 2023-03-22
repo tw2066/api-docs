@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Generator;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\DTO\Mapper;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\OpenApi;
 use OpenApi\Attributes\Tag;
+use OpenApi\Generator;
 use SplPriorityQueue;
 
 class SwaggerOpenApi
@@ -108,10 +110,32 @@ class SwaggerOpenApi
 
     public function save(string $serverName): void
     {
+        $paths = [];
         // 设置paths
         while (! $this->queuePaths->isEmpty()) {
-            $this->openApi->paths[] = $this->queuePaths->extract();
+            $paths[] = $this->queuePaths->extract();
         }
+
+        // 相同path不同method的特殊处理
+        $validateMethods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
+        $uniquePaths = [];
+        foreach ($paths as $value) {
+            $path = $value->path;
+            if (isset($uniquePaths[$path])) {
+                $hasSetMethods = array_filter($validateMethods, fn ($method) => $uniquePaths[$path]->$method !== Generator::UNDEFINED);
+                $newMethods = array_filter($validateMethods, fn($method) => $value->$method !== Generator::UNDEFINED);
+                $needAddMethods = array_diff($newMethods, $hasSetMethods);
+                if (!empty($needAddMethods)) {
+                    foreach ($needAddMethods as $method) {
+                        $uniquePaths[$path]->$method = $value->$method;
+                    }
+                }
+            } else {
+                $uniquePaths[$path] = $value;
+            }
+        }
+
+        $this->openApi->paths= $uniquePaths;
         // 设置tags
         while (! $this->queueTags->isEmpty()) {
             $this->openApi->tags[] = $this->queueTags->extract();
