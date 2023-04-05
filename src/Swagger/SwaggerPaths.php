@@ -120,11 +120,13 @@ class SwaggerPaths
 
         $pathItem->{$method} = $operation;
         // 将$pathItem insert
-        $this->swaggerOpenApi->getQueuePaths()->insert($pathItem, 0 - $position);
+        $this->swaggerOpenApi->getQueuePaths()->insert([$pathItem, $method], 0 - $position);
     }
 
     /**
      * 获取安全认证
+     * @param mixed $classAnnotation
+     * @param mixed $methodAnnotations
      */
     protected function getSecurity($classAnnotation, $methodAnnotations): array|false
     {

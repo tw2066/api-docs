@@ -109,9 +109,19 @@ class SwaggerOpenApi
     public function save(string $serverName): void
     {
         // 设置paths
+        $paths = [];
         while (! $this->queuePaths->isEmpty()) {
-            $this->openApi->paths[] = $this->queuePaths->extract();
+            /** @var OA\PathItem $pathItem */
+            [$pathItem,$method] = $this->queuePaths->extract();
+            $route = $pathItem->path;
+            // 相同path不同method
+            if (isset($paths[$route])) {
+                $paths[$route]->{$method} = $pathItem->{$method};
+            } else {
+                $paths[$route] = $pathItem;
+            }
         }
+        $this->openApi->paths = $paths;
         // 设置tags
         while (! $this->queueTags->isEmpty()) {
             $this->openApi->tags[] = $this->queueTags->extract();
