@@ -10,11 +10,11 @@ use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\ApiDocs\Swagger\SwaggerPaths;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
 use RuntimeException;
+use function Hyperf\Support\make;
 
 class AfterDtoStartListener implements ListenerInterface
 {
@@ -49,7 +49,6 @@ class AfterDtoStartListener implements ListenerInterface
         }
 
         $this->swaggerOpenApi->init();
-
         /** @var SwaggerPaths $swagger */
         $swagger = make(SwaggerPaths::class, [$server['name']]);
         foreach ($router->getData() ?? [] as $routeData) {

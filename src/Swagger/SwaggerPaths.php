@@ -20,6 +20,7 @@ use JetBrains\PhpStorm\Deprecated;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\PathItem;
+use function Hyperf\Support\make;
 
 class SwaggerPaths
 {

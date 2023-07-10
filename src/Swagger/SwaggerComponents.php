@@ -12,6 +12,7 @@ use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
+use function Hyperf\Support\make;
 
 class SwaggerComponents
 {

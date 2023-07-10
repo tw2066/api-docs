@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\Collection\Arr;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
-use Hyperf\Utils\Arr;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
 
