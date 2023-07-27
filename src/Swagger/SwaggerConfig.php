@@ -16,6 +16,8 @@ class SwaggerConfig
 
     private string $prefix_url = '';
 
+    private string $prefix_resources = '';
+
     private bool $validation_custom_attributes = false;
 
     private array $responses = [];
@@ -90,5 +92,15 @@ class SwaggerConfig
     public function getFormat(): string
     {
         return $this->format == 'json' ? 'json' : 'yaml';
+    }
+
+    public function getPrefixResources(): string
+    {
+        return $this->prefix_resources ?: $this->getPrefixUrl();
+    }
+
+    public function setPrefixResources(string $prefix_resources): void
+    {
+        $this->prefix_resources = $prefix_resources;
     }
 }

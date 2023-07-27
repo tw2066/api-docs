@@ -36,8 +36,8 @@ class SwaggerController
     {
         $filePath = BASE_PATH . '/vendor/tangwei/apidocs/src/web/index.html';
         $contents = file_get_contents($filePath);
-        $contents = str_replace('{{$path}}', '.' . $this->swaggerConfig->getPrefixUrl(), $contents);
-        $contents = str_replace('{{$url}}', '.' . $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
+        $contents = str_replace('{{$path}}', $this->swaggerConfig->getPrefixResources(), $contents);
+        $contents = str_replace('{{$url}}', $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
