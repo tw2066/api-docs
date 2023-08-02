@@ -73,6 +73,12 @@ class SwaggerComponents
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
             // swagger 类型
             $swaggerType = $this->common->getSwaggerType($propertyClass->phpSimpleType);
+
+            // 枚举:in
+            if (! empty($inAnnotation)) {
+                $property->type = $swaggerType;
+                $property->enum = $inAnnotation->getValue();
+            }
             // 简单类型
             if ($propertyClass->isSimpleType) {
                 // 数组
@@ -85,11 +91,6 @@ class SwaggerComponents
                     // 普通简单类型
                     $property->type = $swaggerType;
                 }
-            }
-            // 枚举:in
-            elseif (! empty($inAnnotation)) {
-                $property->type = $swaggerType;
-                $property->enum = $inAnnotation->getValue();
             }
             // 枚举类型
             elseif ($propertyClass->enum) {
