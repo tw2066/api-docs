@@ -59,12 +59,17 @@ class SwaggerComponents
                 continue;
             }
             // 字段名称
-            $property->property = $fieldName;
+            $apiModelAlias = ApiAnnotation::getProperty($className, $fieldName, JSONField::class);
+            if ($apiModelAlias !== null) {
+                $property->property = $apiModelAlias->name;
+            } else {
+                $property->property = $fieldName;
+            }
 
             // 描述
             $apiModelProperty->value !== null && $property->description = $apiModelProperty->value;
             if ($apiModelProperty->required !== null) {
-                $apiModelProperty->required && $requiredArr[] = $fieldName;
+                $apiModelProperty->required && $requiredArr[] = $property->property;
             }
             $property->example = $apiModelProperty->example;
             if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
