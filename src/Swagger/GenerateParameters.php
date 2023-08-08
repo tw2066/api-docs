@@ -11,6 +11,7 @@ use Hyperf\ApiDocs\Annotation\BaseParam;
 use Hyperf\Collection\Arr;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionManager;
+use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
@@ -125,7 +126,21 @@ class GenerateParameters
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $parameter = new OA\Parameter();
             $schema = new OA\Schema();
-            $parameter->name = $reflectionProperty->getName();
+
+            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
+            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            if ($apiModelProperty->hidden) {
+                continue;
+            }
+
+            // 字段名称
+            $apiModelAlias = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), JSONField::class);
+            if ($apiModelAlias !== null) {
+                $parameter->name = $apiModelAlias->name;
+            } else {
+                $parameter->name = $reflectionProperty->getName();
+            }
+
             $parameter->in = $in;
             try {
                 $schema->default = $reflectionProperty->getValue(make($parameterClassName));
@@ -138,11 +153,6 @@ class GenerateParameters
             }
             $schema->type = $this->common->getSwaggerType($phpType);
 
-            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
-            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            if ($apiModelProperty->hidden) {
-                continue;
-            }
             $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), Required::class);
             /** @var In $inAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), In::class);
