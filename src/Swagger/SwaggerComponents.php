@@ -8,6 +8,7 @@ use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\ReflectionManager;
+use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\Scan\PropertyManager;
@@ -58,6 +59,7 @@ class SwaggerComponents
             if ($apiModelProperty->hidden) {
                 continue;
             }
+
             // 字段名称
             $apiModelAlias = ApiAnnotation::getProperty($className, $fieldName, JSONField::class);
             if ($apiModelAlias !== null) {

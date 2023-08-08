@@ -127,13 +127,7 @@ class GenerateParameters
             $parameter = new OA\Parameter();
             $schema = new OA\Schema();
 
-            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
-            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            if ($apiModelProperty->hidden) {
-                continue;
-            }
-
-            // 字段名称
+            // 字段名称（处理别名）
             $apiModelAlias = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), JSONField::class);
             if ($apiModelAlias !== null) {
                 $parameter->name = $apiModelAlias->name;
@@ -153,6 +147,11 @@ class GenerateParameters
             }
             $schema->type = $this->common->getSwaggerType($phpType);
 
+            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
+            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            if ($apiModelProperty->hidden) {
+                continue;
+            }
             $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), Required::class);
             /** @var In $inAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), In::class);
