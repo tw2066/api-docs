@@ -21,8 +21,12 @@ class SwaggerCommon
     /**
      * 获取简单php类名.
      */
-    public function getSimpleClassName(string $className): string
+    public function getSimpleClassName(?string $className): string
     {
+        if($className === null){
+            $className = 'Null';
+        }
+
         $className = '\\' . trim($className, '\\');
         if (isset(self::$className[$className])) {
             return self::$className[$className];

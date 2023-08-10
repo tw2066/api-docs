@@ -15,10 +15,9 @@ class ApiResponse extends AbstractMultipleAnnotation
      * @param null|string $type class类或简单类型
      */
     public function __construct(
-        public string|int|null $response = null,
-        public string $description = '',
-        public ?string $type = null,
-        public bool $isArray = false,
+        public null|string|object|array $returnType = null,
+        public string|int|null $response = '200',
+        public string $description = 'success',
     ) {
     }
 }

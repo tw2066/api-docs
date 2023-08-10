@@ -251,7 +251,22 @@ class Image extends BaseValidation
     protected $rule = 'image';
 }
 ```
-  
+
+### 验证器Validation
+
+1. 大家都习惯了框架的`required|date|after:start_date`写法
+```php
+ //可以通过Validation实现
+ #[Validation('required|date|after:start_date')]
+```
+2. 需要支持数组里面是int数据情况 `'intArr.*' => 'integer'`的情况
+```php
+    //可以通过Validation中customKey来自定义key实现
+    #[Validation('integer', customKey: 'intArr.*')]
+    public array $intArr;
+```
+上面写法和`'intArr.*' => 'integer'`效果相同
+
 ## 注意
 ### 数组类型的问题
 > PHP原生暂不支持`int[]`或`Class[]`类型, 使用示例
@@ -293,8 +308,20 @@ return [
     ],
 ];
 ```
+
 ### `AutoController`注解
 > 控制器中使用`AutoController`注解,只收集了`POST`方法
+> 
+## RPC 返回PHP对象
+> 当框架导入 symfony/serializer (^5.0) 和 symfony/property-access (^5.0) 后，并在 dependencies.php 中配置一下映射关系
+```php
+use Hyperf\DTO\Serializer\SerializerFactory;
+use Hyperf\Utils\Serializer\Serializer;
+
+return [
+    Hyperf\Contract\NormalizerInterface::class => new SerializerFactory(Serializer::class),
+];
+```
 ## Swagger界面
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\DTO\ReturnResponse;
 use Hyperf\Collection\Arr;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
@@ -14,15 +15,17 @@ use Psr\Container\ContainerInterface;
 class GenerateResponses
 {
     public function __construct(
-        private string $className,
-        private string $methodName,
-        private array $apiResponseArr,
-        private SwaggerConfig $swaggerConfig,
+        private string                             $className,
+        private string                             $methodName,
+        private array                              $apiResponseArr,
+        private SwaggerConfig                      $swaggerConfig,
         private MethodDefinitionCollectorInterface $methodDefinitionCollector,
-        private ContainerInterface $container,
-        private SwaggerComponents $swaggerComponents,
-        private SwaggerCommon $common,
-    ) {
+        private ContainerInterface                 $container,
+        private SwaggerComponents                  $swaggerComponents,
+        private SwaggerCommon                      $common,
+        private GenericProxyClass                  $genericProxyClass,
+    )
+    {
     }
 
     /**
@@ -53,8 +56,31 @@ class GenerateResponses
         return array_values($arr);
     }
 
-    protected function getContent(string $returnTypeClassName, bool $isArray = false): array
+    protected function getReturnJsonContent(string $returnTypeClassName, bool $isArray = false): array
     {
+        $arr = [];
+        $mediaType = new OA\MediaType();
+        $mediaTypeStr = 'application/json';
+        $returnResponse = 'ReturnResponse';
+        $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
+        $arr[$mediaTypeStr] = $mediaType;
+        $mediaType->mediaType = $mediaTypeStr;
+        return $arr;
+
+    }
+
+    protected function getContent(string|object $returnTypeClassName, bool $isArray = false): array
+    {
+        $globalReturnResponsesClass = $this->swaggerConfig->getGlobalReturnResponsesClass();
+        if($globalReturnResponsesClass){
+            $returnTypeClassName = \Hyperf\Support\make($globalReturnResponsesClass,[$returnTypeClassName]);
+        }
+
+        if (is_object($returnTypeClassName)
+            && $this->genericProxyClass->getGenericClass($returnTypeClassName::class)) {
+            $returnTypeClassName = $this->genericProxyClass->generate($returnTypeClassName);
+        }
+
         $arr = [];
         $mediaType = new OA\MediaType();
 
@@ -115,8 +141,8 @@ class GenerateResponses
             $apiResponse = new ApiResponse();
             $apiResponse->response = $value['response'] ?? null;
             $apiResponse->description = $value['description'] ?? null;
-            ! empty($value['type']) && $apiResponse->type = $value['type'];
-            ! empty($value['isArray']) && $apiResponse->isArray = $value['isArray'];
+            !empty($value['returnType']) && $apiResponse->returnType = $value['returnType'];
+            !empty($value['isArray']) && $apiResponse->isArray = $value['isArray'];
 
             $resp[$apiResponse->response] = $this->getOAResp($apiResponse);
         }
@@ -128,8 +154,13 @@ class GenerateResponses
         $response = new OA\Response();
         $response->response = $apiResponse->response;
         $response->description = $apiResponse->description;
-        if (! empty($apiResponse->type)) {
-            $content = $this->getContent($apiResponse->type, $apiResponse->isArray);
+        if (!empty($apiResponse->returnType)) {
+            $isArray = is_array($apiResponse->returnType);
+            $returnType = $apiResponse->returnType;
+            if ($isArray) {
+                $returnType = $apiResponse->returnType[0] ?? null;
+            }
+            $content = $this->getContent($returnType, $isArray);
             $content && $response->content = $content;
         }
         return $response;

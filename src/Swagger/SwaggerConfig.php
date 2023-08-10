@@ -28,6 +28,8 @@ class SwaggerConfig
 
     private string $format = 'json';
 
+    private string $global_return_responses_class = '';
+
     public function __construct(ConfigInterface $config)
     {
         $data = $config->get('api_docs', []);
@@ -99,8 +101,12 @@ class SwaggerConfig
         return $this->prefix_resources ?: $this->getPrefixUrl();
     }
 
-    public function setPrefixResources(string $prefix_resources): void
+    /**
+     * @return string
+     */
+    public function getGlobalReturnResponsesClass(): string
     {
-        $this->prefix_resources = $prefix_resources;
+        return $this->global_return_responses_class;
     }
+
 }

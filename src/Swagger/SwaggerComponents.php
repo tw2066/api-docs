@@ -39,7 +39,6 @@ class SwaggerComponents
             return ['propertyArr' => [], 'requiredArr' => []];
         }
 
-        $obj = make($className);
         $rc = ReflectionManager::reflectClass($className);
         $propertyArr = [];
         $requiredArr = [];
@@ -58,6 +57,9 @@ class SwaggerComponents
             if ($apiModelProperty->hidden) {
                 continue;
             }
+            if (! $reflectionProperty->isPublic()) {
+                continue;
+            }
             // 字段名称
             $property->property = $fieldName;
 
@@ -67,8 +69,12 @@ class SwaggerComponents
                 $apiModelProperty->required && $requiredArr[] = $fieldName;
             }
             $property->example = $apiModelProperty->example;
-            if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
-                $property->default = $reflectionProperty->getValue($obj);
+            try {
+                $obj = make($className);
+                if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
+                    $property->default = $reflectionProperty->getValue($obj);
+                }
+            } catch (\Throwable) {
             }
 
             $propertyClass = PropertyManager::getProperty($className, $fieldName);
@@ -77,6 +83,8 @@ class SwaggerComponents
 
             // 枚举:in
             if (! empty($inAnnotation)) {
+                var_dump($inAnnotation[0]);die();
+//                $inAnnotation
                 $property->type = $swaggerType;
                 $property->enum = $inAnnotation->getValue();
             }
@@ -92,13 +100,11 @@ class SwaggerComponents
                     // 普通简单类型
                     $property->type = $swaggerType;
                 }
-            }
-            // 枚举类型
+            } // 枚举类型
             elseif ($propertyClass->enum) {
                 $property->type = $this->common->getSwaggerType($propertyClass->enum->backedType);
                 $property->enum = $propertyClass->enum->valueList;
-            }
-            // 普通类
+            } // 普通类
             else {
                 if ($swaggerType == 'array') {
                     $property->type = 'array';
