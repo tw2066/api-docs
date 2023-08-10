@@ -51,7 +51,7 @@ class SwaggerComponents
 
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            /** @var In $inAnnotation */
+            /** @var \Hyperf\Di\Annotation\MultipleAnnotation $inAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($className, $reflectionProperty->getName(), In::class);
 
             if ($apiModelProperty->hidden) {
@@ -86,7 +86,8 @@ class SwaggerComponents
                 var_dump($inAnnotation[0]);die();
 //                $inAnnotation
                 $property->type = $swaggerType;
-                $property->enum = $inAnnotation->getValue();
+                $inFirstAnnotation = $inAnnotation->toAnnotations()[0];
+                $property->enum = $inFirstAnnotation->getValue();
             }
             // 简单类型
             if ($propertyClass->isSimpleType) {
