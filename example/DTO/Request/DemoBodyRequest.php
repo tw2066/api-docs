@@ -6,11 +6,13 @@ namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\DTO\Annotation\ArrayType;
+use Hyperf\DTO\Annotation\Validation\Arr;
 use Hyperf\DTO\Annotation\Validation\Between;
 use Hyperf\DTO\Annotation\Validation\Email;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Integer;
 use Hyperf\DTO\Annotation\Validation\Nullable;
+use Hyperf\DTO\Annotation\Validation\Numeric;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
 use Hyperf\DTO\SimpleType;
@@ -30,42 +32,54 @@ class DemoBodyRequest
 //    #[Required]
 //    public Address $addr3;
 
-    #[ApiModelProperty('int数组')]
-    #[Required]
-    #[ArrayType(SimpleType::INT)]
+//    #[ApiModelProperty('int数组')]
+//    #[Required]
+//    #[ArrayType(SimpleType::INT)]
+//    public array $intArr;
+//
+//    #[ApiModelProperty('demo名称')]
+//    public ?string $demoName = 'demo';
+//
+//    #[ApiModelProperty('枚举')]
+////    #[In(DemoBodyRequest::IN)]
+//    #[Nullable]
+//    public StatusEnum $enum;
+//
+//    #[ApiModelProperty('价格')]
+//    #[Required]
+//    public float $price;
+//
+//    #[ApiModelProperty('电子邮件', example: '1@e.com')]
+//    #[Email(messages: '请输入正确的电子邮件')]
+//    public string $email;
+//
+//    /**
+//     * @var int[]
+//     */
+//    #[ApiModelProperty('int数据')]
+//    #[Validation(rule: 'array')]
+//    public array $intIdList;
+//
+//    #[ApiModelProperty('addArr')]
+//    #[Validation(rule: 'array')]
+//    #[ArrayType(Address::class)]
+//    public array $addArr;
+//
+//    public object $obj;
+//
+//    #[Integer]
+//    #[Between(min: 2, max: 10)]
+//    public int $num = 6;
+
+    #[Validation('required|numeric')]
+    #[Integer]
+    public  $test;
+
+//    #[Between(min: 2, max: 10)]
+    #[ApiModelProperty('intArr数组')]
+    #[Arr]
+    #[Validation('integer', customKey: 'intArr.*')]
+    #[In(['123'])]
     public array $intArr;
 
-    #[ApiModelProperty('demo名称')]
-    public ?string $demoName = 'demo';
-
-    #[ApiModelProperty('枚举')]
-//    #[In(DemoBodyRequest::IN)]
-    #[Nullable]
-    public StatusEnum $enum;
-
-    #[ApiModelProperty('价格')]
-    #[Required]
-    public float $price;
-
-    #[ApiModelProperty('电子邮件', example: '1@e.com')]
-    #[Email(messages: '请输入正确的电子邮件')]
-    public string $email;
-
-    /**
-     * @var int[]
-     */
-    #[ApiModelProperty('int数据')]
-    #[Validation(rule: 'array')]
-    public array $intIdList;
-
-    #[ApiModelProperty('addArr')]
-    #[Validation(rule: 'array')]
-    #[ArrayType(Address::class)]
-    public array $addArr;
-
-    public object $obj;
-
-    #[Integer]
-    #[Between(min: 2, max: 10)]
-    public int $num = 6;
 }

@@ -15,7 +15,7 @@ class Contact
     public ?int $age = null;
 
     #[ApiModelProperty('城市')]
-    public ?City $city = null;
+    public ?CityResponse $city = null;
 
     #[ApiModelProperty('城市1')]
     public ?City1 $city1 = null;

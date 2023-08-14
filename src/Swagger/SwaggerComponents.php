@@ -83,8 +83,6 @@ class SwaggerComponents
 
             // 枚举:in
             if (! empty($inAnnotation)) {
-                var_dump($inAnnotation[0]);die();
-//                $inAnnotation
                 $property->type = $swaggerType;
                 $inFirstAnnotation = $inAnnotation->toAnnotations()[0];
                 $property->enum = $inFirstAnnotation->getValue();
@@ -95,7 +93,7 @@ class SwaggerComponents
                 if ($swaggerType == 'array') {
                     $property->type = 'array';
                     $items = new OA\Items();
-                    // $items->type = 'string';  可选
+                    $items->type = 'null';
                     $property->items = $items;
                 } else {
                     // 普通简单类型

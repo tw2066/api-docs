@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace HyperfExample\ApiDocs\DTO\Response;
 
-class City
+class CityResponse
 {
-    public string $cityName1;
+    public string $name;
 }

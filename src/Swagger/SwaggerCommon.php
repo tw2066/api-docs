@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\DTO\PhpType;
 use ReflectionProperty;
 use Throwable;
 
@@ -23,10 +24,11 @@ class SwaggerCommon
      */
     public function getSimpleClassName(?string $className): string
     {
-        if($className === null){
+        if ($className === null) {
             $className = 'Null';
         }
 
+        $className = ucfirst($className);
         $className = '\\' . trim($className, '\\');
         if (isset(self::$className[$className])) {
             return self::$className[$className];
@@ -63,10 +65,11 @@ class SwaggerCommon
         return match ($phpType) {
             'int', 'integer' => 'integer',
             'boolean', 'bool' => 'boolean',
-            'double', 'float','number' => 'number',
+            'double', 'float', 'number' => 'number',
             'array' => 'array',
             'object' => 'object',
-            default => 'string',
+            'string' => 'string',
+            default => 'null',
         };
     }
 
@@ -95,5 +98,23 @@ class SwaggerCommon
             || $type == 'integer' || $type == 'int'
             || $type == 'double' || $type == 'float'
             || $type == 'array' || $type == 'object';
+    }
+
+    public function getPhpType($type): string
+    {
+        if (is_string($type) && $this->isSimpleType($type)) {
+            return $type;
+        }
+        if($type instanceof PhpType){
+            return $type->value;
+        }
+
+        if (is_object($type) && $type::class != 'stdClass') {
+            return '\\'.$type::class;
+        }
+        if(is_string($type) && class_exists($type)){
+            return '\\'.trim($type,'\\');
+        }
+        return 'mixed';
     }
 }

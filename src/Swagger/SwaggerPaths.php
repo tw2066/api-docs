@@ -16,6 +16,7 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\MultipleAnnotationInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
+use HyperfExample\ApiDocs\Controller\DemoController;
 use JetBrains\PhpStorm\Deprecated;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
@@ -42,6 +43,10 @@ class SwaggerPaths
      */
     public function addPath(string $className, string $methodName, string $route, string $methods): void
     {
+        if($className != DemoController::class){
+            return;
+        }
+
         $pathItem = new PathItem();
         // 获取类中方法的位置
         $position = $this->getMethodNamePosition($className, $methodName);
