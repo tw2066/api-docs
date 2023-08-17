@@ -144,10 +144,11 @@ class GenerateParameters
                 continue;
             }
             $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), Required::class);
-            /** @var In $inAnnotation */
+            /** @var In $inFirstAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), In::class);
             if (! empty($inAnnotation)) {
-                $schema->enum = $inAnnotation->getValue();
+                $inFirstAnnotation = $inAnnotation->toAnnotations()[0];
+                $schema->enum = $inFirstAnnotation->getValue();
             }
             if (! empty($enum)) {
                 $schema->enum = $enum->valueList;
