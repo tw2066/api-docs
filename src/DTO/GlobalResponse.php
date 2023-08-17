@@ -13,6 +13,8 @@ class GlobalResponse
     #[ApiVariable]
     public mixed $data;
 
+    public string $message = '';
+
     public function __construct(mixed $data)
     {
         $this->data = $data;

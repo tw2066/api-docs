@@ -8,7 +8,7 @@ use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Type\Convert;
 
-#[Dto(Convert::SNAKE)]
+//#[Dto(Convert::SNAKE)]
 class CityResponse
 {
     public string $name;

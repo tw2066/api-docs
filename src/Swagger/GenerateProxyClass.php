@@ -9,7 +9,6 @@ use Hyperf\ApiDocs\Ast\ResponseVisitor;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Support\Composer;
-use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
@@ -105,7 +104,7 @@ class GenerateProxyClass
     {
         $outputDir = $this->swaggerConfig->getProxyDir();
         $generateClassName = str_replace('\\', '_', $generateNamespaceClassName);
-        $filename = $outputDir . $generateClassName . '.docs.proxy.php';
+        $filename = $outputDir . $generateClassName . '.dto.proxy.php';
         file_put_contents($filename, $content);
         $classLoader = Composer::getLoader();
         $classLoader->addClassMap([$generateNamespaceClassName => $filename]);
