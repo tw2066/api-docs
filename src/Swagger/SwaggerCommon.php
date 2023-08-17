@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use Hyperf\DTO\PhpType;
+use Hyperf\DTO\Type\PhpType;
 use ReflectionProperty;
 use Throwable;
 
@@ -105,15 +105,15 @@ class SwaggerCommon
         if (is_string($type) && $this->isSimpleType($type)) {
             return $type;
         }
-        if($type instanceof PhpType){
+        if ($type instanceof PhpType) {
             return $type->value;
         }
 
         if (is_object($type) && $type::class != 'stdClass') {
-            return '\\'.$type::class;
+            return '\\' . $type::class;
         }
-        if(is_string($type) && class_exists($type)){
-            return '\\'.trim($type,'\\');
+        if (is_string($type) && class_exists($type)) {
+            return '\\' . trim($type, '\\');
         }
         return 'mixed';
     }

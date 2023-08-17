@@ -5,33 +5,36 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiVariable;
+use Hyperf\ApiDocs\Ast\ResponseVisitor;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
-use Hyperf\ApiDocs\Generic\ResponseVisitor;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Support\Composer;
-use PhpParser\BuilderFactory;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
-use ReflectionClass;
-use SplFileInfo;
 
-class GenericProxyClass
+class GenerateProxyClass
 {
     protected ?array $apiVariableClassArr = null;
+
     protected array $proxyClassArr = [];
 
-    public BuilderFactory $factory;
     public function __construct(
         private SwaggerConfig $swaggerConfig,
         private SwaggerCommon $swaggerCommon,
     ) {
+        $outputDir = $this->swaggerConfig->getProxyDir();
+        if (file_exists($outputDir) === false) {
+            if (mkdir($outputDir, 0755, true) === false) {
+                throw new ApiDocsException("Failed to create a directory : {$outputDir}");
+            }
+        }
     }
 
     public function getGenericClass(string $newClassname)
     {
-        $newClassname = trim($newClassname,'\\');
+        $newClassname = trim($newClassname, '\\');
         if ($this->apiVariableClassArr === null) {
             $arr = [];
             $classes = AnnotationCollector::getPropertiesByAnnotation(ApiVariable::class);
@@ -45,13 +48,11 @@ class GenericProxyClass
     }
 
     /**
-     * 生成代理类
-     * @param object $obj
-     * @return string
+     * 生成代理类.
      */
     public function generate(object $obj): string
     {
-        $ref = new ReflectionClass($obj);
+        $ref = new \ReflectionClass($obj);
         $classname = $obj::class;
         $properties = $this->getGenericClass($classname);
         if (empty($properties)) {
@@ -60,7 +61,7 @@ class GenericProxyClass
 
         $propertyArr = [];
         foreach ($properties as $property) {
-            //获取变量
+            // 获取变量
             $propertyObj = $obj->{$property};
 
             $type = $this->swaggerCommon->getPhpType($propertyObj);
@@ -88,28 +89,23 @@ class GenericProxyClass
             }
         }
 
-        $file = new SplFileInfo($ref->getFileName());
+        $file = new \SplFileInfo($ref->getFileName());
         $realPath = $file->getRealPath();
         [$generateNamespaceClassName, $content] = $this->phpParser($obj, $realPath, $propertyArr);
 
-        if(!isset($this->proxyClassArr[$generateNamespaceClassName])){
-            $this->putContents($generateNamespaceClassName,$content);
+        if (! isset($this->proxyClassArr[$generateNamespaceClassName])) {
+            $this->putContents($generateNamespaceClassName, $content);
             $this->proxyClassArr[$generateNamespaceClassName] = true;
         }
 
-        return '\\'.$generateNamespaceClassName;
+        return '\\' . $generateNamespaceClassName;
     }
 
-    protected function putContents($generateNamespaceClassName,$content): void
+    protected function putContents($generateNamespaceClassName, $content): void
     {
-        $outputDir = $this->swaggerConfig->getOutputDir() . '/proxy/';
-        if (file_exists($outputDir) === false) {
-            if (mkdir($outputDir, 0755, true) === false) {
-                throw new ApiDocsException("Failed to create a directory : {$outputDir}");
-            }
-        }
+        $outputDir = $this->swaggerConfig->getProxyDir();
         $generateClassName = str_replace('\\', '_', $generateNamespaceClassName);
-        $filename = $outputDir . $generateClassName . '.proxy.php';
+        $filename = $outputDir . $generateClassName . '.docs.proxy.php';
         file_put_contents($filename, $content);
         $classLoader = Composer::getLoader();
         $classLoader->addClassMap([$generateNamespaceClassName => $filename]);
@@ -119,12 +115,7 @@ class GenericProxyClass
     {
         $code = file_get_contents($filePath);
         $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
-
-        try {
-            $ast = $parser->parse($code);
-        } catch (Error $error) {
-            echo "Parse error: {$error->getMessage()}\n";
-        }
+        $ast = $parser->parse($code);
 
         $simpleClassName = $this->swaggerCommon->getSimpleClassName($generateClass::class);
         $generateClassName = $simpleClassName;
@@ -137,8 +128,8 @@ class GenericProxyClass
             $generateClassName .= $type;
         }
         $fullGenerateClassName = 'ApiDocs\\Proxy\\' . $generateClassName;
-        if(isset($this->proxyClassArr[$fullGenerateClassName])){
-            return [$fullGenerateClassName,''];
+        if (isset($this->proxyClassArr[$fullGenerateClassName])) {
+            return [$fullGenerateClassName, ''];
         }
 
         $traverser = new NodeTraverser();

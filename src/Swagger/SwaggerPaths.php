@@ -16,8 +16,6 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\MultipleAnnotationInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
-use HyperfExample\ApiDocs\Controller\DemoController;
-use JetBrains\PhpStorm\Deprecated;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\PathItem;
@@ -43,9 +41,6 @@ class SwaggerPaths
      */
     public function addPath(string $className, string $methodName, string $route, string $methods): void
     {
-        if($className != DemoController::class){
-            return;
-        }
 
         $pathItem = new PathItem();
         // 获取类中方法的位置
@@ -74,9 +69,6 @@ class SwaggerPaths
 
         $apiFormDataArr = isset($methodAnnotations[ApiFormData::class]) ? $methodAnnotations[ApiFormData::class]->toAnnotations() : [];
         $apiResponseArr = isset($methodAnnotations[ApiResponse::class]) ? $methodAnnotations[ApiResponse::class]->toAnnotations() : [];
-
-        $isDeprecated = false;
-        class_exists(Deprecated::class) && $isDeprecated = isset($methodAnnotations[Deprecated::class]);
 
         $simpleClassName = $this->common->getSimpleClassName($className);
         if (is_array($apiControllerAnnotation->tags)) {
@@ -111,7 +103,8 @@ class SwaggerPaths
         $operation->description = $apiOperation->description;
         $operation->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
 
-        $isDeprecated && $operation->deprecated = true;
+        // 设置弃用
+        $apiOperation->deprecated && $operation->deprecated = true;
 
         $parameters['requestBody'] && $operation->requestBody = $parameters['requestBody'];
         $parameters['parameter'] && $operation->parameters = $parameters['parameter'];

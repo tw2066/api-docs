@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
-use Hyperf\ApiDocs\Swagger\GenericProxyClass;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
 use Hyperf\Contract\ConfigInterface;
@@ -29,7 +28,6 @@ class BootAppRouteListener implements ListenerInterface
         private ConfigInterface $config,
         private DispatcherFactory $dispatcherFactory,
         private SwaggerConfig $swaggerConfig,
-        private GenericProxyClass $genericProxyClass,
     ) {
     }
 
@@ -70,9 +68,6 @@ class BootAppRouteListener implements ListenerInterface
             $this->logger->warning('Swagger: http Service not started');
             return;
         }
-        //泛型生成代理
-//        $this->genericProxyClass->generate();
-//        $this->generateGenericProxyClasse();
         // 添加路由
         $httpServerRouter->addGroup($prefix, function ($route) {
             $route->get('', [SwaggerController::class, 'index']);
@@ -84,6 +79,4 @@ class BootAppRouteListener implements ListenerInterface
 
         static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix;
     }
-
-
 }

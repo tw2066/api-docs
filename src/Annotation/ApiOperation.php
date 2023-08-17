@@ -15,7 +15,8 @@ class ApiOperation extends AbstractAnnotation
         public string $summary = '',
         public string $description = Generator::UNDEFINED,
         public bool $hidden = false,
-        public bool $security = true
+        public bool $security = true,
+        public bool $deprecated = false
     ) {
     }
 }

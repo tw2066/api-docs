@@ -1,7 +1,8 @@
 <?php
 
-namespace Hyperf\ApiDocs\DTO;
+declare(strict_types=1);
 
+namespace Hyperf\ApiDocs\DTO;
 
 use Hyperf\ApiDocs\Annotation\ApiVariable;
 
@@ -16,5 +17,4 @@ class GlobalResponse
     {
         $this->data = $data;
     }
-
 }

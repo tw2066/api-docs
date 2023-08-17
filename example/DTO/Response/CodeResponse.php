@@ -11,10 +11,6 @@ class CodeResponse
     #[ApiVariable]
     public mixed $data;
 
-    /**
-     * 999999999999999999
-     * @var mixed|null
-     */
     #[ApiVariable]
     public mixed $content;
 

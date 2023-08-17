@@ -7,9 +7,9 @@ namespace Hyperf\ApiDocs\Annotation;
 use Attribute;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Di\Annotation\AbstractMultipleAnnotation;
-use Hyperf\DTO\PhpType;
+use Hyperf\DTO\Type\PhpType;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
 class ApiResponse extends AbstractMultipleAnnotation
 {
     public null|string|object|array $returnType;
@@ -28,10 +28,9 @@ class ApiResponse extends AbstractMultipleAnnotation
             $this->returnType = $returnType->value;
             return;
         }
-        if(is_object($returnType)){
+        if (is_object($returnType)) {
             $this->returnType = $returnType;
             return;
-
         }
         if (is_string($returnType) && class_exists($returnType)) {
             $this->returnType = $returnType;
@@ -52,18 +51,17 @@ class ApiResponse extends AbstractMultipleAnnotation
                 return;
             }
         }
-        //空数组
-        if(is_array($returnType)  && count($returnType) == 0){
+        // 空数组
+        if (is_array($returnType) && count($returnType) == 0) {
             $this->returnType = 'array';
             return;
         }
 
-        if($returnType === null){
+        if ($returnType === null) {
             $this->returnType = null;
             return;
         }
 
-        var_dump($returnType);
         throw new ApiDocsException('ApiResponse: Unsupported data type');
     }
 }

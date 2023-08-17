@@ -6,13 +6,14 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\DTO\Mapper;
-use OpenApi\Annotations\OpenApi;
 
 class SwaggerConfig
 {
     private bool $enable = false;
 
     private string $output_dir = '';
+
+    private string $proxy_dir = '';
 
     private string $prefix_url = '';
 
@@ -52,6 +53,16 @@ class SwaggerConfig
     public function getOutputDir(): string
     {
         return $this->output_dir;
+    }
+
+    public function getProxyDir(): string
+    {
+        return $this->proxy_dir ?: BASE_PATH . '/runtime/container/proxy/';
+    }
+
+    public function setProxyDir(string $proxy_dir): void
+    {
+        $this->proxy_dir = rtrim($proxy_dir, '/') . '/';
     }
 
     public function getPrefixUrl(): string
@@ -101,12 +112,8 @@ class SwaggerConfig
         return $this->prefix_resources ?: $this->getPrefixUrl();
     }
 
-    /**
-     * @return string
-     */
     public function getGlobalReturnResponsesClass(): string
     {
         return $this->global_return_responses_class;
     }
-
 }

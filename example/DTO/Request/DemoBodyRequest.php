@@ -6,6 +6,8 @@ namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\DTO\Annotation\ArrayType;
+use Hyperf\DTO\Annotation\Dto;
+use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\Arr;
 use Hyperf\DTO\Annotation\Validation\Between;
 use Hyperf\DTO\Annotation\Validation\Email;
@@ -19,6 +21,7 @@ use Hyperf\DTO\SimpleType;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\Enum\StatusEnum;
 
+#[Dto]
 class DemoBodyRequest
 {
 //    public const IN = ['A', 'B', 'C'];
@@ -73,7 +76,8 @@ class DemoBodyRequest
 
     #[Validation('required|numeric')]
     #[Integer]
-    public  $test;
+    #[JSONField('test_name')]
+    public int $test;
 
 //    #[Between(min: 2, max: 10)]
     #[ApiModelProperty('intArr数组')]
@@ -81,5 +85,9 @@ class DemoBodyRequest
     #[Validation('integer', customKey: 'intArr.*')]
     #[In(['123'])]
     public array $intArr;
+
+
+
+    private int $privateName = 0;
 
 }

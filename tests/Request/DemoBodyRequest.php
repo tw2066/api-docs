@@ -13,31 +13,40 @@ class DemoBodyRequest
 
     public string $str = 'hi';
 
-    public bool $bo = true;
+    private bool $bo = true;
 
     public Address $address;
 
     /**
      * @var \HyperfTest\ApiDocs\Request\Address[]
      */
-    private array $addressList1;
+    public array $addressList1;
 
     /**
      * @var Address[]
      */
-    private array $addressList2;
+    public array $addressList2;
 
 
     #[ArrayType(Address::class)]
-    private array $addressList3;
+    public array $addressList3;
 
     /**
      * @var int[]
      */
-    private array $intList1;
+    public array $intList1;
 
     #[ArrayType('int')]
-    private array $intList2;
+    public array $intList2;
+
+    /**
+     * @param bool $bo
+     */
+    public function setBo(bool $bo): void
+    {
+        $this->bo = $bo;
+    }
+
 
 
 }

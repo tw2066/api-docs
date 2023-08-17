@@ -57,7 +57,7 @@ class SwaggerComponents
             if ($apiModelProperty->hidden) {
                 continue;
             }
-            if (! $reflectionProperty->isPublic()) {
+            if (! $reflectionProperty->isPublic() && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))) {
                 continue;
             }
             // 字段名称
