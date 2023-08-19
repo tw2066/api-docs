@@ -28,6 +28,7 @@ use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\DTO\City;
+use HyperfExample\ApiDocs\DTO\DataType;
 use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
 use HyperfExample\ApiDocs\DTO\Request\DemoBodyRequest;
@@ -54,12 +55,15 @@ class DemoController
 
     #[ApiOperation(summary: '查询测试')]
     #[GetMapping(path: 'api')]
-    #[ApiHeader(name: 'test', required: true, type: 'string')]
-    #[ApiFormData(name: 'photo', required: true, format: 'binary')]
-    public function api(#[RequestQuery] #[Valid] DemoQuery $request): DemoQuery
+//    #[ApiHeader(name: 'test', required: true, type: 'string')]
+//    #[ApiFormData(name: 'photo', required: true, format: 'binary')]
+    public function api(#[RequestQuery] #[Valid] DemoQuery $request): DataType
     {
-
-        return $request;
+        dump($request);
+//        $cityResponse = new CityResponse();
+//        $cityResponse->name = $request->test123456;
+        //$cityResponse->name22222 ?? '';
+        return new DataType();
     }
 
     #[ApiOperation(summary: '查询测试POST')]

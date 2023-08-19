@@ -7,6 +7,7 @@ namespace Hyperf\ApiDocs\Swagger;
 use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\Di\Annotation\AnnotationCollector;
+use Hyperf\Di\Annotation\MultipleAnnotation;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\ApiAnnotation;
@@ -48,13 +49,13 @@ class SwaggerComponents
             $property = new OA\Property();
 
             $fieldName = $reflectionProperty->getName();
+            $propertyManager = PropertyManager::getProperty($className, $fieldName);
 
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            /** @var \Hyperf\Di\Annotation\MultipleAnnotation $inAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($className, $reflectionProperty->getName(), In::class);
-
-            if ($apiModelProperty->hidden) {
+            /** @var MultipleAnnotation $inAnnotation */
+            $inAnnotation = ApiAnnotation::getProperty($className, $fieldName, In::class);
+            if ($apiModelProperty->hidden || $propertyManager->alias) {
                 continue;
             }
             if (! $reflectionProperty->isPublic() && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))) {
@@ -77,9 +78,8 @@ class SwaggerComponents
             } catch (\Throwable) {
             }
 
-            $propertyClass = PropertyManager::getProperty($className, $fieldName);
             // swagger 类型
-            $swaggerType = $this->common->getSwaggerType($propertyClass->phpSimpleType);
+            $swaggerType = $this->common->getSwaggerType($propertyManager->phpSimpleType);
 
             // 枚举:in
             if (! empty($inAnnotation)) {
@@ -88,7 +88,7 @@ class SwaggerComponents
                 $property->enum = $inFirstAnnotation->getValue();
             }
             // 简单类型
-            if ($propertyClass->isSimpleType) {
+            if ($propertyManager->isSimpleType) {
                 // 数组
                 if ($swaggerType == 'array') {
                     $property->type = 'array';
@@ -100,28 +100,28 @@ class SwaggerComponents
                     $property->type = $swaggerType;
                 }
             } // 枚举类型
-            elseif ($propertyClass->enum) {
-                $property->type = $this->common->getSwaggerType($propertyClass->enum->backedType);
-                $property->enum = $propertyClass->enum->valueList;
+            elseif ($propertyManager->enum) {
+                $property->type = $this->common->getSwaggerType($propertyManager->enum->backedType);
+                $property->enum = $propertyManager->enum->valueList;
             } // 普通类
             else {
                 if ($swaggerType == 'array') {
                     $property->type = 'array';
-                    if (! empty($propertyClass->arrClassName)) {
+                    if (! empty($propertyManager->arrClassName)) {
                         $items = new OA\Items();
-                        $items->ref = $this->common->getComponentsName($propertyClass->arrClassName);
+                        $items->ref = $this->common->getComponentsName($propertyManager->arrClassName);
                         $property->items = $items;
 
-                        $this->generateSchemas($propertyClass->arrClassName);
+                        $this->generateSchemas($propertyManager->arrClassName);
                     }
-                    if (! empty($propertyClass->arrSimpleType)) {
+                    if (! empty($propertyManager->arrSimpleType)) {
                         $items = new OA\Items();
-                        $items->type = $this->common->getSwaggerType($propertyClass->arrSimpleType);
+                        $items->type = $this->common->getSwaggerType($propertyManager->arrSimpleType);
                         $property->items = $items;
                     }
                 } else {
-                    $property->ref = $this->common->getComponentsName($propertyClass->className);
-                    $this->generateSchemas($propertyClass->className);
+                    $property->ref = $this->common->getComponentsName($propertyManager->className);
+                    $this->generateSchemas($propertyManager->className);
                 }
             }
             $propertyArr[] = $property;

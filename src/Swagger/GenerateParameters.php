@@ -19,6 +19,7 @@ use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
 use Throwable;
+use function Hyperf\Support\make;
 
 class GenerateParameters
 {
@@ -124,28 +125,35 @@ class GenerateParameters
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $parameter = new OA\Parameter();
+            $fieldName = $reflectionProperty->getName();
             $schema = new OA\Schema();
-            $parameter->name = $reflectionProperty->getName();
+            $parameter->name = $fieldName;
             $parameter->in = $in;
             try {
                 $schema->default = $reflectionProperty->getValue(make($parameterClassName));
             } catch (Throwable) {
             }
             $phpType = $this->common->getTypeName($reflectionProperty);
-            $enum = PropertyManager::getProperty($phpType, $reflectionProperty->name)?->enum;
+            $propertyManager = PropertyManager::getProperty($parameterClassName, $reflectionProperty->name);
+            $enum = $propertyManager?->enum;
             if ($enum) {
                 $phpType = $enum->backedType;
             }
             $schema->type = $this->common->getSwaggerType($phpType);
 
-            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), ApiModelProperty::class);
+            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            if ($apiModelProperty->hidden) {
+
+            if ($apiModelProperty->hidden  || $propertyManager?->alias) {
                 continue;
             }
-            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), Required::class);
+            if (! $reflectionProperty->isPublic() && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))) {
+                continue;
+            }
+
+            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class);
             /** @var In $inFirstAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $reflectionProperty->getName(), In::class);
+            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class);
             if (! empty($inAnnotation)) {
                 $inFirstAnnotation = $inAnnotation->toAnnotations()[0];
                 $schema->enum = $inFirstAnnotation->getValue();

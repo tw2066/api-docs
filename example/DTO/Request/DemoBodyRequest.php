@@ -17,7 +17,6 @@ use Hyperf\DTO\Annotation\Validation\Nullable;
 use Hyperf\DTO\Annotation\Validation\Numeric;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
-use Hyperf\DTO\SimpleType;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\Enum\StatusEnum;
 

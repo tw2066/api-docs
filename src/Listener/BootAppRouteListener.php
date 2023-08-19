@@ -8,7 +8,7 @@ use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\DTO\ValidationDto;
+use Hyperf\DTO\DtoValidation;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
@@ -42,7 +42,7 @@ class BootAppRouteListener implements ListenerInterface
     {
         // 提前设置
         if ($this->swaggerConfig->isValidationCustomAttributes()) {
-            ValidationDto::$isValidationCustomAttributes = true;
+            DtoValidation::$isValidationCustomAttributes = true;
         }
 
         if (! $this->swaggerConfig->isEnable()) {

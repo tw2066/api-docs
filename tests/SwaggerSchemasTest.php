@@ -9,7 +9,7 @@ use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
-use Hyperf\DTO\Scan\ScanAnnotation;
+use Hyperf\DTO\Scan\Scan;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use Mockery as m;
@@ -35,7 +35,7 @@ class SwaggerSchemasTest extends TestCase
         $classname = DemoBodyRequest::class;
         // dto
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
-        $scanAnnotation = new ScanAnnotation($container, $container->get(MethodDefinitionCollectorInterface::class));
+        $scanAnnotation = new Scan($container, $container->get(MethodDefinitionCollectorInterface::class));
         $scanAnnotation->scanClass($classname);
 
         $swaggerComponents = new SwaggerComponents(new SwaggerCommon());

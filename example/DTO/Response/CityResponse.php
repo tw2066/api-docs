@@ -6,14 +6,17 @@ namespace HyperfExample\ApiDocs\DTO\Response;
 
 use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
+use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Type\Convert;
 
 //#[Dto(Convert::SNAKE)]
 class CityResponse
 {
     public string $name;
+    public string $name22222;
 
     #[JSONField('name_arr_1')]
+    #[Required]
     private array $nameArr = [];
 
     public array $bodyName = [];
