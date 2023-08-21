@@ -23,10 +23,10 @@ class GenerateProxyClass
         private SwaggerConfig $swaggerConfig,
         private SwaggerCommon $swaggerCommon,
     ) {
-        $outputDir = $this->swaggerConfig->getProxyDir();
-        if (file_exists($outputDir) === false) {
-            if (mkdir($outputDir, 0755, true) === false) {
-                throw new ApiDocsException("Failed to create a directory : {$outputDir}");
+        $proxyDir = $this->swaggerConfig->getProxyDir();
+        if (file_exists($proxyDir) === false) {
+            if (mkdir($proxyDir, 0755, true) === false) {
+                throw new ApiDocsException("Failed to create a directory : {$proxyDir}");
             }
         }
     }

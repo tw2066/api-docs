@@ -14,11 +14,13 @@ use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
+use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
 use Throwable;
+
 use function Hyperf\Support\make;
 
 class GenerateParameters
@@ -90,7 +92,7 @@ class GenerateParameters
                 }
             }
         }
-        //Form表单
+        // Form表单
         if (! empty($requestFormDataclass) || ! empty($this->apiFormDataArr)) {
             $requestBody = new OA\RequestBody();
             $requestBody->required = true;
@@ -144,29 +146,33 @@ class GenerateParameters
             $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
 
-            if ($apiModelProperty->hidden  || $propertyManager?->alias) {
+            if ($apiModelProperty->hidden || $propertyManager?->alias) {
                 continue;
             }
-            if (! $reflectionProperty->isPublic() && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))) {
+            if (! $reflectionProperty->isPublic()
+                && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
+                && ! $rc->hasMethod(DtoConfig::getDtoAliasMethodName($fieldName))
+            ) {
                 continue;
             }
 
-            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class);
-            /** @var In $inFirstAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class);
+            /** @var In $inAnnotation */
+            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class)?->toAnnotations()[0];
             if (! empty($inAnnotation)) {
-                $inFirstAnnotation = $inAnnotation->toAnnotations()[0];
-                $schema->enum = $inFirstAnnotation->getValue();
+                $schema->enum = $inAnnotation->getValue();
             }
             if (! empty($enum)) {
                 $schema->enum = $enum->valueList;
             }
-            if ($apiModelProperty->required !== null) {
-                $parameter->required = $apiModelProperty->required;
+            /** @var Required $requiredAnnotation */
+            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class)?->toAnnotations()[0];
+            if ($apiModelProperty->required || $requiredAnnotation) {
+                $parameter->required = true;
             }
             if ($requiredAnnotation !== null) {
                 $parameter->required = true;
             }
+            $parameter->schema = $schema;
             $parameter->description = $apiModelProperty->value ?? '';
             $parameters[] = $parameter;
         }
@@ -214,6 +220,7 @@ class GenerateParameters
             }
             $schema->default = $param->default;
             $schema->format = $param->format;
+            $parameter->schema = $schema;
             $parameters[] = $parameter;
         }
         return $parameters;

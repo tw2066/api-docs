@@ -12,7 +12,6 @@ use Hyperf\ApiDocs\Annotation\ApiOperation;
 use Hyperf\ApiDocs\Annotation\ApiResponse;
 use Hyperf\ApiDocs\Annotation\ApiSecurity;
 use Hyperf\Database\Model\Relations\HasOne;
-use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Contracts\RequestBody;
 use Hyperf\DTO\Annotation\Contracts\RequestFormData;
 use Hyperf\DTO\Annotation\Contracts\RequestHeader;
@@ -27,14 +26,12 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use HyperfExample\ApiDocs\DTO\Address;
-use HyperfExample\ApiDocs\DTO\City;
 use HyperfExample\ApiDocs\DTO\DataType;
 use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
 use HyperfExample\ApiDocs\DTO\Request\DemoBodyRequest;
 use HyperfExample\ApiDocs\DTO\Request\DemoFormData;
 use HyperfExample\ApiDocs\DTO\Request\DemoQuery;
-use HyperfExample\ApiDocs\DTO\Response\ActivityPage;
 use HyperfExample\ApiDocs\DTO\Response\ActivityResponse;
 use HyperfExample\ApiDocs\DTO\Response\CityResponse;
 use HyperfExample\ApiDocs\DTO\Response\CodeResponse;
@@ -47,6 +44,7 @@ use HyperfExample\ApiDocs\DTO\Response\Page;
 class DemoController
 {
     public int $a = 1;
+
     public array $a2 = [];
 
     public function __construct(protected RequestInterface $request)
@@ -55,24 +53,23 @@ class DemoController
 
     #[ApiOperation(summary: '查询测试')]
     #[GetMapping(path: 'api')]
-//    #[ApiHeader(name: 'test', required: true, type: 'string')]
-//    #[ApiFormData(name: 'photo', required: true, format: 'binary')]
     public function api(#[RequestQuery] #[Valid] DemoQuery $request): DataType
     {
+        //        $request->test123456
         dump($request);
-//        $cityResponse = new CityResponse();
-//        $cityResponse->name = $request->test123456;
-        //$cityResponse->name22222 ?? '';
+        //        $cityResponse = new CityResponse();
+        //        $cityResponse->name = $request->test123456;
+        // $cityResponse->name22222 ?? '';
         return new DataType();
     }
 
     #[ApiOperation(summary: '查询测试POST')]
     #[PostMapping(path: 'api')]
     #[ApiHeader(name: 'test', required: true, type: 'string')]
-//    #[ApiFormData(name: 'photo', required: true, format: 'binary')]
-    public function apiPost(#[RequestQuery] #[Valid] DemoQuery $request): DemoQuery
+    //    #[ApiFormData(name: 'photo', required: true, format: 'binary')]
+    public function apiPost(#[RequestBody] #[Valid] DemoQuery $request): DemoQuery
     {
-
+        dump($request);
         return $request;
     }
 
@@ -109,31 +106,29 @@ class DemoController
         return [new Address()];
     }
 
-
     #[ApiOperation('4:查询单体记录')]
     #[GetMapping(path: 'find/{id}/and/{in}')]
     #[ApiHeader('test2')]
-    #[ApiResponse(PhpType::BOOL,11)]
-    #[ApiResponse(PhpType::INT,12)]
-    #[ApiResponse(PhpType::FLOAT,13)]
-    #[ApiResponse(PhpType::ARRAY,14)]
-    #[ApiResponse(PhpType::OBJECT,15)]
-    #[ApiResponse(PhpType::STRING,16)]
-    #[ApiResponse([PhpType::BOOL],101)]
-    #[ApiResponse([PhpType::INT],102)]
-    #[ApiResponse([PhpType::FLOAT],103)]
-    #[ApiResponse([PhpType::ARRAY],104)]
-    #[ApiResponse([PhpType::OBJECT],105)]
-    #[ApiResponse([PhpType::STRING],106)]
-
+    #[ApiResponse(PhpType::BOOL, 11)]
+    #[ApiResponse(PhpType::INT, 12)]
+    #[ApiResponse(PhpType::FLOAT, 13)]
+    #[ApiResponse(PhpType::ARRAY, 14)]
+    #[ApiResponse(PhpType::OBJECT, 15)]
+    #[ApiResponse(PhpType::STRING, 16)]
+    #[ApiResponse([PhpType::BOOL], 101)]
+    #[ApiResponse([PhpType::INT], 102)]
+    #[ApiResponse([PhpType::FLOAT], 103)]
+    #[ApiResponse([PhpType::ARRAY], 104)]
+    #[ApiResponse([PhpType::OBJECT], 105)]
+    #[ApiResponse([PhpType::STRING], 106)]
     #[ApiResponse([])]
     #[ApiResponse([PhpType::BOOL])]
-    #[ApiResponse(Address::class,201)]
-    #[ApiResponse(new Address(),202)]
-    #[ApiResponse([Address::class],203)]
-    #[ApiResponse([PhpType::INT],204)]
-    #[ApiResponse([new Address()],205)]
-    #[ApiResponse(new Page([new Address()]),206)]
+    #[ApiResponse(Address::class, 201)]
+    #[ApiResponse(new Address(), 202)]
+    #[ApiResponse([Address::class], 203)]
+    #[ApiResponse([PhpType::INT], 204)]
+    #[ApiResponse([new Address()], 205)]
+    #[ApiResponse(new Page([new Address()]), 206)]
     public function find(int $id, float $in)
     {
         return ['$id' => $id, '$in' => $in];
@@ -153,7 +148,7 @@ class DemoController
         foreach ($activitys as $activity) {
             $arr[] = ActivityResponse::from($activity);
         }
-        return new Page($arr,$activitys->total());
+        return new Page($arr, $activitys->total());
     }
 
     #[ApiOperation('6:更新')]
@@ -186,7 +181,7 @@ class DemoController
         return null;
     }
 
-    #[ApiOperation('返回 obj(弃用)',deprecated: true)]
+    #[ApiOperation('返回 obj(弃用)', deprecated: true)]
     #[GetMapping(path: 'obj')]
     public function obj(): object
     {
@@ -211,22 +206,21 @@ class DemoController
 
     #[ApiOperation('返回code统一格式:int+数组')]
     #[PostMapping(path: 'codeIntArr')]
-    #[ApiResponse(new CodeResponse([PhpType::INT],[CityResponse::class]))]
+    #[ApiResponse(new CodeResponse([PhpType::INT], [CityResponse::class]))]
     public function codeIntArr(): CodeResponse
     {
         $data = 1;
         $cityResponse = new CityResponse();
         $cityResponse->name = '小明';
-        return new CodeResponse($data,[$cityResponse]);
+        return new CodeResponse($data, [$cityResponse]);
     }
 
     #[PostMapping(path: 'city')]
     public function city(): CityResponse
     {
-
         $city = new CityResponse();
         $city->name = 'name2';
-        $city->bodyName = [1,2,3];
+        $city->bodyName = [1, 2, 3];
 
         return $city;
     }

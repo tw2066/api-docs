@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use Hyperf\DTO\Scan\Scan;
 use Hyperf\DTO\Type\PhpType;
-use ReflectionProperty;
-use Throwable;
 
 class SwaggerCommon
 {
     private static array $className;
 
     private static array $simpleClassName;
+
+    public function __construct(private Scan $scan)
+    {
+    }
 
     public function getComponentsName(string $className): string
     {
@@ -46,19 +49,14 @@ class SwaggerCommon
     /**
      * 获取PHP类型.
      */
-    public function getTypeName(ReflectionProperty $rp): string
+    public function getTypeName(\ReflectionProperty $rprop): string
     {
-        try {
-            $type = $rp->getType()->getName();
-        } catch (Throwable) {
-            $type = 'string';
-        }
-        return $type;
+        return $this->scan->getTypeName($rprop);
     }
 
     /**
      * 获取swagger类型.
-     * @param $phpType
+     * @param mixed $phpType
      */
     public function getSwaggerType($phpType): string
     {
@@ -89,9 +87,8 @@ class SwaggerCommon
 
     /**
      * 判断是否为简单类型.
-     * @param $type
      */
-    public function isSimpleType($type): bool
+    public function isSimpleType(mixed $type): bool
     {
         return $type == 'string'
             || $type == 'boolean' || $type == 'bool'
@@ -100,7 +97,7 @@ class SwaggerCommon
             || $type == 'array' || $type == 'object';
     }
 
-    public function getPhpType($type): string
+    public function getPhpType(mixed $type): string
     {
         if (is_string($type) && $this->isSimpleType($type)) {
             return $type;

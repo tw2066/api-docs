@@ -14,7 +14,10 @@ class DataType
     public bool $boolName;
     public float $floatName;
     public mixed $mixedName;
-    public ?object $objectName;
-    public ?City $cityName = null;
+    public object $objectName;
+    public ?object $objectNameNull;
+    public City $cityName;
+    public City $cityIntName;
+    public ?City $cityNameNull = null;
 
 }
