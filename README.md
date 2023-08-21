@@ -2,7 +2,7 @@
 
 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件，支持swoole/swow驱动
 
-##### 优点
+### 优点
 
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
 - 代码DTO模式，可维护性好，扩展性好
@@ -15,7 +15,7 @@
 ## 使用须知
 
 * php版本 >= 8.1，参数映射到PHP类不支持联合类型
-* 控制器中方法尽可能返回类,这样会更好的生成文档
+* 控制器中方法尽可能返回类(包含简单类型)，这样会更好的生成文档
 * 当返回类的结果满足不了时,可以使用 #[ApiResponse] 注解
 
 ## 例子
@@ -71,7 +71,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 生成swagger文件
+    | 生成swagger文件路径
     |--------------------------------------------------------------------------
     */
     'output_dir' => BASE_PATH . '/runtime/swagger',
@@ -201,7 +201,7 @@ php bin/hyperf.php start
 
 > 命名空间:`Hyperf\DTO\Annotation\Contracts`
 
-#### #[RequestBody]
+#### #[RequestBody] 注解
 
 - 获取Body参数
 
@@ -209,7 +209,7 @@ php bin/hyperf.php start
 public function add(#[RequestBody] DemoBodyRequest $request){}
 ```
 
-#### #[RequestQuery]
+#### #[RequestQuery] 注解
 
 - 获取GET参数
 
@@ -217,7 +217,7 @@ public function add(#[RequestBody] DemoBodyRequest $request){}
 public function add(#[RequestQuery] DemoQuery $request){}
 ```
 
-#### #[RequestFormData]
+#### #[RequestFormData] 注解
 
 - 获取表单请求
 
@@ -526,12 +526,6 @@ class DemoQuery
 * 设置JSONField后会生成代理类,生成`alias_name`属性
 * 接受和返回字段都以`alias_name` 为准
 
-### PHP Accessor
-
-生成类访问器（Getter & Setter）
-
-推荐使用[free2one/hyperf-php-accessor](https://github.com/kkguan/hyperf-php-accessor)
-
 ## RPC 返回PHP对象
 
 > 当框架导入 symfony/serializer (^5.0) 和 symfony/property-access (^5.0) 后，并在 dependencies.php 中配置一下映射关系
@@ -548,3 +542,10 @@ return [
 ## Swagger界面
 
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
+
+## PHP Accessor
+
+生成类访问器（Getter & Setter）
+
+推荐使用[free2one/hyperf-php-accessor](https://github.com/kkguan/hyperf-php-accessor)
+
