@@ -55,11 +55,7 @@ class DemoController
     #[GetMapping(path: 'api')]
     public function api(#[RequestQuery] #[Valid] DemoQuery $request): DataType
     {
-        //        $request->test123456
         dump($request);
-        //        $cityResponse = new CityResponse();
-        //        $cityResponse->name = $request->test123456;
-        // $cityResponse->name22222 ?? '';
         return new DataType();
     }
 

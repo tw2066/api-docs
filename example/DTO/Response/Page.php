@@ -10,7 +10,7 @@ class Page
 {
     public int $total;
 
-    #[ApiVariable]
+    #[ApiVariable] #标记未可变变量
     public array $content;
 
     public function __construct(array $content, int $total = 0)

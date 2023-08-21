@@ -15,23 +15,23 @@ use Hyperf\PhpAccessor\Annotation\HyperfData;
 use HyperfExample\ApiDocs\DTO\City;
 use PhpAccessor\Attribute\Data;
 
-#[HyperfData]
-#[Data]
+//#[HyperfData]
+//#[Data]
 #[Dto]
 class DemoQuery
 {
 
-    #[ApiModelProperty('这是一个测试')]
-    #[JSONField('alias66666')]
+    #[ApiModelProperty('这是一个别名属性')]
+    #[JSONField('alias_name')]
     #[Required]
-    public int $test123456 = 123;
+    public string $aliasName;
 
     #[ApiModelProperty('类型')]
     #[In(['a','b'])]
     private string $type;
 
     private PhpType $phpType;
-    #[AsyncAnnotation]
+    //#[AsyncAnnotation]
     public function getA()
     {
         return $this->test123456;
