@@ -60,7 +60,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | 全局返回 如:[code=>200,data=>null] 格式,设置会后会全局生成对应文档
-    | 配合ApiVariable注解使用,示例查考GlobalResponse类
+    | 配合ApiVariable注解使用,示例参考GlobalResponse类
+    | 返回数据格式可以利用AOP统一返回
     |
     */
     // 'global_return_responses_class' => GlobalResponse::class,

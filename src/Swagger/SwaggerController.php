@@ -70,11 +70,6 @@ class SwaggerController
         return $this->fileResponse($filePath);
     }
 
-    private function getSwaggerFileUrl($serverName): string
-    {
-        return $this->swaggerConfig->getPrefixResources() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
-    }
-
     protected function fileResponse(string $filePath)
     {
         if (Constant::ENGINE == 'Swoole') {
@@ -98,5 +93,10 @@ class SwaggerController
                 break;
         }
         return $response;
+    }
+
+    private function getSwaggerFileUrl($serverName): string
+    {
+        return $this->swaggerConfig->getPrefixResources() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
     }
 }

@@ -6,6 +6,7 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\DTO\Scan\Scan;
 use Hyperf\DTO\Type\PhpType;
+use ReflectionProperty;
 
 class SwaggerCommon
 {
@@ -49,7 +50,7 @@ class SwaggerCommon
     /**
      * 获取PHP类型.
      */
-    public function getTypeName(\ReflectionProperty $rprop): string
+    public function getTypeName(ReflectionProperty $rprop): string
     {
         return $this->scan->getTypeName($rprop);
     }

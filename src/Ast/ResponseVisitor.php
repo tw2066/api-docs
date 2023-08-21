@@ -9,6 +9,8 @@ use Hyperf\DTO\Annotation\ArrayType;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use ReflectionClass;
+use ReflectionProperty;
 
 class ResponseVisitor extends NodeVisitorAbstract
 {
@@ -62,8 +64,8 @@ class ResponseVisitor extends NodeVisitorAbstract
     protected function getNotDefaultPropertyFromAnnotation(AbstractAnnotation $annotation): array
     {
         $properties = [];
-        $ref = new \ReflectionClass($annotation);
-        foreach ($ref->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        $ref = new ReflectionClass($annotation);
+        foreach ($ref->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if ($property->hasDefaultValue() && $property->getDefaultValue() === $property->getValue($annotation)) {
                 continue;
             }

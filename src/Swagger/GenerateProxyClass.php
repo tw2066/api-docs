@@ -12,6 +12,8 @@ use Hyperf\Support\Composer;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
+use ReflectionClass;
+use SplFileInfo;
 
 class GenerateProxyClass
 {
@@ -51,7 +53,7 @@ class GenerateProxyClass
      */
     public function generate(object $obj): string
     {
-        $ref = new \ReflectionClass($obj);
+        $ref = new ReflectionClass($obj);
         $classname = $obj::class;
         $properties = $this->getGenericClass($classname);
         if (empty($properties)) {
@@ -88,7 +90,7 @@ class GenerateProxyClass
             }
         }
 
-        $file = new \SplFileInfo($ref->getFileName());
+        $file = new SplFileInfo($ref->getFileName());
         $realPath = $file->getRealPath();
         [$generateNamespaceClassName, $content] = $this->phpParser($obj, $realPath, $propertyArr);
 

@@ -19,6 +19,7 @@ use Hyperf\HttpServer\Annotation\AutoController;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\PathItem;
+
 use function Hyperf\Support\make;
 
 class SwaggerPaths
@@ -41,7 +42,6 @@ class SwaggerPaths
      */
     public function addPath(string $className, string $methodName, string $route, string $methods): void
     {
-
         $pathItem = new PathItem();
         // 获取类中方法的位置
         $position = $this->getMethodNamePosition($className, $methodName);

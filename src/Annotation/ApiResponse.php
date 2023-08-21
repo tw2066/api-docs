@@ -9,7 +9,7 @@ use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Di\Annotation\AbstractMultipleAnnotation;
 use Hyperf\DTO\Type\PhpType;
 
-#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ApiResponse extends AbstractMultipleAnnotation
 {
     public null|string|object|array $returnType;

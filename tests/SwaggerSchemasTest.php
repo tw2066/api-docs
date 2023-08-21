@@ -35,10 +35,10 @@ class SwaggerSchemasTest extends TestCase
         $classname = DemoBodyRequest::class;
         // dto
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
-        $scanAnnotation = new Scan($container, $container->get(MethodDefinitionCollectorInterface::class));
-        $scanAnnotation->scanClass($classname);
+        $scan = new Scan($container, $container->get(MethodDefinitionCollectorInterface::class));
+        $scan->scanClass($classname);
 
-        $swaggerComponents = new SwaggerComponents(new SwaggerCommon());
+        $swaggerComponents = new SwaggerComponents(new SwaggerCommon($scan));
         $schemas = $swaggerComponents->generateSchemas($classname);
         $properties = $schemas->properties;
         $this->assertEquals($properties[0]->property, 'int');
