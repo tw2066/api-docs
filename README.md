@@ -2,7 +2,7 @@
 
 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件，支持swoole/swow驱动
 
-### 优点
+## 优点
 
 - 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
 - 代码DTO模式，可维护性好，扩展性好
@@ -193,7 +193,7 @@ php bin/hyperf.php start
 [INFO] HTTP Server listening at 0.0.0.0:9501
 ```
 
-> 看到`Swagger Url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
+> 看到`Swagger docs url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
 
 ### 3. 使用
 
@@ -507,7 +507,7 @@ class DemoQuery
 
 #### JSONField注解
 
-用于设置属性的别名与Dto注解配合使用
+用于设置属性的别名
 
 ```php
 use Hyperf\DTO\Annotation\Dto;
