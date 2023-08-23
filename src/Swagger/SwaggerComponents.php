@@ -77,13 +77,12 @@ class SwaggerComponents
                 $requiredArr[] = $fieldName;
             }
             $property->example = $apiModelProperty->example;
-            try {
-                $obj = make($className);
-                if ($reflectionProperty->isPublic() && $reflectionProperty->isInitialized($obj)) {
-                    $property->default = $reflectionProperty->getValue($obj);
-                }
-            } catch (\Throwable) {
+
+            $classVars = get_class_vars($className);
+            if(isset($classVars[$fieldName])){
+                $property->default = $classVars[$fieldName];
             }
+
 
             // swagger 类型
             $swaggerType = $this->common->getSwaggerType($propertyManager->phpSimpleType);
