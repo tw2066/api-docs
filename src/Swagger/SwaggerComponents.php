@@ -16,8 +16,6 @@ use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 
-use function Hyperf\Support\make;
-
 class SwaggerComponents
 {
     protected static array $schemas = [];
@@ -79,10 +77,9 @@ class SwaggerComponents
             $property->example = $apiModelProperty->example;
 
             $classVars = get_class_vars($className);
-            if(isset($classVars[$fieldName])){
+            if (array_key_exists($fieldName, $classVars)) {
                 $property->default = $classVars[$fieldName];
             }
-
 
             // swagger 类型
             $swaggerType = $this->common->getSwaggerType($propertyManager->phpSimpleType);
