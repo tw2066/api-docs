@@ -44,6 +44,7 @@ class SwaggerComponents
         $rc = ReflectionManager::reflectClass($className);
         $propertyArr = [];
         $requiredArr = [];
+        $classVars = get_class_vars($className);
         // 循环类中字段
         foreach ($rc->getProperties() as $reflectionProperty) {
             // 属性
@@ -76,7 +77,6 @@ class SwaggerComponents
             }
             $property->example = $apiModelProperty->example;
 
-            $classVars = get_class_vars($className);
             if (array_key_exists($fieldName, $classVars)) {
                 $property->default = $classVars[$fieldName];
             }
