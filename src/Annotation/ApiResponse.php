@@ -13,11 +13,13 @@ use Hyperf\DTO\Type\PhpType;
 class ApiResponse extends AbstractMultipleAnnotation
 {
 
+    public null|string|object|array $returnType = null;
     public function __construct(
-        public null|string|object|array $returnType = null,
+        null|string|object|array $returnType = null,
         public string|int|null $response = '200',
         public string $description = 'success',
     ) {
+        $this->setReturnType($returnType);
     }
 
     protected function setReturnType($returnType): void

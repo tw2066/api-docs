@@ -15,6 +15,7 @@ use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
+use OpenApi\Generator;
 
 class SwaggerComponents
 {
@@ -63,6 +64,7 @@ class SwaggerComponents
             ) {
                 continue;
             }
+
             // 字段名称
             $property->property = $fieldName;
             // 描述
@@ -74,7 +76,7 @@ class SwaggerComponents
                 $requiredArr[] = $fieldName;
             }
             $property->example = $apiModelProperty->example;
-            $property->default = $this->common->getPropertyDefaultValue($className,$reflectionProperty);
+            $property->default = $this->common->getPropertyDefaultValue($className, $reflectionProperty);
 
             $isSimpleType = $propertyManager->isSimpleType;
             $phpSimpleType = $propertyManager->phpSimpleType;
@@ -116,6 +118,7 @@ class SwaggerComponents
                         $items->ref = $this->common->getComponentsName($propertyManager->arrClassName);
                         $property->items = $items;
                         $this->generateSchemas($propertyManager->arrClassName);
+                        $property->default = Generator::UNDEFINED;
                     } elseif (! empty($propertyManager->arrSimpleType)) {
                         $items = new OA\Items();
                         $items->type = $this->common->getSwaggerType($propertyManager->arrSimpleType);

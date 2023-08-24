@@ -78,7 +78,7 @@ class GenerateResponses
         // 判断对象
         if (is_object($returnTypeClassName)) {
             // 生成代理类
-            if ($this->genericProxyClass->getGenericClass($returnTypeClassName::class)) {
+            if ($this->genericProxyClass->getApiVariableClass($returnTypeClassName::class)) {
                 $returnTypeClassName = $this->genericProxyClass->generate($returnTypeClassName);
             } else {
                 $returnTypeClassName = $returnTypeClassName::class;
@@ -93,7 +93,6 @@ class GenerateResponses
         $returnTypeClassName == 'array' && $isArray = true;
         $arr = [];
         $mediaType = new OA\MediaType();
-
         $mediaTypeStr = 'text/plain';
         // 简单类型
         if ($this->common->isSimpleType($returnTypeClassName)) {

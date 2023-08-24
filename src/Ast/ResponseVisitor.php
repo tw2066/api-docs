@@ -19,7 +19,7 @@ class ResponseVisitor extends NodeVisitorAbstract
     public function __construct(
         protected object $generateClass,
         protected string $generateClassName,
-        protected array $data,
+        protected array $propertyArr,
     ) {
         $this->factory = new BuilderFactory();
     }
@@ -29,8 +29,8 @@ class ResponseVisitor extends NodeVisitorAbstract
         if ($node instanceof Node\Stmt\Property) {
             $propertyName = $node->props[0]->name->name;
             // 存在可变变量
-            if (isset($this->data[$propertyName])) {
-                $propertyTypeName = $this->data[$propertyName];
+            if (isset($this->propertyArr[$propertyName])) {
+                $propertyTypeName = $this->propertyArr[$propertyName];
                 if (is_array($propertyTypeName)) {
                     $arrayType = $propertyTypeName[0];
                     $name = new Node\Name('\Hyperf\DTO\Annotation\ArrayType');

@@ -33,7 +33,7 @@ class GenerateProxyClass
         }
     }
 
-    public function getGenericClass(string $newClassname)
+    public function getApiVariableClass(string $newClassname)
     {
         $newClassname = trim($newClassname, '\\');
         if ($this->apiVariableClassArr === null) {
@@ -55,37 +55,37 @@ class GenerateProxyClass
     {
         $ref = new ReflectionClass($obj);
         $classname = $obj::class;
-        $properties = $this->getGenericClass($classname);
+        $properties = $this->getApiVariableClass($classname);
         if (empty($properties)) {
             return $classname;
         }
 
         $propertyArr = [];
         foreach ($properties as $property) {
-            // 获取变量
-            $propertyObj = $obj->{$property};
+            // 获取变量值
+            $propertyValue = $obj->{$property};
 
-            $type = $this->swaggerCommon->getPhpType($propertyObj);
-            if (is_object($propertyObj) && $type != '\stdClass') {
+            $type = $this->swaggerCommon->getPhpType($propertyValue);
+            if (is_object($propertyValue) && $type != '\stdClass') {
                 $propertyClassname = $type;
-                if ($this->getGenericClass($propertyClassname)) {
-                    $propertyClassname = $this->generate($propertyObj);
+                if ($this->getApiVariableClass($propertyClassname)) {
+                    $propertyClassname = $this->generate($propertyValue);
                 }
                 $type = $propertyClassname;
             }
             $propertyArr[$property] = $type;
-            if (is_array($propertyObj) && count($propertyObj) > 0) {
-                $arrayType = $this->swaggerCommon->getPhpType($propertyObj[0]);
-                if (is_object($propertyObj[0]) && $propertyObj[0]::class != '\stdClass') {
+            if (is_array($propertyValue) && count($propertyValue) > 0) {
+                $arrayType = $this->swaggerCommon->getPhpType($propertyValue[0]);
+                if (is_object($propertyValue[0]) && $propertyValue[0]::class != '\stdClass') {
                     $propertyClassname = $arrayType;
-                    if ($this->getGenericClass($propertyClassname)) {
-                        $propertyClassname = $this->generate($propertyObj[0]);
+                    if ($this->getApiVariableClass($propertyClassname)) {
+                        $propertyClassname = $this->generate($propertyValue[0]);
                     }
                     $arrayType = $propertyClassname;
                 }
                 $propertyArr[$property] = [$arrayType];
             }
-            if (is_array($propertyObj) && count($propertyObj) == 0) {
+            if (is_array($propertyValue) && count($propertyValue) == 0) {
                 $propertyArr[$property] = 'array';
             }
         }

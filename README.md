@@ -264,11 +264,9 @@ public function getUserInfo(DemoToken $header){}
   #[ApiResponse([PhpType::ARRAY], 104)]
   #[ApiResponse([PhpType::OBJECT], 105)]
   #[ApiResponse([PhpType::STRING], 106)]
-  #[ApiResponse([])]
   #[ApiResponse([PhpType::BOOL])]
   #[ApiResponse([Address::class], 203)]
   #[ApiResponse([PhpType::INT], 204)]
-  #[ApiResponse([new Address()], 205)]
   public function test(){}
   ```
 
@@ -298,20 +296,20 @@ public function getUserInfo(DemoToken $header){}
 
   ```php
       #[ApiOperation('分页')]
-      #[GetMapping(path: 'page')]
-      #[ApiResponse(new Page([new ActivityResponse()]))]
-      public function page(#[RequestQuery] PageQuery $pageQuery): Page
+      #[GetMapping(path: 'activityPage')]
+      #[ApiResponse(new Page([ActivityResponse::class]))]
+      public function activityPage(#[RequestQuery] PageQuery $pageQuery): Page
       {
-          $activitys = Activity::paginate($pageQuery->getSize());
+          $activityPage = Activity::paginate($pageQuery->getSize());
           $arr = [];
-          foreach ($activitys as $activity) {
+          foreach ($activityPage as $activity) {
               $arr[] = ActivityResponse::from($activity);
           }
-          return new Page($arr, $activitys->total());
+          return new Page($arr, $activityPage->total());
       }
   ```
 
-  通过`#[ApiResponse(new Page([new ActivityResponse()]))]`会生成相应的文档
+  通过`#[ApiResponse(new Page([ActivityResponse::class]))]`会生成相应的文档
 
 
 
