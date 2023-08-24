@@ -12,20 +12,18 @@ use Hyperf\DTO\Type\PhpType;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class ApiResponse extends AbstractMultipleAnnotation
 {
-    public null|string|object|array $returnType;
 
     public function __construct(
-        null|string|object|array $returnType = null,
+        public null|string|object|array $returnType = null,
         public string|int|null $response = '200',
         public string $description = 'success',
     ) {
-        $this->setReturnType($returnType);
     }
 
     protected function setReturnType($returnType): void
     {
         if ($returnType instanceof PhpType) {
-            $this->returnType = $returnType->value;
+            $this->returnType = $returnType->getValue();
             return;
         }
         if (is_object($returnType)) {
@@ -39,7 +37,7 @@ class ApiResponse extends AbstractMultipleAnnotation
         // eg: [class]
         if (is_array($returnType) && count($returnType) > 0) {
             if ($returnType[0] instanceof PhpType) {
-                $this->returnType = [$returnType[0]->value];
+                $this->returnType = [$returnType[0]->getValue()];
                 return;
             }
             if (is_string($returnType[0]) && class_exists($returnType[0])) {

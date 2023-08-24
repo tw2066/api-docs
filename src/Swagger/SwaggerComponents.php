@@ -44,16 +44,14 @@ class SwaggerComponents
         $rc = ReflectionManager::reflectClass($className);
         $propertyArr = [];
         $requiredArr = [];
-        $classVars = get_class_vars($className);
-        // 循环类中字段
+        // 循环字段
         foreach ($rc->getProperties() as $reflectionProperty) {
             // 属性
             $property = new OA\Property();
             $fieldName = $reflectionProperty->getName();
             $propertyManager = PropertyManager::getProperty($className, $fieldName);
 
-            $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class);
-            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
             /** @var In $inAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($className, $fieldName, In::class)?->toAnnotations()[0];
             if ($apiModelProperty->hidden || $propertyManager->alias) {
@@ -76,21 +74,25 @@ class SwaggerComponents
                 $requiredArr[] = $fieldName;
             }
             $property->example = $apiModelProperty->example;
+            $property->default = $this->common->getPropertyDefaultValue($className,$reflectionProperty);
 
-            if (array_key_exists($fieldName, $classVars)) {
-                $property->default = $classVars[$fieldName];
+            $isSimpleType = $propertyManager->isSimpleType;
+            $phpSimpleType = $propertyManager->phpSimpleType;
+            if ($apiModelProperty->phpType) {
+                $isSimpleType = true;
+                $phpSimpleType = $apiModelProperty->phpType;
             }
 
             // swagger 类型
-            $swaggerType = $this->common->getSwaggerType($propertyManager->phpSimpleType);
+            $swaggerType = $this->common->getSwaggerType($phpSimpleType);
 
             // 枚举:in
-            if (! empty($inAnnotation)) {
+            if (! empty($inAnnotation) && empty($apiModelProperty->phpType)) {
                 $property->type = $swaggerType;
                 $property->enum = $inAnnotation->getValue();
             }
             // 简单类型
-            elseif ($propertyManager->isSimpleType) {
+            elseif ($isSimpleType) {
                 // 数组
                 if ($swaggerType == 'array') {
                     $property->type = 'array';

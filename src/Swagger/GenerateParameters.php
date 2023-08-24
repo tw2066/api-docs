@@ -19,9 +19,6 @@ use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
-use Throwable;
-
-use function Hyperf\Support\make;
 
 class GenerateParameters
 {
@@ -131,21 +128,11 @@ class GenerateParameters
             $schema = new OA\Schema();
             $parameter->name = $fieldName;
             $parameter->in = $in;
-            try {
-                $schema->default = $reflectionProperty->getValue(make($parameterClassName));
-            } catch (Throwable) {
-            }
-            $phpType = $this->common->getTypeName($reflectionProperty);
+            $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
             $propertyManager = PropertyManager::getProperty($parameterClassName, $reflectionProperty->name);
-            $enum = $propertyManager?->enum;
-            if ($enum) {
-                $phpType = $enum->backedType;
-            }
-            $schema->type = $this->common->getSwaggerType($phpType);
 
             $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-
             if ($apiModelProperty->hidden || $propertyManager?->alias) {
                 continue;
             }
@@ -155,21 +142,30 @@ class GenerateParameters
             ) {
                 continue;
             }
+            // 存在自定义简单类型
+            if ($apiModelProperty->phpType) {
+                $phpType = $apiModelProperty->phpType;
+            } else {
+                $phpType = $this->common->getTypeName($reflectionProperty);
+                $enum = $propertyManager?->enum;
+                if ($enum) {
+                    $phpType = $enum->backedType;
+                }
+                /** @var In $inAnnotation */
+                $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class)?->toAnnotations()[0];
+                if (! empty($inAnnotation)) {
+                    $schema->enum = $inAnnotation->getValue();
+                }
+                if (! empty($enum)) {
+                    $schema->enum = $enum->valueList;
+                }
+            }
 
-            /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class)?->toAnnotations()[0];
-            if (! empty($inAnnotation)) {
-                $schema->enum = $inAnnotation->getValue();
-            }
-            if (! empty($enum)) {
-                $schema->enum = $enum->valueList;
-            }
+            $schema->type = $this->common->getSwaggerType($phpType);
+
             /** @var Required $requiredAnnotation */
             $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class)?->toAnnotations()[0];
             if ($apiModelProperty->required || $requiredAnnotation) {
-                $parameter->required = true;
-            }
-            if ($requiredAnnotation !== null) {
                 $parameter->required = true;
             }
             $parameter->schema = $schema;

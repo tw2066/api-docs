@@ -6,6 +6,7 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\DTO\Scan\Scan;
 use Hyperf\DTO\Type\PhpType;
+use OpenApi\Generator;
 use ReflectionProperty;
 
 class SwaggerCommon
@@ -104,7 +105,7 @@ class SwaggerCommon
             return $type;
         }
         if ($type instanceof PhpType) {
-            return $type->value;
+            return $type->getValue();
         }
 
         if (is_object($type) && $type::class != 'stdClass') {
@@ -114,5 +115,24 @@ class SwaggerCommon
             return '\\' . trim($type, '\\');
         }
         return 'mixed';
+    }
+
+    public function getPropertyDefaultValue(string $className, ReflectionProperty $reflectionProperty)
+    {
+        $default = Generator::UNDEFINED;
+        try {
+            $obj = \Hyperf\Support\make($className);
+            if ($reflectionProperty->isInitialized($obj)) {
+                $default = $reflectionProperty->getValue($obj);
+            }
+        } catch (\Throwable) {
+            $fieldName = $reflectionProperty->getName();
+            $classVars = get_class_vars($className);
+            // 别名会获取不到默认值
+            if (isset($classVars[$fieldName])) {
+                $default = $classVars[$fieldName];
+            }
+        }
+        return $default;
     }
 }
