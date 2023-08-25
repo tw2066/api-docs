@@ -40,7 +40,7 @@ class SwaggerCommon
         }
         $simpleClassName = substr($className, strrpos($className, '\\') + 1);
         if (isset(self::$simpleClassName[$simpleClassName])) {
-            $simpleClassName .= '-' . (++self::$simpleClassName[$simpleClassName]);
+            $simpleClassName .= '_' . (++self::$simpleClassName[$simpleClassName]);
         } else {
             self::$simpleClassName[$simpleClassName] = 0;
         }
