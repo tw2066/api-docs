@@ -11,9 +11,9 @@ use ReflectionProperty;
 
 class SwaggerCommon
 {
-    private static array $className;
+    private static array $className = [];
 
-    private static array $simpleClassName;
+    private static array $simpleClassName = [];
 
     public function __construct(private Scan $scan)
     {
@@ -39,11 +39,7 @@ class SwaggerCommon
             return self::$className[$className];
         }
         $simpleClassName = substr($className, strrpos($className, '\\') + 1);
-        if (isset(self::$simpleClassName[$simpleClassName])) {
-            $simpleClassName .= '_' . (++self::$simpleClassName[$simpleClassName]);
-        } else {
-            self::$simpleClassName[$simpleClassName] = 0;
-        }
+        $simpleClassName = $this->getSimpleClassNameNum($simpleClassName);
         self::$className[$className] = $simpleClassName;
         return $simpleClassName;
     }
@@ -134,5 +130,15 @@ class SwaggerCommon
             }
         }
         return $default;
+    }
+
+    private function getSimpleClassNameNum(string $simpleClassName, $num = 0)
+    {
+        $tmp = $simpleClassName . ($num > 0 ? '_' . $num : '');
+        if (isset(self::$simpleClassName[$tmp])) {
+            return $this->getSimpleClassNameNum($simpleClassName, $num + 1);
+        }
+        self::$simpleClassName[$tmp] = $num;
+        return $tmp;
     }
 }
