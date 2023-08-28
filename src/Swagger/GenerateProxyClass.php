@@ -69,7 +69,7 @@ class GenerateProxyClass
             if (is_object($propertyValue) && $type != '\stdClass') {
                 $propertyClassname = $type;
                 if ($this->getApiVariableClass($propertyClassname)) {
-                    $propertyClassname = $this->generate($propertyValue);
+                    $propertyClassname = '\\' . $this->generate($propertyValue);
                 }
                 $type = $propertyClassname;
             }
@@ -79,7 +79,7 @@ class GenerateProxyClass
                 if (is_object($propertyValue[0]) && $propertyValue[0]::class != '\stdClass') {
                     $propertyClassname = $arrayType;
                     if ($this->getApiVariableClass($propertyClassname)) {
-                        $propertyClassname = $this->generate($propertyValue[0]);
+                        $propertyClassname = '\\' . $this->generate($propertyValue[0]);
                     }
                     $arrayType = $propertyClassname;
                 }
