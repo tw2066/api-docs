@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace HyperfTest\ApiDocs;
 
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
-use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
-use Hyperf\DTO\Scan\Scan;
-use HyperfTest\ApiDocs\Request\Address;
-use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -33,9 +29,7 @@ class SwaggerCommonTest extends TestCase
         $container = m::mock(ContainerInterface::class);
         $container->shouldReceive('has')->andReturn(true);
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
-        $scan = new Scan($container, $container->get(MethodDefinitionCollectorInterface::class));
-
-        $swaggerCommon   = new SwaggerCommon($scan);
+        $swaggerCommon = new SwaggerCommon();
         $simpleClassName = $swaggerCommon->getSimpleClassName('Hyperf\ApiDocs\Address');
         $this->assertEquals($simpleClassName, 'Address');
         $simpleClassName = $swaggerCommon->getSimpleClassName('\ApiDocs\Address_1');
@@ -46,7 +40,6 @@ class SwaggerCommonTest extends TestCase
         $this->assertEquals($simpleClassName, 'Address_3');
         $simpleClassName = $swaggerCommon->getSimpleClassName('\Hyperf\ApiDocs\Address');
         $this->assertEquals($simpleClassName, 'Address');
-
 
         $simpleClassName = $swaggerCommon->getSimpleClassName('Hyperf\ApiDocs\City');
         $this->assertEquals($simpleClassName, 'City');
@@ -66,5 +59,12 @@ class SwaggerCommonTest extends TestCase
 
         $simpleClassName = $swaggerCommon->getSimpleClassName('\ApiDocs\DTO\City_2');
         $this->assertEquals($simpleClassName, 'City_2_1');
+
+        $simpleClassName = $swaggerCommon->getSimpleClassName('int');
+        $this->assertEquals($simpleClassName, 'Int');
+        $simpleClassName = $swaggerCommon->getSimpleClassName('Int');
+        $this->assertEquals($simpleClassName, 'Int_1');
+        $simpleClassName = $swaggerCommon->getSimpleClassName('\Int');
+        $this->assertEquals($simpleClassName, 'Int_1');
     }
 }

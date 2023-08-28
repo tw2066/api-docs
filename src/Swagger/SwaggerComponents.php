@@ -22,7 +22,8 @@ class SwaggerComponents
     protected static array $schemas = [];
 
     public function __construct(
-        private SwaggerCommon $common,
+        protected SwaggerCommon $common,
+        protected PropertyManager $propertyManager,
     ) {
     }
 
@@ -50,7 +51,7 @@ class SwaggerComponents
             // 属性
             $property = new OA\Property();
             $fieldName = $reflectionProperty->getName();
-            $propertyManager = PropertyManager::getProperty($className, $fieldName);
+            $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
 
             $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
             /** @var In $inAnnotation */

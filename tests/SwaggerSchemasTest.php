@@ -9,6 +9,9 @@ use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
+use Hyperf\DTO\DtoCommon;
+use Hyperf\DTO\Scan\PropertyEnum;
+use Hyperf\DTO\Scan\PropertyManager;
 use Hyperf\DTO\Scan\Scan;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
@@ -35,10 +38,9 @@ class SwaggerSchemasTest extends TestCase
         $classname = DemoBodyRequest::class;
         // dto
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
-        $scan = new Scan($container, $container->get(MethodDefinitionCollectorInterface::class));
-        $scan->scanClass($classname);
+        $swaggerCommon = new SwaggerCommon();
 
-        $swaggerComponents = new SwaggerComponents(new SwaggerCommon($scan));
+        $swaggerComponents = new SwaggerComponents($swaggerCommon,new PropertyManager($swaggerCommon,new PropertyEnum()));
         $schemas = $swaggerComponents->generateSchemas($classname);
         $properties = $schemas->properties;
         $this->assertEquals($properties[0]->property, 'int');

@@ -22,8 +22,8 @@ class GenerateProxyClass
     protected array $proxyClassArr = [];
 
     public function __construct(
-        private SwaggerConfig $swaggerConfig,
-        private SwaggerCommon $swaggerCommon,
+        protected SwaggerConfig $swaggerConfig,
+        protected SwaggerCommon $swaggerCommon,
     ) {
         $proxyDir = $this->swaggerConfig->getProxyDir();
         if (file_exists($proxyDir) === false) {
@@ -99,7 +99,7 @@ class GenerateProxyClass
             $this->proxyClassArr[$generateNamespaceClassName] = true;
         }
 
-        return '\\' . $generateNamespaceClassName;
+        return $generateNamespaceClassName;
     }
 
     protected function putContents($generateNamespaceClassName, $content): void

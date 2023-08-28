@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
-use Hyperf\DTO\Scan\Scan;
+use Hyperf\DTO\DtoCommon;
 use Hyperf\DTO\Type\PhpType;
 use OpenApi\Generator;
 use ReflectionProperty;
+use Throwable;
 
-class SwaggerCommon
+class SwaggerCommon extends DtoCommon
 {
-    private static array $className = [];
+    protected static array $className = [];
 
-    private static array $simpleClassName = [];
-
-    public function __construct(private Scan $scan)
-    {
-    }
+    protected static array $simpleClassName = [];
 
     public function getComponentsName(string $className): string
     {
@@ -32,31 +29,25 @@ class SwaggerCommon
         if ($className === null) {
             $className = 'Null';
         }
-
-        $className = ucfirst($className);
-        $className = '\\' . trim($className, '\\');
+        $className = ltrim($className, '\\');
         if (isset(self::$className[$className])) {
             return self::$className[$className];
         }
-        $simpleClassName = substr($className, strrpos($className, '\\') + 1);
-        $simpleClassName = $this->getSimpleClassNameNum($simpleClassName);
+        $pos = strrpos($className, '\\');
+        $simpleClassName = $className;
+        if ($pos !== false) {
+            $simpleClassName = substr($className, $pos + 1);
+        }
+
+        $simpleClassName = $this->getSimpleClassNameNum(ucfirst($simpleClassName));
         self::$className[$className] = $simpleClassName;
         return $simpleClassName;
     }
 
     /**
-     * 获取PHP类型.
-     */
-    public function getTypeName(ReflectionProperty $rprop): string
-    {
-        return $this->scan->getTypeName($rprop);
-    }
-
-    /**
      * 获取swagger类型.
-     * @param mixed $phpType
      */
-    public function getSwaggerType($phpType): string
+    public function getSwaggerType(mixed $phpType): string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
@@ -81,18 +72,6 @@ class SwaggerCommon
             'string', 'mixed' => 'string',
             default => null,
         };
-    }
-
-    /**
-     * 判断是否为简单类型.
-     */
-    public function isSimpleType(mixed $type): bool
-    {
-        return $type == 'string'
-            || $type == 'boolean' || $type == 'bool'
-            || $type == 'integer' || $type == 'int'
-            || $type == 'double' || $type == 'float'
-            || $type == 'array' || $type == 'object';
     }
 
     public function getPhpType(mixed $type): string
@@ -121,7 +100,7 @@ class SwaggerCommon
             if ($reflectionProperty->isInitialized($obj)) {
                 $default = $reflectionProperty->getValue($obj);
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $fieldName = $reflectionProperty->getName();
             $classVars = get_class_vars($className);
             // 别名会获取不到默认值
@@ -132,13 +111,13 @@ class SwaggerCommon
         return $default;
     }
 
-    private function getSimpleClassNameNum(string $simpleClassName, $num = 0)
+    private function getSimpleClassNameNum(string $className, $num = 0): string
     {
-        $tmp = $simpleClassName . ($num > 0 ? '_' . $num : '');
-        if (isset(self::$simpleClassName[$tmp])) {
-            return $this->getSimpleClassNameNum($simpleClassName, $num + 1);
+        $simpleClassName = $className . ($num > 0 ? '_' . $num : '');
+        if (isset(self::$simpleClassName[$simpleClassName])) {
+            return $this->getSimpleClassNameNum($className, $num + 1);
         }
-        self::$simpleClassName[$tmp] = $num;
-        return $tmp;
+        self::$simpleClassName[$simpleClassName] = $num;
+        return $simpleClassName;
     }
 }

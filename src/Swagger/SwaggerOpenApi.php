@@ -15,16 +15,16 @@ class SwaggerOpenApi
 {
     public ?SplPriorityQueue $queueTags;
 
-    private ?OpenApi $openApi = null;
+    protected ?OpenApi $openApi = null;
 
-    private ?SplPriorityQueue $queuePaths;
+    protected ?SplPriorityQueue $queuePaths;
 
-    private array $tags = [];
+    protected array $tags = [];
 
-    private array $componentsSchemas = [];
+    protected array $componentsSchemas = [];
 
     public function __construct(
-        private SwaggerConfig $swaggerConfig,
+        protected SwaggerConfig $swaggerConfig,
     ) {
     }
 
@@ -139,13 +139,13 @@ class SwaggerOpenApi
         $this->openApi->saveAs($outputFile);
     }
 
-    private function setInfo(): void
+    protected function setInfo(): void
     {
         $info = $this->swaggerConfig->getSwagger()['info'] ?? [];
         $this->openApi->info = Mapper::map($info, new OA\Info());
     }
 
-    private function setExternalDocs(): void
+    protected function setExternalDocs(): void
     {
         $externalDocs = $this->swaggerConfig->getSwagger()['externalDocs'] ?? [];
         if ($externalDocs) {
@@ -153,7 +153,7 @@ class SwaggerOpenApi
         }
     }
 
-    private function setServers(): void
+    protected function setServers(): void
     {
         $servers = $this->swaggerConfig->getSwagger()['servers'] ?? [];
         if ($servers) {

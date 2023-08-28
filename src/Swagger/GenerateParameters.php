@@ -27,14 +27,16 @@ class GenerateParameters
      * @param ApiFormData[] $apiFormDataArr
      */
     public function __construct(
-        private string $controller,
-        private string $action,
-        private array $apiHeaderArr,
-        private array $apiFormDataArr,
-        private ContainerInterface $container,
-        private MethodDefinitionCollectorInterface $methodDefinitionCollector,
-        private SwaggerComponents $swaggerComponents,
-        private SwaggerCommon $common,
+        protected string $controller,
+        protected string $action,
+        protected array $apiHeaderArr,
+        protected array $apiFormDataArr,
+        protected ContainerInterface $container,
+        protected MethodDefinitionCollectorInterface $methodDefinitionCollector,
+        protected SwaggerComponents $swaggerComponents,
+        protected SwaggerCommon $common,
+        protected PropertyManager $propertyManager,
+        protected MethodParametersManager $methodParametersManager
     ) {
     }
 
@@ -66,7 +68,7 @@ class GenerateParameters
             }
 
             if ($this->container->has($parameterClassName)) {
-                $methodParameter = MethodParametersManager::getMethodParameter($this->controller, $this->action, $paramName);
+                $methodParameter = $this->methodParametersManager->getMethodParameter($this->controller, $this->action, $paramName);
                 if ($methodParameter == null) {
                     continue;
                 }
@@ -129,7 +131,7 @@ class GenerateParameters
             $parameter->name = $fieldName;
             $parameter->in = $in;
             $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
-            $propertyManager = PropertyManager::getProperty($parameterClassName, $reflectionProperty->name);
+            $propertyManager = $this->propertyManager->getProperty($parameterClassName, $reflectionProperty->name);
 
             $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
@@ -196,10 +198,10 @@ class GenerateParameters
     /**
      * @param BaseParam[] $baseParam
      */
-    private function getParameterArrByBaseParam(array $baseParam): array
+    protected function getParameterArrByBaseParam(array $baseParam): array
     {
         $parameters = [];
-        foreach ($baseParam ?? [] as $param) {
+        foreach ($baseParam as $param) {
             if ($param->hidden) {
                 continue;
             }
@@ -225,12 +227,12 @@ class GenerateParameters
     /**
      * @param BaseParam[] $baseParam
      */
-    private function getPropertiesByBaseParam(array $baseParam): array
+    protected function getPropertiesByBaseParam(array $baseParam): array
     {
         $propertyArr = [];
         $requiredArr = [];
 
-        foreach ($baseParam ?? [] as $param) {
+        foreach ($baseParam as $param) {
             if ($param->hidden) {
                 continue;
             }

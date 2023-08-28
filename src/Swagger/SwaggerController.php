@@ -17,15 +17,15 @@ use Swow\Psr7\Message\BufferStream;
 #[Api(hidden: true)]
 class SwaggerController
 {
-    private string $swaggerUiPath = BASE_PATH . '/vendor/tangwei/swagger-ui/dist';
+    protected string $swaggerUiPath = BASE_PATH . '/vendor/tangwei/swagger-ui/dist';
 
-    private string $outputDir;
+    protected string $outputDir;
 
-    private array $uiFileList;
+    protected array $uiFileList;
 
-    private array $swaggerFileList;
+    protected array $swaggerFileList;
 
-    public function __construct(private SwaggerConfig $swaggerConfig, private ResponseInterface $response)
+    public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response)
     {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = scandir($this->swaggerUiPath);
@@ -95,7 +95,7 @@ class SwaggerController
         return $response;
     }
 
-    private function getSwaggerFileUrl($serverName): string
+    protected function getSwaggerFileUrl($serverName): string
     {
         return $this->swaggerConfig->getPrefixUrl() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
     }

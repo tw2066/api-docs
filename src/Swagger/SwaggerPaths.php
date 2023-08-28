@@ -24,16 +24,16 @@ use function Hyperf\Support\make;
 
 class SwaggerPaths
 {
-    public int $index = 0;
+    protected int $index = 0;
 
-    public array $classMethodArray = [];
+    protected array $classMethodArray = [];
 
     public function __construct(
         public string $serverName,
         public ConfigInterface $config,
         public StdoutLoggerInterface $stdoutLogger,
-        private SwaggerOpenApi $swaggerOpenApi,
-        private SwaggerCommon $common,
+        protected SwaggerOpenApi $swaggerOpenApi,
+        protected SwaggerCommon $common,
     ) {
     }
 
@@ -124,10 +124,11 @@ class SwaggerPaths
 
     /**
      * 获取安全认证
-     * @param mixed $classAnnotation
-     * @param mixed $methodAnnotations
+     * @param array|null $classAnnotation
+     * @param array|null $methodAnnotations
+     * @return array|false
      */
-    protected function getSecurity($classAnnotation, $methodAnnotations): array|false
+    protected function getSecurity(?array $classAnnotation, ?array $methodAnnotations): array|false
     {
         $apiOperation = $methodAnnotations[ApiOperation::class] ?? new ApiOperation();
         if (! $apiOperation->security) {
@@ -149,7 +150,7 @@ class SwaggerPaths
         return false;
     }
 
-    private function isSetApiSecurity(?array $annotations): bool
+    protected function isSetApiSecurity(?array $annotations): bool
     {
         foreach ($annotations ?? [] as $item) {
             if ($item instanceof MultipleAnnotationInterface) {
@@ -167,7 +168,7 @@ class SwaggerPaths
     /**
      * 设置安全验证
      */
-    private function setSecurity(?array $annotations): array
+    protected function setSecurity(?array $annotations): array
     {
         $result = [];
         foreach ($annotations ?? [] as $item) {
@@ -189,7 +190,7 @@ class SwaggerPaths
     /**
      * 获取方法在类中的位置.
      */
-    private function getMethodNamePosition(string $className, string $methodName): int
+    protected function getMethodNamePosition(string $className, string $methodName): int
     {
         $methodArray = $this->makeMethodIndex($className);
         return $methodArray[$methodName] ?? 0;
@@ -198,7 +199,7 @@ class SwaggerPaths
     /**
      * 设置位置并获取类位置数组.
      */
-    private function makeMethodIndex(string $className): array
+    protected function makeMethodIndex(string $className): array
     {
         if (isset($this->classMethodArray[$className])) {
             return $this->classMethodArray[$className];

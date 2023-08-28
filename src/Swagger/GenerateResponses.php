@@ -14,15 +14,15 @@ use Psr\Container\ContainerInterface;
 class GenerateResponses
 {
     public function __construct(
-        private string $className,
-        private string $methodName,
-        private array $apiResponseArr,
-        private SwaggerConfig $swaggerConfig,
-        private MethodDefinitionCollectorInterface $methodDefinitionCollector,
-        private ContainerInterface $container,
-        private SwaggerComponents $swaggerComponents,
-        private SwaggerCommon $common,
-        private GenerateProxyClass $genericProxyClass,
+        protected string $className,
+        protected string $methodName,
+        protected array $apiResponseArr,
+        protected SwaggerConfig $swaggerConfig,
+        protected MethodDefinitionCollectorInterface $methodDefinitionCollector,
+        protected ContainerInterface $container,
+        protected SwaggerComponents $swaggerComponents,
+        protected SwaggerCommon $common,
+        protected GenerateProxyClass $genericProxyClass,
     ) {
     }
 
@@ -54,20 +54,17 @@ class GenerateResponses
         return array_values($arr);
     }
 
-    protected function getReturnJsonContent(string $returnTypeClassName, bool $isArray = false): array
-    {
-        $arr = [];
-        $mediaType = new OA\MediaType();
-        $mediaTypeStr = 'application/json';
-        $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
-        $arr[$mediaTypeStr] = $mediaType;
-        $mediaType->mediaType = $mediaTypeStr;
-        return $arr;
-    }
+//    protected function getReturnJsonContent(string $returnTypeClassName, bool $isArray = false): array
+//    {
+//        $arr = [];
+//        $mediaType = new OA\MediaType();
+//        $mediaTypeStr = 'application/json';
+//        $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
+//        $arr[$mediaTypeStr] = $mediaType;
+//        $mediaType->mediaType = $mediaTypeStr;
+//        return $arr;
+//    }
 
-    /**
-     * @param object|string $returnTypeClassName ['int']
-     */
     protected function getContent(string|array|object $returnTypeClassName): array
     {
         // 获取全局类
