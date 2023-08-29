@@ -21,6 +21,12 @@ class SwaggerCommon extends DtoCommon
         return '#/components/schemas/' . $this->getSimpleClassName($className);
     }
 
+    public function simpleClassNameClear(): void
+    {
+        static::$className = [];
+        static::$simpleClassName = [];
+    }
+
     /**
      * 获取简单php类名.
      */

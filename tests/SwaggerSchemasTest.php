@@ -39,7 +39,6 @@ class SwaggerSchemasTest extends TestCase
         // dto
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
         $swaggerCommon = new SwaggerCommon();
-
         $swaggerComponents = new SwaggerComponents($swaggerCommon,new PropertyManager($swaggerCommon,new PropertyEnum()));
         $schemas = $swaggerComponents->generateSchemas($classname);
         $properties = $schemas->properties;
@@ -89,5 +88,7 @@ class SwaggerSchemasTest extends TestCase
 
         $this->assertEquals($addressProperties[1]->property, 'user');
         $this->assertEquals($addressProperties[1]->ref, '#/components/schemas/User');
+
+        $swaggerCommon->simpleClassNameClear();
     }
 }

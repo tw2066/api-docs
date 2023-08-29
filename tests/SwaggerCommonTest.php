@@ -66,5 +66,7 @@ class SwaggerCommonTest extends TestCase
         $this->assertEquals($simpleClassName, 'Int_1');
         $simpleClassName = $swaggerCommon->getSimpleClassName('\Int');
         $this->assertEquals($simpleClassName, 'Int_1');
+
+        $swaggerCommon->simpleClassNameClear();
     }
 }
