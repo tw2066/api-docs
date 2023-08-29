@@ -9,19 +9,10 @@ use Hyperf\DTO\Annotation\ArrayType;
 use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\Required;
 
-class Address
+class Address_1
 {
-    public string $street;
+    public string $street_1;
 
     #[ApiModelProperty('浮点数')]
-    public float $float;
-
-    #[ApiModelProperty('城市')]
-    #[Required]
-    public ?City $city = null;
-
-    #[ApiModelProperty('城市数组')]
-    #[ArrayType(City::class)]
-    #[JSONField('city_new')]
-    public array $cityArr;
+    public float $float_1;
 }

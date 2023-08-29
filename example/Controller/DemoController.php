@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace HyperfExample\ApiDocs\Controller;
 
+use App\Annotation\TestAnnotation;
+use App\DTO\Response\DemoResponse;
+use App\DTO\User;
 use App\Model\Activity;
+use App\Service\GoodsInfoService;
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
@@ -26,6 +30,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use HyperfExample\ApiDocs\DTO\Address;
+use HyperfExample\ApiDocs\DTO\Address_1;
 use HyperfExample\ApiDocs\DTO\DataType;
 use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
@@ -93,7 +98,9 @@ class DemoController
     #[ApiOperation('3:表单提交')]
     #[PostMapping(path: 'fromData')]
     #[ApiFormData(name: 'photo', format: 'binary')]
-    #[ApiResponse(new CodeResponse(new Address()))]
+//    #[ApiResponse(new CodeResponse(new GoodsInfoService()))]
+//    #[TestAnnotation(new GoodsInfoService())]
+//    #[ApiResponse(new GoodsInfoService())]
     public function fromData(#[RequestFormData] DemoFormData $formData): array
     {
         $file = $this->request->file('photo');
@@ -102,9 +109,10 @@ class DemoController
         return [new Address()];
     }
 
-    #[ApiOperation('4:查询单体记录')]
+    #[ApiOperation('4:查询单条记录')]
     #[GetMapping(path: 'find/{id}/and/{in}')]
     #[ApiHeader('test2')]
+    #[ApiResponse()]
     #[ApiResponse(PhpType::BOOL, 11)]
     #[ApiResponse(PhpType::INT, 12)]
     #[ApiResponse(PhpType::FLOAT, 13)]
@@ -117,15 +125,13 @@ class DemoController
     #[ApiResponse([PhpType::ARRAY], 104)]
     #[ApiResponse([PhpType::OBJECT], 105)]
     #[ApiResponse([PhpType::STRING], 106)]
-    #[ApiResponse([])]
     #[ApiResponse([PhpType::BOOL])]
     #[ApiResponse(Address::class, 201)]
-    #[ApiResponse(new Address(), 202)]
+    #[ApiResponse(Address_1::class, 202)]
     #[ApiResponse([Address::class], 203)]
     #[ApiResponse([PhpType::INT], 204)]
-    #[ApiResponse([new Address()], 205)]
-    #[ApiResponse(new Page([new Address()]), 206)]
-    public function find(int $id, float $in)
+    #[ApiResponse(new Page([Address::class]), 206)]
+    public function find666666666(int $id, float $in)
     {
         return ['$id' => $id, '$in' => $in];
     }
@@ -144,6 +150,7 @@ class DemoController
         foreach ($activitys as $activity) {
             $arr[] = ActivityResponse::from($activity);
         }
+        dump(new ActivityResponse());
         return new Page($arr, $activitys->total());
     }
 
@@ -208,6 +215,8 @@ class DemoController
         $data = 1;
         $cityResponse = new CityResponse();
         $cityResponse->name = '小明';
+
+        dump($cityResponse);
         return new CodeResponse($data, [$cityResponse]);
     }
 
@@ -217,7 +226,7 @@ class DemoController
         $city = new CityResponse();
         $city->name = 'name2';
         $city->bodyName = [1, 2, 3];
-
+        dump($city);
         return $city;
     }
 }

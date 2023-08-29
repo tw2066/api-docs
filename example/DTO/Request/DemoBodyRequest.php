@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HyperfExample\ApiDocs\DTO\Request;
 
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\DTO\Annotation\ArrayType;
 use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
@@ -17,22 +18,23 @@ use Hyperf\DTO\Annotation\Validation\Nullable;
 use Hyperf\DTO\Annotation\Validation\Numeric;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Annotation\Validation\Validation;
+use Hyperf\DTO\Type\PhpType;
 use HyperfExample\ApiDocs\DTO\Address;
 use HyperfExample\ApiDocs\Enum\StatusEnum;
 
-#[Dto]
+//#[Dto]
 class DemoBodyRequest
 {
+
 //    public const IN = ['A', 'B', 'C'];
 //
 //    public Address $addr1;
 //
 //    public Address $addr2;
 //
-//    #[ApiModelProperty('地址')]
-//
-//    #[Required]
-//    public Address $addr3;
+    #[ApiModelProperty('地址3')]
+    #[Required]
+    public Address $addr3;
 
 //    #[ApiModelProperty('int数组')]
 //    #[Required]
@@ -76,13 +78,12 @@ class DemoBodyRequest
     #[Validation('required|numeric')]
     #[Integer]
     #[JSONField('test_name')]
-    public int $test;
+    public int $test=1;
 
 //    #[Between(min: 2, max: 10)]
     #[ApiModelProperty('intArr数组')]
     #[Arr]
     #[Validation('integer', customKey: 'intArr.*')]
-    #[In(['123'])]
     public array $intArr;
 
 

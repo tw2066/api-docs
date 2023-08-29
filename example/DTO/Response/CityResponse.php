@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HyperfExample\ApiDocs\DTO\Response;
 
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\Required;
@@ -12,6 +13,7 @@ use Hyperf\DTO\Type\Convert;
 #[Dto(Convert::SNAKE)]
 class CityResponse
 {
+    #[ApiModelProperty('名称')]
     public string $name;
     public string $name22222;
 

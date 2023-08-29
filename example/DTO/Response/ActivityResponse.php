@@ -11,14 +11,24 @@ use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Mapper;
 use HyperfExample\ApiDocs\DTO\ActivityUser;
 
-//#[Dto]
+#[Dto]
 class ActivityResponse
 {
+//    public function __construct()
+//    {
+//        dump('...............ActivityResponse..................');
+//    }
+
     #[ApiModelProperty('id')]
     public string $id;
 
     #[ApiModelProperty('活动名称')]
+    #[JSONField('activity_name')]
     public string $activityName;
+
+    #[ApiModelProperty('测试')]
+    #[JSONField('foo_bar')]
+    public string $fooBar;
 
     /**
      * @var ActivityUser[]

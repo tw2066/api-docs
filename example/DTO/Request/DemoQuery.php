@@ -6,6 +6,7 @@ namespace HyperfExample\ApiDocs\DTO\Request;
 
 use App\Annotation\AsyncAnnotation;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\Contract\Arrayable;
 use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Annotation\Validation\In;
@@ -17,8 +18,7 @@ use PhpAccessor\Attribute\Data;
 
 //#[HyperfData]
 //#[Data]
-#[Dto]
-class DemoQuery
+class DemoQuery implements Arrayable
 {
 
     #[ApiModelProperty('这是一个别名属性')]
@@ -37,4 +37,12 @@ class DemoQuery
         return $this->test123456;
     }
 
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [];
+        // TODO: Implement toArray() method.
+    }
 }
