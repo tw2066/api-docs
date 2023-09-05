@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 #[Api(hidden: true)]
 class SwaggerUiController extends SwaggerController
 {
-    protected string $swaggerUiPath = BASE_PATH . '/vendor/tangwei/knife4j-ui';
+    protected string $swaggerUiPath = BASE_PATH . '/vendor/tangwei/knife4j-ui/dist';
 
     public function swagger(): PsrResponseInterface
     {
