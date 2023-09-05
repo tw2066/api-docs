@@ -74,7 +74,7 @@ class BootAppRouteListener implements ListenerInterface
         $httpServerRouter->addGroup($prefix, function ($route) {
             $route->get('', [SwaggerUiController::class, 'swagger']);
             $route->get('/redoc', [SwaggerUiController::class, 'redoc']);
-            $route->get('/doc.html', [SwaggerUiController::class, 'knife4j']);
+            $route->get('/doc', [SwaggerUiController::class, 'knife4j']);
             $route->get('/swagger-resources', [SwaggerUiController::class, 'swaggerResources']);
             $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);
             $route->get('/favicon.ico', [SwaggerUiController::class, 'favicon']);
@@ -85,7 +85,7 @@ class BootAppRouteListener implements ListenerInterface
         });
         self::$httpServerName = $httpServer['name'];
         $isKnife4j = Composer::hasPackage('tangwei/knife4j-ui');
-        $docHtml = $isKnife4j ? '/doc.html' : '';
+        $docHtml = $isKnife4j ? '/doc' : '';
         static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix . $docHtml;
     }
 }
