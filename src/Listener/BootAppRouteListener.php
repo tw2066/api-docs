@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
+use Hyperf\ApiDocs\Swagger\SwaggerUiController;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
 use Hyperf\Contract\ConfigInterface;
@@ -13,6 +14,7 @@ use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\Server\Server;
+use Hyperf\Support\Composer;
 
 /**
  * 添加路由到框架.
@@ -46,7 +48,7 @@ class BootAppRouteListener implements ListenerInterface
         }
 
         if (! $this->swaggerConfig->isEnable()) {
-            $this->logger->debug('api_docs swagger not enable');
+            $this->logger->info('api_docs swagger not enable');
             return;
         }
         if (! $this->swaggerConfig->getOutputDir()) {
@@ -70,13 +72,20 @@ class BootAppRouteListener implements ListenerInterface
         }
         // 添加路由
         $httpServerRouter->addGroup($prefix, function ($route) {
-            $route->get('', [SwaggerController::class, 'index']);
+            $route->get('', [SwaggerUiController::class, 'swagger']);
+            $route->get('/redoc', [SwaggerUiController::class, 'redoc']);
+            $route->get('/doc.html', [SwaggerUiController::class, 'knife4j']);
+            $route->get('/swagger-resources', [SwaggerUiController::class, 'swaggerResources']);
+            $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);
+            $route->get('/favicon.ico', [SwaggerUiController::class, 'favicon']);
+
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
             $route->get('/{httpName}.yaml', [SwaggerController::class, 'getYamlFile']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);
         });
         self::$httpServerName = $httpServer['name'];
-
-        static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix;
+        $isKnife4j = Composer::hasPackage('tangwei/knife4j-ui');
+        $docHtml = $isKnife4j ? '/doc.html' : '';
+        static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix . $docHtml;
     }
 }

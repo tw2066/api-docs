@@ -49,10 +49,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 设置swagger资源路径,不设置默认prefix_url
+    | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    // 'prefix_resources' => env('API_DOCS_PREFIX_resources', '/swagger'),
+    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0',
 
     /*
     |--------------------------------------------------------------------------

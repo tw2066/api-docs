@@ -17,7 +17,7 @@ class SwaggerConfig
 
     private string $prefix_url = '';
 
-    private string $prefix_resources = '';
+    private string $prefix_swagger_resources = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0';
 
     private bool $validation_custom_attributes = false;
 
@@ -67,7 +67,7 @@ class SwaggerConfig
 
     public function getPrefixUrl(): string
     {
-        return $this->prefix_url;
+        return $this->prefix_url ?: 'swagger';
     }
 
     public function isValidationCustomAttributes(): bool
@@ -107,9 +107,9 @@ class SwaggerConfig
         return $this->format == 'json' ? 'json' : 'yaml';
     }
 
-    public function getPrefixResources(): string
+    public function getPrefixSwaggerResources(): string
     {
-        return $this->prefix_resources ?: $this->getPrefixUrl();
+        return $this->prefix_swagger_resources;
     }
 
     public function getGlobalReturnResponsesClass(): string

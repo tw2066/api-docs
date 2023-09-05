@@ -6,7 +6,6 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\Api;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
-use Hyperf\ApiDocs\Listener\BootAppRouteListener;
 use Hyperf\Engine\Constant;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
@@ -19,6 +18,8 @@ class SwaggerController
 {
     protected string $swaggerUiPath = BASE_PATH . '/vendor/tangwei/swagger-ui/dist';
 
+    protected string $docsWebPath = BASE_PATH . '/vendor/tangwei/apidocs/src/web';
+
     protected string $outputDir;
 
     protected array $uiFileList;
@@ -28,17 +29,8 @@ class SwaggerController
     public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response)
     {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
-        $this->uiFileList = scandir($this->swaggerUiPath);
+        $this->uiFileList = is_dir($this->swaggerUiPath) ? scandir($this->swaggerUiPath) : [];
         $this->swaggerFileList = scandir($this->outputDir);
-    }
-
-    public function index(): PsrResponseInterface
-    {
-        $filePath = BASE_PATH . '/vendor/tangwei/apidocs/src/web/index.html';
-        $contents = file_get_contents($filePath);
-        $contents = str_replace('{{$path}}', $this->swaggerConfig->getPrefixResources(), $contents);
-        $contents = str_replace('{{$url}}', $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
-        return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
     public function getFile(string $file): PsrResponseInterface

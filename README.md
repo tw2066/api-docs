@@ -27,6 +27,11 @@
 ```
 composer require tangwei/apidocs
 ```
+默认使用swagger-ui,推荐使用knife4j-ui(功能更强大)
+
+```
+composer require tangwei/knife4j-ui
+```
 
 ## 使用
 
@@ -92,10 +97,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 设置swagger资源路径,不设置默认prefix_url
+    | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    // 'prefix_resources' => env('API_DOCS_PREFIX_resources', '/swagger'),
+    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -194,6 +199,8 @@ php bin/hyperf.php start
 ```
 
 > 看到`Swagger docs url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
+> 安装[knife4j-ui](https://github.com/tw2066/knife4j-ui)，访问`/swagger/doc.html`即可以看到knife4j页面
+> 访问`/swagger/redoc`，可以看到[redoc](https://github.com/Redocly/redoc)页面
 
 ### 3. 使用
 
