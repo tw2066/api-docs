@@ -1,4 +1,7 @@
 # PHP Swagger Api Docs
+[![Latest Stable Version](https://img.shields.io/packagist/v/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
+[![Total Downloads](https://img.shields.io/packagist/dt/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
+[![License](https://img.shields.io/packagist/l/tangwei/apidocs)](https://github.com/tw2066/api-docs)
 
 基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件，支持swoole/swow驱动
 
@@ -27,7 +30,7 @@
 ```
 composer require tangwei/apidocs
 ```
-默认使用swagger-ui,推荐使用knife4j-ui(功能更强大)
+默认使用swagger-ui,可使用knife4j-ui(功能更强大)
 
 ```
 composer require tangwei/knife4j-ui
@@ -265,15 +268,15 @@ public function getUserInfo(DemoToken $header){}
   use Hyperf\ApiDocs\Annotation\ApiResponse; 
   use Hyperf\DTO\Type\PhpType;
   
-  #[ApiResponse([PhpType::BOOL], 101)]
-  #[ApiResponse([PhpType::INT], 102)]
-  #[ApiResponse([PhpType::FLOAT], 103)]
-  #[ApiResponse([PhpType::ARRAY], 104)]
-  #[ApiResponse([PhpType::OBJECT], 105)]
-  #[ApiResponse([PhpType::STRING], 106)]
+  #[ApiResponse([PhpType::BOOL], 201)]
+  #[ApiResponse([PhpType::INT], 202)]
+  #[ApiResponse([PhpType::FLOAT], 203)]
+  #[ApiResponse([PhpType::ARRAY], 204)]
+  #[ApiResponse([PhpType::OBJECT], 205)]
+  #[ApiResponse([PhpType::STRING], 206)]
+  #[ApiResponse([Address::class], 207)]
+  #[ApiResponse([PhpType::INT], 208)]
   #[ApiResponse([PhpType::BOOL])]
-  #[ApiResponse([Address::class], 203)]
-  #[ApiResponse([PhpType::INT], 204)]
   public function test(){}
   ```
 
@@ -467,24 +470,6 @@ public array $intArr;
     public array $stringArr;
 ```
 
-### hyperf 2.2版本报错
-
-> @required注解会提示报错,请忽略required
->
-> 修改文件config/autoload/annotations.php
-
-```php
-return [
-    'scan' => [
-        //...
-        'ignore_annotations' => [
-            //...
-           'required'
-        ],
-    ],
-];
-```
-
 ### `AutoController`注解
 
 > 控制器中使用`AutoController`注解,只收集了`POST`方法
@@ -509,6 +494,7 @@ class DemoQuery
 ```
 
 * 可以设置返回枚举`#[Dto(Convert::SNAKE)]`, 批量转换下划线返回的key
+* `Dto`注解不会生成文档, 要生成对应文档使用`JSONField`注解
 
 #### JSONField注解
 
