@@ -10,6 +10,7 @@ use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerOpenApi;
 use Hyperf\ApiDocs\Swagger\SwaggerPaths;
 use Hyperf\Contract\StdoutLoggerInterface;
+use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Event\AfterDtoStart;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\HttpServer\Router\Handler;
@@ -24,8 +25,8 @@ class AfterDtoStartListener implements ListenerInterface
         private SwaggerOpenApi $swaggerOpenApi,
         private SwaggerComponents $swaggerComponents,
         private SwaggerConfig $swaggerConfig,
-    ) {
-    }
+        private DtoConfig $dtoConfig,
+    ) {}
 
     public function listen(): array
     {
@@ -46,6 +47,10 @@ class AfterDtoStartListener implements ListenerInterface
             return;
         }
         if (! $this->swaggerConfig->getOutputDir()) {
+            return;
+        }
+        dump($this->dtoConfig->isScanCacheable());
+        if ($this->dtoConfig->isScanCacheable()) {
             return;
         }
 

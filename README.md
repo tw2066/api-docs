@@ -534,6 +534,10 @@ return [
 ];
 ```
 
+## Phar 打包器
+
+> 使用 Phar 打包器时, 可以`api_docs.php`中`scan_cacheable`配置设置为false, 生成代理类后, 再设置true进行打包
+
 ## Swagger界面
 
 ![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
