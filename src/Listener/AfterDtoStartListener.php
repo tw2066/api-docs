@@ -49,7 +49,6 @@ class AfterDtoStartListener implements ListenerInterface
         if (! $this->swaggerConfig->getOutputDir()) {
             return;
         }
-        dump($this->dtoConfig->isScanCacheable());
         if ($this->dtoConfig->isScanCacheable()) {
             return;
         }
