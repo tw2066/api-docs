@@ -8,6 +8,7 @@ use Hyperf\ApiDocs\Annotation\ApiVariable;
 use Hyperf\ApiDocs\Ast\ResponseVisitor;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Di\Annotation\AnnotationCollector;
+use Hyperf\DTO\DtoConfig;
 use Hyperf\Support\Composer;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
@@ -24,6 +25,7 @@ class GenerateProxyClass
     public function __construct(
         protected SwaggerConfig $swaggerConfig,
         protected SwaggerCommon $swaggerCommon,
+        protected DtoConfig $dtoConfig,
     ) {
         $proxyDir = $this->swaggerConfig->getProxyDir();
         if (file_exists($proxyDir) === false) {
@@ -107,7 +109,9 @@ class GenerateProxyClass
         $outputDir = $this->swaggerConfig->getProxyDir();
         $generateClassName = str_replace('\\', '_', $generateNamespaceClassName);
         $filename = $outputDir . $generateClassName . '.dto.proxy.php';
-        file_put_contents($filename, $content);
+        if (! $this->dtoConfig->isScanCacheable()) {
+            file_put_contents($filename, $content);
+        }
         $classLoader = Composer::getLoader();
         $classLoader->addClassMap([$generateNamespaceClassName => $filename]);
     }
