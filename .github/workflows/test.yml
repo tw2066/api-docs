@@ -3,7 +3,7 @@ name: PHPUnit
 on: [ push, pull_request ]
 
 env:
-  SWOOLE_VERSION: '5.0.3'
+  SWOOLE_VERSION: '5.1.4'
   SWOW_VERSION: 'develop'
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        php-version: [ '8.1','8.2' ]
+        php-version: [ '8.1','8.2','8.3' ]
         engine: [ 'swoole' ]
       max-parallel: 5
     steps:
