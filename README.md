@@ -536,7 +536,7 @@ return [
 
 ## Phar 打包器
 
-> 使用 Phar 打包器时, 可以`api_docs.php`中`scan_cacheable`配置设置为false, 生成代理类后, 再设置true进行打包
+> 使用 Phar 打包器时, 可以在`api_docs.php`中配置`scan_cacheable`为false, 启动项目生成代理类后, 再设置true进行打包
 
 ## Swagger界面
 
