@@ -536,7 +536,12 @@ return [
 
 ## Phar 打包器
 
-> 使用 Phar 打包器时, 可以在`api_docs.php`中配置`scan_cacheable`为false, 启动项目生成代理类后, 再设置true进行打包
+```shell
+# 1.启动生成代理类和注解缓存
+php bin/hyperf.php start
+# 2.打包
+php bin/hyperf.php phar:build
+```
 
 ## Swagger界面
 

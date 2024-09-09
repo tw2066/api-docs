@@ -10,6 +10,7 @@ use Hyperf\Engine\Constant;
 use Hyperf\HttpMessage\Stream\SwooleFileStream;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\HttpServer\Contract\ResponseInterface;
+use Phar;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Swow\Psr7\Message\BufferStream;
 
@@ -64,7 +65,7 @@ class SwaggerController
 
     protected function fileResponse(string $filePath)
     {
-        if (Constant::ENGINE == 'Swoole') {
+        if (! Phar::running() && Constant::ENGINE == 'Swoole') {  // phar报错
             $stream = new SwooleFileStream($filePath);
         } elseif (Constant::ENGINE == 'Swow') {
             /* @phpstan-ignore-next-line */
