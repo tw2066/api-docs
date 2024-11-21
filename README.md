@@ -48,24 +48,24 @@ php bin/hyperf.php vendor:publish tangwei/apidocs
 
 > config/autoload/api_docs.php
 
+<details>
+  <summary>配置详情</summary>
+  <p>
+
 ```php
-<?php
-
-declare(strict_types=1);
-
 use Hyperf\ApiDocs\DTO\GlobalResponse;
 use function Hyperf\Support\env;
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | 启动 swagger 服务
-    |--------------------------------------------------------------------------
-    |
-    | false 将不会启动 swagger 服务
-    |
-    */
-    'enable' => env('APP_ENV') !== 'prod',
+/*
+|--------------------------------------------------------------------------
+| 启动 swagger 服务
+|--------------------------------------------------------------------------
+|
+| false 将不会启动 swagger 服务
+|
+*/
+'enable' => env('APP_ENV') !== 'prod',
 
     /*
     |--------------------------------------------------------------------------
@@ -189,6 +189,9 @@ return [
     ],
 ];
 ```
+ </p>
+</details>
+
 
 ### 2. 直接启动框架(需要有http服务)
 
@@ -270,12 +273,6 @@ public function getUserInfo(DemoToken $header){}
   
   #[ApiResponse([PhpType::BOOL], 201)]
   #[ApiResponse([PhpType::INT], 202)]
-  #[ApiResponse([PhpType::FLOAT], 203)]
-  #[ApiResponse([PhpType::ARRAY], 204)]
-  #[ApiResponse([PhpType::OBJECT], 205)]
-  #[ApiResponse([PhpType::STRING], 206)]
-  #[ApiResponse([Address::class], 207)]
-  #[ApiResponse([PhpType::INT], 208)]
   #[ApiResponse([PhpType::BOOL])]
   public function test(){}
   ```
