@@ -27,7 +27,7 @@ class SwaggerController
 
     protected array $swaggerFileList;
 
-    public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response)
+    public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response,protected SwaggerOpenApi $swaggerOpenApi,)
     {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = is_dir($this->swaggerUiPath) ? scandir($this->swaggerUiPath) : [];
@@ -36,7 +36,7 @@ class SwaggerController
 
     public function getFile(string $file): PsrResponseInterface
     {
-        if (! in_array($file, $this->uiFileList)) {
+        if (!in_array($file, $this->uiFileList)) {
             throw new ApiDocsException('File does not exist');
         }
         $file = $this->swaggerUiPath . '/' . $file;
@@ -46,7 +46,7 @@ class SwaggerController
     public function getJsonFile(string $httpName): PsrResponseInterface
     {
         $file = $httpName . '.json';
-        if (! in_array($file, $this->swaggerFileList)) {
+        if (!in_array($file, $this->swaggerFileList)) {
             throw new ApiDocsException('File does not exist');
         }
         $filePath = $this->outputDir . '/' . $file;
@@ -56,7 +56,7 @@ class SwaggerController
     public function getYamlFile(string $httpName): PsrResponseInterface
     {
         $file = $httpName . '.yaml';
-        if (! in_array($file, $this->swaggerFileList)) {
+        if (!in_array($file, $this->swaggerFileList)) {
             throw new ApiDocsException('File does not exist');
         }
         $filePath = $this->outputDir . '/' . $file;
@@ -65,7 +65,7 @@ class SwaggerController
 
     protected function fileResponse(string $filePath)
     {
-        if (! Phar::running() && Constant::ENGINE == 'Swoole') {  // phar报错
+        if (!$this->pharRunning() && Constant::ENGINE == 'Swoole') {  // phar报错
             $stream = new SwooleFileStream($filePath);
         } elseif (Constant::ENGINE == 'Swow') {
             /* @phpstan-ignore-next-line */
@@ -91,5 +91,10 @@ class SwaggerController
     protected function getSwaggerFileUrl($serverName): string
     {
         return $this->swaggerConfig->getPrefixUrl() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
+    }
+
+    private function pharRunning(): bool
+    {
+        return class_exists('Phar') && Phar::running();
     }
 }

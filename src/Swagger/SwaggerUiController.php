@@ -20,10 +20,16 @@ class SwaggerUiController extends SwaggerController
         $contents = file_get_contents($filePath);
         $contents = str_replace('{{$prefixUrl}}', $this->swaggerConfig->getPrefixUrl(), $contents);
         $contents = str_replace('{{$path}}', $this->swaggerConfig->getPrefixSwaggerResources(), $contents);
-        $contents = str_replace('{{$url}}', $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
+        // $contents = str_replace('{{$url}}', $this->getSwaggerFileUrl(BootAppRouteListener::$httpServerName), $contents);
+        $serverNameAll = array_reverse($this->swaggerOpenApi->serverNameAll);
+        $urls = '';
+        foreach ($serverNameAll as $serverName) {
+            $url = $this->getSwaggerFileUrl($serverName);
+            $urls .= "{url: '{$url}', name: '{$serverName} server'},";
+        }
+        $contents = str_replace('"{{$urls}}"', $urls, $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
-
 
     public function redoc(): PsrResponseInterface
     {

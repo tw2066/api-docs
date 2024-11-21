@@ -15,6 +15,8 @@ class SwaggerOpenApi
 {
     public ?SplPriorityQueue $queueTags;
 
+    public array $serverNameAll = [];
+
     protected ?OpenApi $openApi = null;
 
     protected ?SplPriorityQueue $queuePaths;
@@ -137,6 +139,7 @@ class SwaggerOpenApi
         }
         $outputFile = $outputDir . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
         $this->openApi->saveAs($outputFile);
+        $this->serverNameAll[] = $serverName;
     }
 
     protected function setInfo(): void
