@@ -48,14 +48,16 @@ class SwaggerUiController extends SwaggerController
 
     public function swaggerResources()
     {
-        return [
-            [
-                'name' => 'api-docs',
-                'url' => BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(),
-                //                "swaggerVersion" => "",
-                //                "location" => ""
-            ],
-        ];
+        $serverNameAll = array_reverse($this->swaggerOpenApi->serverNameAll);
+        $urls = [];
+        foreach ($serverNameAll as $serverName) {
+            $urls[] = [
+                'name' => "{$serverName} server",
+                'url' => $serverName . '.' . $this->swaggerConfig->getFormat(),
+            ];
+        }
+
+        return $urls;
     }
 
     public function knife4jFile(string $file): PsrResponseInterface
