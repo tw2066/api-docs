@@ -30,7 +30,7 @@
 ```
 composer require tangwei/apidocs
 ```
-默认使用swagger-ui,可使用knife4j-ui(功能更强大)
+默认使用swagger-ui,可安装knife4j-ui(功能更强大) (可选)
 
 ```
 composer require tangwei/knife4j-ui
@@ -204,11 +204,10 @@ php bin/hyperf.php start
 [INFO] HTTP Server listening at 0.0.0.0:9501
 ```
 
-> 看到`Swagger docs url`显示，表示文档生成成功，访问`/swagger`即可以看到swagger页面
-> 安装[knife4j-ui](https://github.com/tw2066/knife4j-ui)，访问`/swagger/doc`即可以看到knife4j页面
-> 访问`/swagger/redoc`，可以看到[redoc](https://github.com/Redocly/redoc)页面
-
-### 3. 使用
+* 看到`Swagger docs url`显示，表示文档生成成功
+* 访问`/swagger`可以看到swagger页面
+* 已安装[knife4j-ui](https://github.com/tw2066/knife4j-ui)，访问`/swagger/doc`可以看到knife4j页面
+* 访问`/swagger/redoc`，可以看到[redoc](https://github.com/Redocly/redoc)页面
 
 ## 注解
 
