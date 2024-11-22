@@ -26,7 +26,8 @@ class AfterDtoStartListener implements ListenerInterface
         private SwaggerComponents $swaggerComponents,
         private SwaggerConfig $swaggerConfig,
         private DtoConfig $dtoConfig,
-    ) {}
+    ) {
+    }
 
     public function listen(): array
     {
@@ -49,11 +50,13 @@ class AfterDtoStartListener implements ListenerInterface
         if (! $this->swaggerConfig->getOutputDir()) {
             return;
         }
+
+        $this->swaggerOpenApi->init($server['name']);
+
         if ($this->dtoConfig->isScanCacheable()) {
             return;
         }
 
-        $this->swaggerOpenApi->init();
         /** @var SwaggerPaths $swagger */
         $swagger = make(SwaggerPaths::class, [$server['name']]);
         foreach ($router->getData() ?? [] as $routeData) {

@@ -30,7 +30,7 @@ class SwaggerOpenApi
     ) {
     }
 
-    public function init(): void
+    public function init(string $serverName): void
     {
         $this->openApi = new OpenApi();
         $this->openApi->paths = [];
@@ -45,6 +45,7 @@ class SwaggerOpenApi
         $this->setComponentsSecuritySchemes();
         $this->setSecurity();
         $this->setExternalDocs();
+        $this->serverNameAll[] = $serverName;
     }
 
     public function clean(): void
@@ -139,7 +140,6 @@ class SwaggerOpenApi
         }
         $outputFile = $outputDir . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
         $this->openApi->saveAs($outputFile);
-        $this->serverNameAll[] = $serverName;
     }
 
     protected function setInfo(): void
