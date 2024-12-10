@@ -17,6 +17,8 @@ use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use OpenApi\Generator;
 
+use function Hyperf\Support\setter;
+
 class SwaggerComponents
 {
     protected static array $schemas = [];
@@ -24,6 +26,7 @@ class SwaggerComponents
     public function __construct(
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
+        protected GenerateProxyClass $generateProxyClass,
     ) {
     }
 
@@ -53,14 +56,17 @@ class SwaggerComponents
             $fieldName = $reflectionProperty->getName();
             $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
 
-            $apiModelProperty = ApiAnnotation::getProperty($className, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
+            // 适配ApiVariable注解
+            $sourceClassName = $this->generateProxyClass->getSourceClassname($className) ?? $className;
+            $apiModelProperty = ApiAnnotation::getProperty($sourceClassName, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
+
             /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($className, $fieldName, In::class)?->toAnnotations()[0];
+            $inAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, In::class)?->toAnnotations()[0];
             if ($apiModelProperty->hidden || $propertyManager->alias) {
                 continue;
             }
             if (! $reflectionProperty->isPublic()
-                && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
+                && ! $rc->hasMethod(setter($fieldName))
                 && ! $rc->hasMethod(DtoConfig::getDtoAliasMethodName($fieldName))
             ) {
                 continue;
@@ -72,7 +78,7 @@ class SwaggerComponents
             $apiModelProperty->value !== null && $property->description = $apiModelProperty->value;
             // required
             /** @var Required $requiredAnnotation */
-            $requiredAnnotation = ApiAnnotation::getProperty($className, $fieldName, Required::class)?->toAnnotations()[0];
+            $requiredAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, Required::class)?->toAnnotations()[0];
             if ($apiModelProperty->required || $requiredAnnotation) {
                 $requiredArr[] = $fieldName;
             }

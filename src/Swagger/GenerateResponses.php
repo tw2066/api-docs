@@ -11,6 +11,8 @@ use Hyperf\Di\ReflectionType;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
 
+use function Hyperf\Support\make;
+
 class GenerateResponses
 {
     public function __construct(
@@ -65,12 +67,12 @@ class GenerateResponses
 //        return $arr;
 //    }
 
-    protected function getContent(string|array|object $returnTypeClassName): array
+    protected function getContent(array|object|string $returnTypeClassName): array
     {
         // 获取全局类
         $globalReturnResponsesClass = $this->swaggerConfig->getGlobalReturnResponsesClass();
         if ($globalReturnResponsesClass) {
-            $returnTypeClassName = \Hyperf\Support\make($globalReturnResponsesClass, [$returnTypeClassName]);
+            $returnTypeClassName = make($globalReturnResponsesClass, [$returnTypeClassName]);
         }
         // 判断对象
         if (is_object($returnTypeClassName)) {

@@ -16,6 +16,8 @@ use PhpParser\PrettyPrinter;
 use ReflectionClass;
 use SplFileInfo;
 
+use function Hyperf\Support\make;
+
 class GenerateProxyClass
 {
     protected ?array $apiVariableClassArr = null;
@@ -98,10 +100,18 @@ class GenerateProxyClass
 
         if (! isset($this->proxyClassArr[$generateNamespaceClassName])) {
             $this->putContents($generateNamespaceClassName, $content);
-            $this->proxyClassArr[$generateNamespaceClassName] = true;
+            $this->proxyClassArr[$generateNamespaceClassName] = $classname;
         }
 
         return $generateNamespaceClassName;
+    }
+
+    /**
+     * 获取代理类对应的源类.
+     */
+    public function getSourceClassname(string $proxyClassname): ?string
+    {
+        return $this->proxyClassArr[$proxyClassname] ?? null;
     }
 
     protected function putContents($generateNamespaceClassName, $content): void
@@ -132,13 +142,13 @@ class GenerateProxyClass
             $type = $this->swaggerCommon->getSimpleClassName($type);
             $generateClassName .= $type;
         }
-        $fullGenerateClassName = 'ApiDocs\\Proxy\\' . $generateClassName;
+        $fullGenerateClassName = 'ApiDocs\Proxy\\' . $generateClassName;
         if (isset($this->proxyClassArr[$fullGenerateClassName])) {
             return [$fullGenerateClassName, ''];
         }
 
         $traverser = new NodeTraverser();
-        $resVisitor = \Hyperf\Support\make(ResponseVisitor::class, [$generateClass, $generateClassName, $propertyArr]);
+        $resVisitor = make(ResponseVisitor::class, [$generateClass, $generateClassName, $propertyArr]);
         $traverser->addVisitor($resVisitor);
         $ast = $traverser->traverse($ast);
 
