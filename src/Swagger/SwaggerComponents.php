@@ -26,7 +26,7 @@ class SwaggerComponents
     public function __construct(
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
-        protected GenerateProxyClass $generateProxyClass,
+        protected ?GenerateProxyClass $generateProxyClass,
     ) {
     }
 
@@ -57,7 +57,7 @@ class SwaggerComponents
             $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
 
             // 适配ApiVariable注解
-            $sourceClassName = $this->generateProxyClass->getSourceClassname($className) ?? $className;
+            $sourceClassName = $this->generateProxyClass?->getSourceClassname($className) ?? $className;
             $apiModelProperty = ApiAnnotation::getProperty($sourceClassName, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
 
             /** @var In $inAnnotation */
