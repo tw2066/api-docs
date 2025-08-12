@@ -62,7 +62,7 @@ class SwaggerComponents
 
             /** @var In $inAnnotation */
             $inAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, In::class)?->toAnnotations()[0];
-            if ($apiModelProperty->hidden || $propertyManager->alias) {
+            if ($apiModelProperty->hidden) {
                 continue;
             }
             if (! $reflectionProperty->isPublic()
@@ -73,7 +73,7 @@ class SwaggerComponents
             }
 
             // 字段名称
-            $property->property = $fieldName;
+            $property->property = $propertyManager->alias ?? $fieldName;
             // 描述
             $apiModelProperty->value !== null && $property->description = $apiModelProperty->value;
             // required
