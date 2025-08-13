@@ -52,7 +52,7 @@ return [
     | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0',
+    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.27.1',
 
     /*
     |--------------------------------------------------------------------------
