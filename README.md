@@ -208,6 +208,7 @@ php bin/hyperf.php start
 * 访问`/swagger`可以看到swagger页面
 * 已安装[knife4j-ui](https://github.com/tw2066/knife4j-ui)，访问`/swagger/doc`可以看到knife4j页面
 * 访问`/swagger/redoc`，可以看到[redoc](https://github.com/Redocly/redoc)页面
+* 访问`/swagger/rapidoc`，可以看到[rapidoc](https://github.com/rapi-doc/RapiDoc)页面
 
 ## 注解
 

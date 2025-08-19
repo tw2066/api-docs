@@ -17,7 +17,7 @@ class SwaggerConfig
 
     private string $prefix_url = '';
 
-    private string $prefix_swagger_resources = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0';
+    private string $prefix_swagger_resources = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.27.1';
 
     private bool $validation_custom_attributes = false;
 

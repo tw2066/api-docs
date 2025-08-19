@@ -74,6 +74,7 @@ class BootAppRouteListener implements ListenerInterface
         $httpServerRouter->addGroup($prefix, function ($route) {
             $route->get('', [SwaggerUiController::class, 'swagger']);
             $route->get('/redoc', [SwaggerUiController::class, 'redoc']);
+            $route->get('/rapidoc', [SwaggerUiController::class, 'rapidoc']);
             $route->get('/doc', [SwaggerUiController::class, 'knife4j']);
             $route->get('/swagger-resources', [SwaggerUiController::class, 'swaggerResources']);
             $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);

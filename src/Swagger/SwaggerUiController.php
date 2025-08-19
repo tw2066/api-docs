@@ -39,6 +39,15 @@ class SwaggerUiController extends SwaggerController
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
+    public function rapidoc(): PsrResponseInterface
+    {
+        // https://rapidocweb.com/examples.html
+        $filePath = $this->docsWebPath . '/rapidoc.html';
+        $contents = file_get_contents($filePath);
+        $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
+        return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
+    }
+
     public function knife4j()
     {
         $filePath = $this->swaggerUiPath . '/doc.html';
