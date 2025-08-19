@@ -47,6 +47,14 @@ class SwaggerUiController extends SwaggerController
         $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
+    public function scalar(): PsrResponseInterface
+    {
+        // https://github.com/scalar/scalar
+        $filePath = $this->docsWebPath . '/scalar.html';
+        $contents = file_get_contents($filePath);
+        $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
+        return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
+    }
 
     public function knife4j()
     {

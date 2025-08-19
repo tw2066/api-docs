@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
-use Hyperf\ApiDocs\Swagger\SwaggerUiController;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\ApiDocs\Swagger\SwaggerController;
+use Hyperf\ApiDocs\Swagger\SwaggerUiController;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DTO\DtoValidation;
@@ -75,6 +75,7 @@ class BootAppRouteListener implements ListenerInterface
             $route->get('', [SwaggerUiController::class, 'swagger']);
             $route->get('/redoc', [SwaggerUiController::class, 'redoc']);
             $route->get('/rapidoc', [SwaggerUiController::class, 'rapidoc']);
+            $route->get('/scalar', [SwaggerUiController::class, 'scalar']);
             $route->get('/doc', [SwaggerUiController::class, 'knife4j']);
             $route->get('/swagger-resources', [SwaggerUiController::class, 'swaggerResources']);
             $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);
