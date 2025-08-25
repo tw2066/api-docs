@@ -47,6 +47,7 @@ class SwaggerUiController extends SwaggerController
         $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
+
     public function scalar(): PsrResponseInterface
     {
         // https://github.com/scalar/scalar
@@ -75,6 +76,16 @@ class SwaggerUiController extends SwaggerController
         }
 
         return $urls;
+    }
+
+    /**
+     * 适配knife4j 4.5.0版本.
+     */
+    public function swaggerConfig(): array
+    {
+        $urls = $this->swaggerResources();
+        $data['urls'] = $urls;
+        return $data;
     }
 
     public function knife4jFile(string $file): PsrResponseInterface
