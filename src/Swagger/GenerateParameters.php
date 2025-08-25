@@ -125,17 +125,17 @@ class GenerateParameters
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
+            $propertyManager = $this->propertyManager->getProperty($parameterClassName, $reflectionProperty->name);
             $parameter = new OA\Parameter();
             $fieldName = $reflectionProperty->getName();
             $schema = new OA\Schema();
-            $parameter->name = $fieldName;
+            $parameter->name = $propertyManager?->alias ?? $fieldName;
             $parameter->in = $in;
             $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
-            $propertyManager = $this->propertyManager->getProperty($parameterClassName, $reflectionProperty->name);
 
             $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
-            if ($apiModelProperty->hidden || $propertyManager?->alias) {
+            if ($apiModelProperty->hidden) {
                 continue;
             }
             if (! $reflectionProperty->isPublic()
