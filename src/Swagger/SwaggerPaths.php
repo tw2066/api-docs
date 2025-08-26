@@ -16,6 +16,7 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\MultipleAnnotationInterface;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\HttpServer\Annotation\AutoController;
+use Hyperf\Stringable\Str;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\PathItem;
@@ -27,6 +28,8 @@ class SwaggerPaths
     protected int $index = 0;
 
     protected array $classMethodArray = [];
+
+    protected static array $operationIds = [];
 
     public function __construct(
         public string $serverName,
@@ -100,8 +103,11 @@ class SwaggerPaths
         $operation->path = $route;
         $operation->tags = $tags;
         $operation->summary = $apiOperation->summary;
-        $operation->description = $apiOperation->description;
-        $operation->operationId = implode('', array_map('ucfirst', explode('/', $route))) . $methods;
+        $operation->description = $this->getClassMethodPath($className, $methodName);
+        if ($apiOperation->description) {
+            $operation->description .= '<br>' . $apiOperation->description;
+        }
+        $operation->operationId = $this->getOperationId($route, $methods);
 
         // 设置弃用
         $apiOperation->deprecated && $operation->deprecated = true;
@@ -123,10 +129,37 @@ class SwaggerPaths
     }
 
     /**
+     * 获取类方法路径(快速定位后端代码).
+     */
+    protected function getClassMethodPath(string $fullClassName, string $methodName): string
+    {
+        $parts = explode('\\', $fullClassName);
+        $shortParts = [];
+        for ($i = 0; $i < count($parts) - 1; ++$i) {
+            $shortParts[] = $parts[$i][0] ?? '';
+        }
+        $shortParts[] = end($parts);
+        return sprintf('**code location**: `%s`', implode('.', $shortParts) . '::' . $methodName);
+    }
+
+    /**
+     * 获取全局操作ID.
+     */
+    protected function getOperationId(string $route, string $methods): string
+    {
+        $operationId = Str::camel(str_replace('/', '_', $route));
+        if (empty($operationId)) {
+            $operationId = '-';
+        }
+        if (! isset(self::$operationIds[$operationId])) {
+            self::$operationIds[$operationId] = true;
+            return $operationId;
+        }
+        return $this->getOperationId($operationId . ucfirst(strtolower($methods)), $methods);
+    }
+
+    /**
      * 获取安全认证
-     * @param array|null $classAnnotation
-     * @param array|null $methodAnnotations
-     * @return array|false
      */
     protected function getSecurity(?array $classAnnotation, ?array $methodAnnotations): array|false
     {
