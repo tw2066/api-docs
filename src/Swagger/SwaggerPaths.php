@@ -20,6 +20,7 @@ use Hyperf\Stringable\Str;
 use OpenApi\Annotations\Operation;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\PathItem;
+use OpenApi\Generator;
 
 use function Hyperf\Support\make;
 
@@ -102,7 +103,7 @@ class SwaggerPaths
         $operation = new $OAClass();
         $operation->path = $route;
         $operation->tags = $tags;
-        $operation->summary = $apiOperation->summary;
+        $operation->summary = $apiOperation->summary ?: Generator::UNDEFINED;
         $operation->description = $this->getClassMethodPath($className, $methodName);
         if ($apiOperation->description) {
             $operation->description .= '<br>' . $apiOperation->description;
@@ -139,7 +140,7 @@ class SwaggerPaths
             $shortParts[] = $parts[$i][0] ?? '';
         }
         $shortParts[] = end($parts);
-        return sprintf('**code location**: `%s`', implode('.', $shortParts) . '::' . $methodName);
+        return sprintf('%s', implode('.', $shortParts) . '::' . $methodName);
     }
 
     /**

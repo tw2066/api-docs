@@ -80,6 +80,7 @@ class SwaggerUiController extends SwaggerController
 
     /**
      * 适配knife4j 4.5.0版本.
+     * https://gitee.com/xiaoym/knife4j/issues/I986E2
      */
     public function swaggerConfig(): array
     {
