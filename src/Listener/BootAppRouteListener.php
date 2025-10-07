@@ -89,6 +89,8 @@ class BootAppRouteListener implements ListenerInterface
         self::$httpServerName = $httpServer['name'];
         $isKnife4j = Composer::hasPackage('tangwei/knife4j-ui');
         $docHtml = $isKnife4j ? '/doc' : '';
-        static::$massage = 'Swagger docs url at http://127.0.0.1:' . $httpServer['port'] . $prefix . $docHtml;
+
+        $host = $httpServer['host'] == '0.0.0.0' ? '127.0.0.1' : $httpServer['host'];
+        static::$massage = 'Swagger docs url at http://' . $host . ':' . $httpServer['port'] . $prefix . $docHtml;
     }
 }
