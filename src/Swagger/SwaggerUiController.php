@@ -51,9 +51,16 @@ class SwaggerUiController extends SwaggerController
     public function scalar(): PsrResponseInterface
     {
         // https://github.com/scalar/scalar
+        $serverNameAll = array_reverse($this->swaggerOpenApi->serverNameAll);
+        $urls = '';
+        foreach ($serverNameAll as $serverName) {
+            $url = $this->getSwaggerFileUrl($serverName);
+            $urls .= "{url: '{$url}', title: '{$serverName} server'},";
+        }
         $filePath = $this->docsWebPath . '/scalar.html';
         $contents = file_get_contents($filePath);
-        $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
+        $contents = str_replace('"{{$urls}}"', $urls, $contents);
+
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
