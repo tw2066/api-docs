@@ -32,7 +32,7 @@ class SwaggerCommon extends DtoCommon
      */
     public function getSimpleClassName(?string $className): string
     {
-        if ($className === null) {
+        if (empty($className)) {
             $className = 'Null';
         }
         $className = ltrim($className, '\\');

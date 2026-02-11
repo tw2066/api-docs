@@ -16,6 +16,7 @@ use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\MethodParametersManager;
+use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
@@ -67,12 +68,19 @@ class GenerateParameters
                 continue;
             }
 
+            $methodParameter = $this->methodParametersManager->getMethodParameter($this->controller, $this->action, $paramName);
+            if ($parameterClassName === 'array' && $methodParameter->isRequestBody()) {
+                $requestBody = new OA\RequestBody();
+                $requestBody->required = true;
+                $property = $this->methodParametersManager->getProperty($this->controller, $this->action, $paramName);
+                $requestBody->content = $this->getContent($property->arrClassName ?? '', property: $property);
+                $result['requestBody'] = $requestBody;
+            }
+
             if ($this->container->has($parameterClassName)) {
-                $methodParameter = $this->methodParametersManager->getMethodParameter($this->controller, $this->action, $paramName);
                 if ($methodParameter == null) {
                     continue;
                 }
-
                 if ($methodParameter->isRequestBody()) {
                     $requestBody = new OA\RequestBody();
                     $requestBody->required = true;
@@ -177,21 +185,32 @@ class GenerateParameters
         return $parameters;
     }
 
-    protected function getContent(string $className, string $mediaTypeStr = 'application/json'): array
+    protected function getContent(string $className, string $mediaTypeStr = 'application/json', ?Property $property = null): array
     {
         $arr = [];
         $mediaType = new OA\MediaType();
         $mediaType->mediaType = $mediaTypeStr;
-        $mediaType->schema = $this->getJsonContent($className);
+        $mediaType->schema = $this->getJsonContent($className, $property);
         $arr[] = $mediaType;
         return $arr;
     }
 
-    protected function getJsonContent(string $className): OA\JsonContent
+    protected function getJsonContent(string $className, ?Property $property = null): OA\JsonContent
     {
         $jsonContent = new OA\JsonContent();
         $this->swaggerComponents->generateSchemas($className);
-        $jsonContent->ref = $this->common->getComponentsName($className);
+        if ($property?->phpSimpleType == 'array') {
+            $jsonContent->type = 'array';
+            $items = new OA\Items();
+            if ($property->arrClassName) {
+                $items->ref = $this->common->getComponentsName($property->arrClassName);
+            } else {
+                $items->type = $this->common->getSwaggerType($property->arrSimpleType);
+            }
+            $jsonContent->items = $items;
+        } else {
+            $jsonContent->ref = $this->common->getComponentsName($className);
+        }
         return $jsonContent;
     }
 
