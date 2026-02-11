@@ -22,7 +22,7 @@ class DemoQuery
 
     #[ApiModelProperty('类型')]
     #[In(['a', 'b'])]
-    private string $type;
+    public string $type;
 
 
 

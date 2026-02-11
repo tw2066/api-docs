@@ -65,6 +65,17 @@ class DemoController
         return new DataType();
     }
 
+    /**
+     * @param DemoQuery[] $request
+     */
+    #[ApiOperation(summary: '查询测试POST Arr')]
+    #[PostMapping(path: 'apiArr')]
+    public function apiArr(#[RequestBody] #[Valid] array $request, Address $address): array
+    {
+        dump($request);
+        return $request;
+    }
+
     #[ApiOperation(summary: '查询测试POST')]
     #[PostMapping(path: 'api')]
     #[ApiHeader(name: 'test', required: true, type: 'string')]
