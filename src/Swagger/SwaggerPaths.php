@@ -148,6 +148,7 @@ class SwaggerPaths
      */
     protected function getOperationId(string $route, string $methods): string
     {
+        $route = str_replace(['{','}'], '', $route);
         $operationId = Str::camel(str_replace('/', '_', $route));
         if (empty($operationId)) {
             $operationId = '-';
