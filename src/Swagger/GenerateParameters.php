@@ -69,7 +69,7 @@ class GenerateParameters
             }
 
             $methodParameter = $this->methodParametersManager->getMethodParameter($this->controller, $this->action, $paramName);
-            if ($parameterClassName === 'array' && $methodParameter->isRequestBody()) {
+            if ($parameterClassName === 'array' && $methodParameter?->isRequestBody()) {
                 $requestBody = new OA\RequestBody();
                 $requestBody->required = true;
                 $property = $this->methodParametersManager->getProperty($this->controller, $this->action, $paramName);
