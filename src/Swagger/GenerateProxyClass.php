@@ -129,7 +129,7 @@ class GenerateProxyClass
     protected function phpParser(object $generateClass, $filePath, $propertyArr): array
     {
         $code = file_get_contents($filePath);
-        $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse($code);
 
         $simpleClassName = $this->swaggerCommon->getSimpleClassName($generateClass::class);
