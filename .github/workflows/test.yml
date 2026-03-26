@@ -3,7 +3,7 @@ name: PHPUnit
 on: [ push, pull_request ]
 
 env:
-  SWOOLE_VERSION: '6.1.6'
+  SWOOLE_VERSION: '6.1.7'
   SWOW_VERSION: 'develop'
 
 jobs:
