@@ -56,16 +56,16 @@ class GenerateResponses
         return array_values($arr);
     }
 
-//    protected function getReturnJsonContent(string $returnTypeClassName, bool $isArray = false): array
-//    {
-//        $arr = [];
-//        $mediaType = new OA\MediaType();
-//        $mediaTypeStr = 'application/json';
-//        $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
-//        $arr[$mediaTypeStr] = $mediaType;
-//        $mediaType->mediaType = $mediaTypeStr;
-//        return $arr;
-//    }
+    //    protected function getReturnJsonContent(string $returnTypeClassName, bool $isArray = false): array
+    //    {
+    //        $arr = [];
+    //        $mediaType = new OA\MediaType();
+    //        $mediaTypeStr = 'application/json';
+    //        $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
+    //        $arr[$mediaTypeStr] = $mediaType;
+    //        $mediaType->mediaType = $mediaTypeStr;
+    //        return $arr;
+    //    }
 
     protected function getContent(array|object|string $returnTypeClassName): array
     {

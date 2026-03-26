@@ -30,7 +30,7 @@ class SwaggerPaths
 
     protected array $classMethodArray = [];
 
-    protected static array $operationIds = [];
+    protected array $operationIds = [];
 
     public function __construct(
         public string $serverName,
@@ -148,13 +148,13 @@ class SwaggerPaths
      */
     protected function getOperationId(string $route, string $methods): string
     {
-        $route = str_replace(['{','}'], '', $route);
+        $route = str_replace(['{', '}'], '', $route);
         $operationId = Str::camel(str_replace('/', '_', $route));
         if (empty($operationId)) {
             $operationId = '-';
         }
-        if (! isset(self::$operationIds[$operationId])) {
-            self::$operationIds[$operationId] = true;
+        if (! isset($this->operationIds[$operationId])) {
+            $this->operationIds[$operationId] = true;
             return $operationId;
         }
         return $this->getOperationId($operationId . ucfirst(strtolower($methods)), $methods);

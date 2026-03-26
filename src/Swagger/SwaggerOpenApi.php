@@ -135,7 +135,7 @@ class SwaggerOpenApi
         $outputDir = $this->swaggerConfig->getOutputDir();
         if (file_exists($outputDir) === false) {
             if (mkdir($outputDir, 0755, true) === false) {
-                throw new ApiDocsException("Failed to create a directory : {$outputDir}");
+                throw ApiDocsException::directoryCreationFailed($outputDir);
             }
         }
         $outputFile = $outputDir . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();

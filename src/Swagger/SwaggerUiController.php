@@ -98,15 +98,21 @@ class SwaggerUiController extends SwaggerController
 
     public function knife4jFile(string $file): PsrResponseInterface
     {
-        $file = str_replace('..', '', $file);
-        $file = '/webjars/' . $file;
-        $file = $this->swaggerUiPath . '/' . $file;
-        return $this->fileResponse($file);
+        $file = $this->sanitizeFilePath($file);
+        $filePath = $this->swaggerUiPath . '/webjars/' . $file;
+        return $this->fileResponse($filePath);
     }
 
     public function favicon(): PsrResponseInterface
     {
         $file = $this->docsWebPath . '/favicon.png';
         return $this->fileResponse($file);
+    }
+
+    protected function sanitizeFilePath(string $file): string
+    {
+        $file = str_replace(['..', '\\', "\0"], '', $file);
+
+        return ltrim($file, '/');
     }
 }

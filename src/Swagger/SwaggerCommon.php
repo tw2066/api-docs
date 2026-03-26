@@ -12,9 +12,9 @@ use Throwable;
 
 class SwaggerCommon extends DtoCommon
 {
-    protected static array $className = [];
+    protected array $classNameCache = [];
 
-    protected static array $simpleClassName = [];
+    protected array $simpleClassNameCache = [];
 
     public function getComponentsName(string $className): string
     {
@@ -23,8 +23,8 @@ class SwaggerCommon extends DtoCommon
 
     public function simpleClassNameClear(): void
     {
-        static::$className = [];
-        static::$simpleClassName = [];
+        $this->classNameCache = [];
+        $this->simpleClassNameCache = [];
     }
 
     /**
@@ -36,8 +36,8 @@ class SwaggerCommon extends DtoCommon
             $className = 'Null';
         }
         $className = ltrim($className, '\\');
-        if (isset(self::$className[$className])) {
-            return self::$className[$className];
+        if (isset($this->classNameCache[$className])) {
+            return $this->classNameCache[$className];
         }
         $pos = strrpos($className, '\\');
         $simpleClassName = $className;
@@ -46,7 +46,7 @@ class SwaggerCommon extends DtoCommon
         }
 
         $simpleClassName = $this->getSimpleClassNameNum(ucfirst($simpleClassName));
-        self::$className[$className] = $simpleClassName;
+        $this->classNameCache[$className] = $simpleClassName;
         return $simpleClassName;
     }
 
@@ -89,7 +89,7 @@ class SwaggerCommon extends DtoCommon
             return $type->getValue();
         }
 
-        if (is_object($type) && $type::class != 'stdClass') {
+        if (is_object($type) && $type::class !== 'stdClass') {
             return '\\' . $type::class;
         }
         if (is_string($type) && class_exists($type)) {
@@ -98,7 +98,7 @@ class SwaggerCommon extends DtoCommon
         return 'mixed';
     }
 
-    public function getPropertyDefaultValue(string $className, ReflectionProperty $reflectionProperty)
+    public function getPropertyDefaultValue(string $className, ReflectionProperty $reflectionProperty): mixed
     {
         $default = Generator::UNDEFINED;
         try {
@@ -109,7 +109,6 @@ class SwaggerCommon extends DtoCommon
         } catch (Throwable) {
             $fieldName = $reflectionProperty->getName();
             $classVars = get_class_vars($className);
-            // 别名会获取不到默认值
             if (isset($classVars[$fieldName])) {
                 $default = $classVars[$fieldName];
             }
@@ -117,13 +116,13 @@ class SwaggerCommon extends DtoCommon
         return $default;
     }
 
-    private function getSimpleClassNameNum(string $className, $num = 0): string
+    private function getSimpleClassNameNum(string $className, int $num = 0): string
     {
         $simpleClassName = $className . ($num > 0 ? '_' . $num : '');
-        if (isset(self::$simpleClassName[$simpleClassName])) {
+        if (isset($this->simpleClassNameCache[$simpleClassName])) {
             return $this->getSimpleClassNameNum($className, $num + 1);
         }
-        self::$simpleClassName[$simpleClassName] = $num;
+        $this->simpleClassNameCache[$simpleClassName] = $num;
         return $simpleClassName;
     }
 }

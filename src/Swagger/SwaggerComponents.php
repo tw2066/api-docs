@@ -21,7 +21,7 @@ use function Hyperf\Support\setter;
 
 class SwaggerComponents
 {
-    protected static array $schemas = [];
+    protected array $schemas = [];
 
     public function __construct(
         protected SwaggerCommon $common,
@@ -32,12 +32,12 @@ class SwaggerComponents
 
     public function getSchemas(): array
     {
-        return self::$schemas;
+        return $this->schemas;
     }
 
     public function setSchemas(array $schemas): void
     {
-        self::$schemas = $schemas;
+        $this->schemas = $schemas;
     }
 
     public function getProperties(string $className): array
@@ -135,7 +135,7 @@ class SwaggerComponents
                     $property->ref = $this->common->getComponentsName($propertyManager->className);
                     $this->generateSchemas($propertyManager->className);
                 } else {
-                    throw new ApiDocsException("field:{$className}-{$fieldName} type resolved not found");
+                    throw ApiDocsException::typeResolutionFailed($className, $fieldName);
                 }
             }
             $propertyArr[] = $property;
@@ -146,8 +146,8 @@ class SwaggerComponents
     public function generateSchemas(string $className)
     {
         $simpleClassName = $this->common->getSimpleClassName($className);
-        if (isset(static::$schemas[$simpleClassName])) {
-            return static::$schemas[$simpleClassName];
+        if (isset($this->schemas[$simpleClassName])) {
+            return $this->schemas[$simpleClassName];
         }
         $schema = new OA\Schema();
         $schema->schema = $simpleClassName;
@@ -160,7 +160,7 @@ class SwaggerComponents
             $schema->description = $apiModel->value;
         }
         $data['requiredArr'] && $schema->required = $data['requiredArr'];
-        self::$schemas[$simpleClassName] = $schema;
-        return self::$schemas[$simpleClassName];
+        $this->schemas[$simpleClassName] = $schema;
+        return $this->schemas[$simpleClassName];
     }
 }

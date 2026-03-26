@@ -32,7 +32,7 @@ class GenerateProxyClass
         $proxyDir = $this->swaggerConfig->getProxyDir();
         if (file_exists($proxyDir) === false) {
             if (mkdir($proxyDir, 0755, true) === false) {
-                throw new ApiDocsException("Failed to create a directory : {$proxyDir}");
+                throw ApiDocsException::directoryCreationFailed($proxyDir);
             }
         }
     }
