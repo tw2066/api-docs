@@ -1,0 +1,79 @@
+name: PHPUnit3.1
+
+on: [ push, pull_request ]
+
+jobs:
+  ci31:
+    runs-on: ubuntu-latest
+    container: hyperf/hyperf:${{ matrix.hyperf-version }}
+    strategy:
+      matrix:
+        hyperf-version:
+          - "8.1-alpine-v3.19-swoole"
+          - "8.2-alpine-v3.22-swoole"
+          - "8.3-alpine-v3.23-swoole"
+          - "8.4-alpine-v3.23-swoole"
+      fail-fast: false
+      max-parallel: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Environment
+        run: |
+          pwd
+          ls -al
+          php -v
+          php -m
+          php --ri swoole
+          composer -V
+
+      - name: Install Dependencies
+        run: |
+          composer require hyperf/di:3.1.* --no-update
+          composer update -o --no-scripts 
+          composer info
+
+      - name: Static Analysis
+        run: composer analyse
+
+      - name: Run Tests
+        run: composer test
+
+  ci32:
+    runs-on: ubuntu-latest
+    container: hyperf/hyperf:${{ matrix.hyperf-version }}
+    strategy:
+      matrix:
+        hyperf-version:
+          - "8.2-alpine-v3.22-swoole"
+          - "8.3-alpine-v3.23-swoole"
+          - "8.4-alpine-v3.23-swoole"
+      fail-fast: false
+      max-parallel: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Environment
+        run: |
+          pwd
+          ls -al
+          php -v
+          php -m
+          php --ri swoole
+          composer -V
+
+      - name: Install Dependencies
+        run: |
+          php .github/workflows/add_composer_stability.php
+          composer require hyperf/di:3.2.*
+          composer require tangwei/dto:dev-master
+          composer update -o 
+          composer info
+
+      - name: Static Analysis
+        run: composer analyse
+
+      - name: Run Tests
+        run: composer test
