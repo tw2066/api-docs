@@ -1,9 +1,9 @@
-name: PHPUnit
+name: PHPUnit3.1
 
 on: [ push, pull_request ]
 
 jobs:
-  ci:
+  ci31:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -13,7 +13,7 @@ jobs:
           - "8.3-alpine-v3.23-swoole"
           - "8.4-alpine-v3.23-swoole"
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 15
 
     steps:
       - name: Checkout
@@ -28,7 +28,7 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app -w /app hyperf/hyperf:${{ matrix.hyperf-version }} \
-            sh -c "composer require "tangwei/dto:dev-master" && composer update -o"
+            sh -c "composer require hyperf/di:3.1.* && composer require tangwei/dto:dev-master && composer update -o"
       - name: Composer Analyse
         run: |
           docker run --rm \
@@ -39,5 +39,3 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/app -w /app hyperf/hyperf:${{ matrix.hyperf-version }} \
             sh -c "composer test"
-          
-          

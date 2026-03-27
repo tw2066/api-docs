@@ -1,0 +1,40 @@
+#name: PHPUnit3.2
+#
+#on: [ push, pull_request ]
+#
+#jobs:
+#  ci32:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        hyperf-version:
+#          - "8.2-alpine-v3.22-swoole"
+#          - "8.3-alpine-v3.23-swoole"
+#          - "8.4-alpine-v3.23-swoole"
+#      fail-fast: false
+#      max-parallel: 15
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#      - name: Pull Hyperf Image
+#        run: docker pull hyperf/hyperf:${{ matrix.hyperf-version }}
+#      - name: Environment Info
+#        run: |
+#          docker run --rm hyperf/hyperf:${{ matrix.hyperf-version }} \
+#            sh -c "php -v && php -m && php --ri swoole && composer -V"
+#      - name: Composer Update
+#        run: |
+#          docker run --rm \
+#            -v ${{ github.workspace }}:/app -w /app hyperf/hyperf:${{ matrix.hyperf-version }} \
+#            sh -c "composer require hyperf/di:3.2.* && composer require tangwei/dto:dev-master && composer update -o"
+#      - name: Composer Analyse
+#        run: |
+#          docker run --rm \
+#            -v ${{ github.workspace }}:/app -w /app hyperf/hyperf:${{ matrix.hyperf-version }} \
+#            sh -c "composer analyse"
+#      - name: Run Unit Tests
+#        run: |
+#          docker run --rm \
+#            -v ${{ github.workspace }}:/app -w /app hyperf/hyperf:${{ matrix.hyperf-version }} \
+#            sh -c "composer test"
