@@ -31,7 +31,7 @@ jobs:
       - name: Install Dependencies
         run: |
           composer require hyperf/di:3.1.* --no-update
-          composer update -o --no-scripts 
+          composer update -o
           composer info
 
       - name: Static Analysis
