@@ -30,6 +30,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          php .github/workflows/add_composer_stability.php
           composer require hyperf/di:3.1.* --no-update
           composer update -o
           composer info
