@@ -1,4 +1,4 @@
-name: PHPUnit3.1
+name: PHPUnit
 
 on: [ push, pull_request ]
 
