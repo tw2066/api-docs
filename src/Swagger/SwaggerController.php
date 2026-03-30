@@ -50,7 +50,7 @@ class SwaggerController
             throw ApiDocsException::fileNotFound($file);
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->fileResponse($filePath);
+        return $this->fileResponse($filePath)->withHeader('content-type', 'application/json;charset=utf-8');
     }
 
     public function getYamlFile(string $httpName): PsrResponseInterface
@@ -60,7 +60,7 @@ class SwaggerController
             throw ApiDocsException::fileNotFound($file);
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->fileResponse($filePath);
+        return $this->fileResponse($filePath)->withHeader('content-type', 'text/yaml;charset=utf-8');
     }
 
     protected function fileResponse(string $filePath)
