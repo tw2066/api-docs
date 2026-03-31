@@ -82,7 +82,7 @@ class SwaggerConfigTest extends TestCase
 
         $config = new SwaggerConfig($configInterface);
 
-        $this->assertEquals('swagger', $config->getPrefixUrl());
+        $this->assertEquals('/swagger', $config->getPrefixUrl());
     }
 
     public function testIsValidationCustomAttributesDefaultsToFalse(): void
