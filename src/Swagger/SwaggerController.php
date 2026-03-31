@@ -27,8 +27,12 @@ class SwaggerController
 
     protected array $swaggerFileList;
 
-    public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response, protected SwaggerOpenApi $swaggerOpenApi)
-    {
+    public function __construct(
+        protected SwaggerConfig $swaggerConfig,
+        protected ResponseInterface $response,
+        protected SwaggerOpenApi $swaggerOpenApi,
+        protected SwaggerLlms $swaggerLlms,
+    ) {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = is_dir($this->swaggerUiPath) ? scandir($this->swaggerUiPath) : [];
         $this->swaggerFileList = scandir($this->outputDir);
@@ -61,6 +65,33 @@ class SwaggerController
         }
         $filePath = $this->outputDir . '/' . $file;
         return $this->fileResponse($filePath)->withHeader('content-type', 'text/yaml;charset=utf-8');
+    }
+
+    public function llmsMd(string $httpName = 'http'): PsrResponseInterface
+    {
+        $prefix = $this->swaggerConfig->getPrefixUrl();
+        $url = $this->swaggerConfig->getSwagger()['servers'][0]['url'] ?? '';
+        if ($url) {
+            $prefix = $url . $prefix;
+        }
+        $file = $httpName . '.json';
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
+        $filePath = $this->outputDir . '/' . $file;
+        $content = $this->swaggerLlms->list($httpName, $filePath, $prefix);
+        return $this->response->raw($content);
+    }
+
+    public function llmsDetailMd(string $httpName, string $operationId): PsrResponseInterface
+    {
+        $file = $httpName . '.json';
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
+        $filePath = $this->outputDir . '/' . $file;
+        $content = $this->swaggerLlms->detail($operationId, $filePath);
+        return $this->response->raw($content);
     }
 
     protected function fileResponse(string $filePath)

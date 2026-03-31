@@ -233,14 +233,15 @@ return [
 ```bash
 php bin/hyperf.php start
 ```
-
-启动成功后，访问 `http://your-host:9501/swagger` 即可查看 API 文档。
-
 ```
 [INFO] Swagger docs url at http://0.0.0.0:9501/swagger
 [INFO] Worker#0 started.
 [INFO] HTTP Server listening at 0.0.0.0:9501
 ```
+
+- 启动成功后，访问 `http://your-host:9501/swagger` 即可查看 API 文档。
+- 访问 `http://your-host:9501/swagger/llms.txt` 包含控制器每个Markdown页面的链接,可以用于Ai快速访问编程文档。
+- 其他服务访问 `http://your-host:9501/swagger/{service-name}.md` 访问 `{service-name}` 服务的 Markdown 文档。
 
 ## 📖 使用指南
 

@@ -82,6 +82,10 @@ class BootAppRouteListener implements ListenerInterface
             $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);
             $route->get('/favicon.ico', [SwaggerUiController::class, 'favicon']);
 
+            $route->get('/llms.txt', [SwaggerController::class, 'llmsMd']);
+            $route->get('/{httpName}.md', [SwaggerController::class, 'llmsMd']);
+            $route->get('/{httpName}/{operationId}.md', [SwaggerController::class, 'llmsDetailMd']);
+
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
             $route->get('/{httpName}.yaml', [SwaggerController::class, 'getYamlFile']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);

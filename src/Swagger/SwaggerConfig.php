@@ -67,7 +67,7 @@ class SwaggerConfig
 
     public function getPrefixUrl(): string
     {
-        return $this->prefix_url ?: 'swagger';
+        return $this->prefix_url ?: '/swagger';
     }
 
     public function isValidationCustomAttributes(): bool
