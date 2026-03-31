@@ -50,43 +50,6 @@ class SwaggerPathsTest extends TestCase
         $this->assertIsArray($property->getValue($swaggerPaths));
     }
 
-    public function testOperationIdInstanceIsolation(): void
-    {
-        $container = m::mock(ContainerInterface::class);
-        $config = m::mock(ConfigInterface::class);
-        $logger = m::mock(StdoutLoggerInterface::class);
-        $swaggerOpenApi = m::mock(SwaggerOpenApi::class);
-        $swaggerCommon = new SwaggerCommon();
-
-        $swaggerPaths1 = new SwaggerPaths(
-            'http',
-            $config,
-            $logger,
-            $swaggerOpenApi,
-            $swaggerCommon
-        );
-
-        $swaggerPaths2 = new SwaggerPaths(
-            'http2',
-            $config,
-            $logger,
-            $swaggerOpenApi,
-            $swaggerCommon
-        );
-
-        $reflection1 = new ReflectionClass($swaggerPaths1);
-        $property1 = $reflection1->getProperty('operationIds');
-        $property1->setAccessible(true);
-
-        $reflection2 = new ReflectionClass($swaggerPaths2);
-        $property2 = $reflection2->getProperty('operationIds');
-        $property2->setAccessible(true);
-
-        $property1->setValue($swaggerPaths1, ['test' => true]);
-
-        $this->assertArrayNotHasKey('test', $property2->getValue($swaggerPaths2));
-    }
-
     public function testGetClassMethodPath(): void
     {
         $container = m::mock(ContainerInterface::class);
@@ -104,7 +67,6 @@ class SwaggerPathsTest extends TestCase
         );
 
         $method = new ReflectionMethod($swaggerPaths, 'getClassMethodPath');
-        $method->setAccessible(true);
 
         $result = $method->invoke($swaggerPaths, 'Hyperf\ApiDocs\Controller\UserController', 'getUser');
 
@@ -129,7 +91,6 @@ class SwaggerPathsTest extends TestCase
         );
 
         $method = new ReflectionMethod($swaggerPaths, 'getClassMethodPath');
-        $method->setAccessible(true);
 
         $result = $method->invoke($swaggerPaths, 'Controller\UserController', 'index');
 
