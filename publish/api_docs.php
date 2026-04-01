@@ -111,7 +111,7 @@ return [
         'info' => [
             'title' => 'API DOC',
             'version' => '0.1',
-            'description' => 'swagger api desc',
+            'description' => 'Swagger api desc, API for LLM integration [LLM Usage Guide](/swagger/llms.txt)',
         ],
         'servers' => [
             [
