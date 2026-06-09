@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         hyperf-version:
-          - "8.1-alpine-v3.19-swoole"
           - "8.2-alpine-v3.22-swoole"
           - "8.3-alpine-v3.23-swoole"
           - "8.4-alpine-v3.23-swoole"
