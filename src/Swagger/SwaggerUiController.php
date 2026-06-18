@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
@@ -100,6 +101,11 @@ class SwaggerUiController extends SwaggerController
     {
         $file = $this->sanitizeFilePath($file);
         $filePath = $this->swaggerUiPath . '/webjars/' . $file;
+        $realBasePath = realpath($this->swaggerUiPath . '/webjars');
+        $realFilePath = realpath($filePath);
+        if ($realFilePath === false || $realBasePath === false || ! str_starts_with($realFilePath, $realBasePath . DIRECTORY_SEPARATOR)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
         return $this->fileResponse($filePath);
     }
 
@@ -111,7 +117,9 @@ class SwaggerUiController extends SwaggerController
 
     protected function sanitizeFilePath(string $file): string
     {
-        $file = str_replace(['..', '\\', "\0"], '', $file);
+        do {
+            $file = str_replace(['..', '\\', "\0"], '', $file, $count);
+        } while ($count > 0);
 
         return ltrim($file, '/');
     }

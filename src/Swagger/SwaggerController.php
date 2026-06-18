@@ -35,7 +35,10 @@ class SwaggerController
     ) {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = is_dir($this->swaggerUiPath) ? scandir($this->swaggerUiPath) : [];
-        $this->swaggerFileList = scandir($this->outputDir);
+        if (! is_dir($this->outputDir) || ($swaggerFileList = scandir($this->outputDir)) === false) {
+            throw ApiDocsException::directoryCreationFailed($this->outputDir);
+        }
+        $this->swaggerFileList = $swaggerFileList;
     }
 
     public function getFile(string $file): PsrResponseInterface

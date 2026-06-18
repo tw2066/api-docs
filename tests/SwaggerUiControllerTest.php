@@ -39,6 +39,40 @@ class SwaggerUiControllerTest extends TestCase
         $this->assertStringNotContainsString('..', $result);
     }
 
+    public function testSanitizeFilePathPreventsDotDotSlashBypass(): void
+    {
+        // ....// 绕过：第一次 str_replace 移除 .. 后剩下 ../
+        $config = m::mock(SwaggerConfig::class);
+        $config->shouldReceive('getPrefixUrl')->andReturn('/swagger');
+        $config->shouldReceive('getFormat')->andReturn('json');
+
+        $response = m::mock(ResponseInterface::class);
+
+        $controller = new SwaggerUiControllerTestable($config, $response, m::mock(SwaggerOpenApi::class));
+
+        $reflection = new ReflectionMethod($controller, 'sanitizeFilePath');
+
+        $result = $reflection->invoke($controller, '....//etc/passwd');
+        $this->assertStringNotContainsString('..', $result, 'Bypass attempt ....// should not result in .. remaining');
+    }
+
+    public function testSanitizeFilePathPreventsMultipleBypassLayers(): void
+    {
+        // 多层嵌套绕过尝试
+        $config = m::mock(SwaggerConfig::class);
+        $config->shouldReceive('getPrefixUrl')->andReturn('/swagger');
+        $config->shouldReceive('getFormat')->andReturn('json');
+
+        $response = m::mock(ResponseInterface::class);
+
+        $controller = new SwaggerUiControllerTestable($config, $response, m::mock(SwaggerOpenApi::class));
+
+        $reflection = new ReflectionMethod($controller, 'sanitizeFilePath');
+
+        $result = $reflection->invoke($controller, '....//....//....//etc/passwd');
+        $this->assertStringNotContainsString('..', $result, 'Multi-layer bypass should not result in .. remaining');
+    }
+
     public function testSanitizeFilePathRemovesBackslashes(): void
     {
         $config = m::mock(SwaggerConfig::class);
@@ -177,11 +211,5 @@ class SwaggerUiControllerTestable extends SwaggerUiController
         $urls = $this->swaggerResources();
         $data['urls'] = $urls;
         return $data;
-    }
-
-    protected function sanitizeFilePath(string $file): string
-    {
-        $file = str_replace(['..', '\\', "\0"], '', $file);
-        return ltrim($file, '/');
     }
 }
