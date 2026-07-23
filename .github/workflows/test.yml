@@ -31,8 +31,8 @@ jobs:
         run: |
           php .github/workflows/add_composer_stability.php
           composer require hyperf/di:3.2.*
-          composer require tangwei/dto:dev-master
-          composer update -oW 
+          composer require tangwei/dto:dev-master -W
+          composer update -o 
           composer info
 
       - name: Static Analysis
