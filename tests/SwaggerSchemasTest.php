@@ -13,6 +13,7 @@ use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
+use HyperfTest\ApiDocs\Request\TreeNode;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -147,5 +148,33 @@ class SwaggerSchemasTest extends TestCase
         $propertyNames = array_map(fn ($p) => $p->property, $properties);
         $this->assertContains('name', $propertyNames);
         $this->assertContains('age', $propertyNames);
+    }
+
+    /**
+     * 自引用与互相引用的 DTO 不会导致 generateSchemas 无限递归.
+     */
+    public function testCircularReferenceSchemas(): void
+    {
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+        $schema = $swaggerComponents->generateSchemas(TreeNode::class);
+        $properties = $schema->properties;
+
+        $propertyMap = [];
+        foreach ($properties as $property) {
+            $propertyMap[$property->property] = $property;
+        }
+        // 自引用
+        $this->assertSame('#/components/schemas/TreeNode', $propertyMap['child']->ref);
+        // 互相引用 A → B，B 的 schema 也应生成且 B → A 正常回指
+        $this->assertSame('#/components/schemas/TreeSibling', $propertyMap['sibling']->ref);
+        $schemas = $swaggerComponents->getSchemas();
+        $this->assertArrayHasKey('TreeNode', $schemas);
+        $this->assertArrayHasKey('TreeSibling', $schemas);
+        $siblingProperties = $schemas['TreeSibling']->properties;
+        $this->assertSame('#/components/schemas/TreeNode', $siblingProperties[1]->ref);
+
+        $swaggerCommon->simpleClassNameClear();
     }
 }

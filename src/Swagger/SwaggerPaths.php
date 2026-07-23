@@ -92,7 +92,7 @@ class SwaggerPaths
 
         $method = strtolower($methods);
         /** @var GenerateParameters $generateParameters */
-        $generateParameters = make(GenerateParameters::class, [$className, $methodName, $apiHeaderArr, $apiFormDataArr]);
+        $generateParameters = make(GenerateParameters::class, [$className, $methodName, $apiHeaderArr, $apiFormDataArr, $route]);
         /** @var GenerateResponses $generateResponses */
         $generateResponses = make(GenerateResponses::class, [$className, $methodName, $apiResponseArr]);
         $parameters = $generateParameters->generate();

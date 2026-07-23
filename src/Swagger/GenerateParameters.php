@@ -32,6 +32,7 @@ class GenerateParameters
         protected string $action,
         protected array $apiHeaderArr,
         protected array $apiFormDataArr,
+        protected string $route,
         protected ContainerInterface $container,
         protected MethodDefinitionCollectorInterface $methodDefinitionCollector,
         protected SwaggerComponents $swaggerComponents,
@@ -57,6 +58,9 @@ class GenerateParameters
             // 判断是否为简单类型
             $simpleSwaggerType = $this->common->getSimpleType2SwaggerType($parameterClassName);
             if ($simpleSwaggerType !== null) {
+                if (! $this->isPathParam($paramName)) {
+                    continue;
+                }
                 $parameter = new OA\Parameter();
                 $parameter->required = true;
                 $parameter->name = $paramName;
@@ -269,5 +273,13 @@ class GenerateParameters
             $propertyArr[] = $property;
         }
         return ['propertyArr' => $propertyArr, 'requiredArr' => $requiredArr];
+    }
+
+    /**
+     * 判断参数是否为路由路径占位符（支持 {id} 和 {id:\d+} 形式）.
+     */
+    protected function isPathParam(string $paramName): bool
+    {
+        return preg_match('/\{' . preg_quote($paramName, '/') . '(:[^}]*)?\}/', $this->route) === 1;
     }
 }
