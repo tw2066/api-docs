@@ -13,6 +13,7 @@ use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\DtoConfig;
+use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
 use OpenApi\Generator;
@@ -55,6 +56,10 @@ class SwaggerComponents
             $property = new OA\Property();
             $fieldName = $reflectionProperty->getName();
             $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
+            if ($propertyManager === null) {
+                // 属性未被 DTO 扫描器登记（如代理类），按反射类型兜底
+                $propertyManager = $this->buildPropertyFromReflection($reflectionProperty);
+            }
 
             // 适配ApiVariable注解
             $sourceClassName = $this->generateProxyClass?->getSourceClassname($className) ?? $className;
@@ -151,6 +156,8 @@ class SwaggerComponents
         }
         $schema = new OA\Schema();
         $schema->schema = $simpleClassName;
+        // 先登记再解析属性，防止循环引用类（A ↔ B）导致无限递归
+        $this->schemas[$simpleClassName] = $schema;
 
         $data = $this->getProperties($className);
         $schema->properties = $data['propertyArr'];
@@ -160,7 +167,19 @@ class SwaggerComponents
             $schema->description = $apiModel->value;
         }
         $data['requiredArr'] && $schema->required = $data['requiredArr'];
-        $this->schemas[$simpleClassName] = $schema;
         return $this->schemas[$simpleClassName];
+    }
+
+    protected function buildPropertyFromReflection(\ReflectionProperty $reflectionProperty): Property
+    {
+        $property = new Property();
+        $phpType = $this->common->getTypeName($reflectionProperty);
+        if ($this->common->isSimpleType($phpType)) {
+            $property->phpSimpleType = $phpType;
+        } else {
+            $property->isSimpleType = false;
+            $property->className = $phpType;
+        }
+        return $property;
     }
 }
