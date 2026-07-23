@@ -276,10 +276,10 @@ class GenerateParameters
     }
 
     /**
-     * 判断参数是否为路由路径占位符（支持 {id} 和 {id:\d+} 形式）.
+     * 判断参数是否为路由路径占位符（支持 {id}、{id:\d+} 及 { id }、{id : \d+} 等空白变体，与 FastRoute 规则对齐）.
      */
     protected function isPathParam(string $paramName): bool
     {
-        return preg_match('/\{' . preg_quote($paramName, '/') . '(:[^}]*)?\}/', $this->route) === 1;
+        return preg_match('/\{\s*' . preg_quote($paramName, '/') . '\s*(?::[^{}]*(?:\{[^{}]*\}[^{}]*)*)?\}/', $this->route) === 1;
     }
 }
