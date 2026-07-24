@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use FastRoute\RouteParser\Std;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -276,10 +277,18 @@ class GenerateParameters
     }
 
     /**
-     * 判断参数是否为路由路径占位符（支持 {id}、{id:\d+} 及 { id }、{id : \d+} 等空白变体，与 FastRoute 规则对齐）.
+     * 判断参数是否为路由路径占位符（复用 FastRoute 解析器，与框架路由匹配规则保持一致）.
      */
     protected function isPathParam(string $paramName): bool
     {
-        return preg_match('/\{\s*' . preg_quote($paramName, '/') . '\s*(?::[^{}]*(?:\{[^{}]*\}[^{}]*)*)?\}/', $this->route) === 1;
+        $routeDataList = (new Std())->parse($this->route);
+        foreach ($routeDataList as $routeData) {
+            foreach ($routeData as $segment) {
+                if (is_array($segment) && $segment[0] === $paramName) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
