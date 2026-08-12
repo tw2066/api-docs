@@ -50,8 +50,9 @@ class GenerateResponses
         $content && $response->content = $content;
         $arr[$code] = $response;
 
-        $annotationResp && $arr = Arr::merge($arr, $annotationResp);
+        // 优先级：方法级 ApiResponse 注解 > 全局 responses 配置
         $globalResp && $arr = Arr::merge($arr, $globalResp);
+        $annotationResp && $arr = Arr::merge($arr, $annotationResp);
 
         return array_values($arr);
     }

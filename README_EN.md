@@ -3,7 +3,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![Total Downloads](https://img.shields.io/packagist/dt/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![License](https://img.shields.io/packagist/l/tangwei/apidocs)](https://github.com/tw2066/api-docs)
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-blue)](https://www.php.net)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net)
 
 English | [中文](./README.md)
 
@@ -11,7 +11,7 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 
 ## ✨ Features
 
-- 🚀 **Auto Generation** - Automatically generate OpenAPI 3.0 documentation based on PHP 8 Attributes
+- 🚀 **Auto Generation** - Automatically generate OpenAPI 3.0/3.1 documentation based on PHP 8 Attributes
 - 🎯 **Type Safety** - Support DTO mode with automatic parameter mapping to PHP classes
 - 📝 **Multiple UIs** - Support Swagger UI, Knife4j, Redoc, RapiDoc, Scalar, and more
 - ✅ **Data Validation** - Integrate Hyperf validator with rich validation annotations
@@ -22,8 +22,8 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 
 ## 📋 Requirements
 
-- PHP >= 8.1
-- Hyperf >= 3.0
+- PHP >= 8.2
+- Hyperf ~3.2
 - Swoole >= 5.0 or Swow
 
 ## 💡 Important Notes
@@ -237,13 +237,15 @@ return [
 php bin/hyperf.php start
 ```
 
-After successful startup, visit `http://your-host:9501/swagger` to view the API documentation.
-
 ```
 [INFO] Swagger docs url at http://0.0.0.0:9501/swagger
 [INFO] Worker#0 started.
 [INFO] HTTP Server listening at 0.0.0.0:9501
 ```
+
+- After successful startup, visit `http://your-host:9501/swagger` to view the API documentation.
+- Visit `http://your-host:9501/swagger/llms.txt` for links to a Markdown page per controller, which can be used by AI to quickly access the API documentation.
+- Other servers can visit `http://your-host:9501/swagger/{service-name}.md` to access the Markdown documentation of the `{service-name}` server.
 
 ## 📖 Usage Guide
 
@@ -848,7 +850,7 @@ public function upload(#[RequestFormData] UploadRequest $request)
 Access different UI interfaces:
 
 - **Swagger UI**: `http://your-host:9501/swagger`
-- **Knife4j**: `http://your-host:9501/swagger/knife4j`
+- **Knife4j**: `http://your-host:9501/swagger/doc` (requires `tangwei/knife4j-ui`)
 - **Redoc**: `http://your-host:9501/swagger/redoc`
 - **RapiDoc**: `http://your-host:9501/swagger/rapidoc`
 - **Scalar**: `http://your-host:9501/swagger/scalar`
@@ -898,7 +900,7 @@ class DemoQuery
 
 ### RPC Support
 
-[Return PHP Object](https://hyperf.wiki/3.1/#/en/json-rpc?id=returning-php-objects)
+[Return PHP Object](https://hyperf.wiki/3.2/#/en/json-rpc?id=returning-php-objects)
 
 Configure in aspects.php:
 
@@ -996,7 +998,7 @@ public function getUser(): UserResponse
 
 ### Q: What validation rules are supported?
 
-A: All Hyperf Validation rules are supported. See [Hyperf Validation Documentation](https://hyperf.wiki/3.1/#/en/validation).
+A: All Hyperf Validation rules are supported. See [Hyperf Validation Documentation](https://hyperf.wiki/3.2/#/en/validation).
 
 ### Q: Does `AutoController` annotation work?
 

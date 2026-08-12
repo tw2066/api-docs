@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Swagger;
 
+use FastRoute\RouteParser\Std;
 use Hyperf\ApiDocs\Annotation\ApiFormData;
 use Hyperf\ApiDocs\Annotation\ApiHeader;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
@@ -32,6 +33,7 @@ class GenerateParameters
         protected string $action,
         protected array $apiHeaderArr,
         protected array $apiFormDataArr,
+        protected string $route,
         protected ContainerInterface $container,
         protected MethodDefinitionCollectorInterface $methodDefinitionCollector,
         protected SwaggerComponents $swaggerComponents,
@@ -57,6 +59,9 @@ class GenerateParameters
             // 判断是否为简单类型
             $simpleSwaggerType = $this->common->getSimpleType2SwaggerType($parameterClassName);
             if ($simpleSwaggerType !== null) {
+                if (! $this->isPathParam($paramName)) {
+                    continue;
+                }
                 $parameter = new OA\Parameter();
                 $parameter->required = true;
                 $parameter->name = $paramName;
@@ -269,5 +274,21 @@ class GenerateParameters
             $propertyArr[] = $property;
         }
         return ['propertyArr' => $propertyArr, 'requiredArr' => $requiredArr];
+    }
+
+    /**
+     * 判断参数是否为路由路径占位符（复用 FastRoute 解析器，与框架路由匹配规则保持一致）.
+     */
+    protected function isPathParam(string $paramName): bool
+    {
+        $routeDataList = (new Std())->parse($this->route);
+        foreach ($routeDataList as $routeData) {
+            foreach ($routeData as $segment) {
+                if (is_array($segment) && $segment[0] === $paramName) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

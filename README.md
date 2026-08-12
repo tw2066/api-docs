@@ -3,7 +3,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![Total Downloads](https://img.shields.io/packagist/dt/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![License](https://img.shields.io/packagist/l/tangwei/apidocs)](https://github.com/tw2066/api-docs)
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-blue)](https://www.php.net)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net)
 
 [English](./README_EN.md) | 中文
 
@@ -22,8 +22,8 @@
 
 ## 📋 环境要求
 
-- PHP >= 8.1
-- Hyperf >= 3.0
+- PHP >= 8.2
+- Hyperf ~3.2
 - Swoole >= 5.0 或 Swow
 
 ## 💡 使用须知
@@ -139,7 +139,7 @@ return [
     | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0',
+    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.27.1',
 
     /*
     |--------------------------------------------------------------------------
@@ -719,7 +719,7 @@ public function upload(#[RequestFormData] UploadRequest $request)
 访问不同的 UI 界面：
 
 - **Swagger UI**: `http://your-host:9501/swagger`
-- **Knife4j**: `http://your-host:9501/swagger/knife4j`
+- **Knife4j**: `http://your-host:9501/swagger/doc`（需安装 `tangwei/knife4j-ui`）
 - **Redoc**: `http://your-host:9501/swagger/redoc`
 - **RapiDoc**: `http://your-host:9501/swagger/rapidoc`
 - **Scalar**: `http://your-host:9501/swagger/scalar`
@@ -769,7 +769,7 @@ class DemoQuery
 
 ### RPC 支持
 
-[返回 PHP 对象](https://hyperf.wiki/3.1/#/zh-cn/json-rpc?id=%e8%bf%94%e5%9b%9e-php-%e5%af%b9%e8%b1%a1)
+[返回 PHP 对象](https://hyperf.wiki/3.2/#/zh-cn/json-rpc?id=%e8%bf%94%e5%9b%9e-php-%e5%af%b9%e8%b1%a1)
 
 aspects.php 中配置：
 
@@ -865,7 +865,7 @@ public function getUser(): UserResponse
 
 ### Q: 支持哪些验证规则？
 
-A: 支持所有 Hyperf Validation 规则。详见 [Hyperf 验证器文档](https://hyperf.wiki/3.1/#/zh-cn/validation)。
+A: 支持所有 Hyperf Validation 规则。详见 [Hyperf 验证器文档](https://hyperf.wiki/3.2/#/zh-cn/validation)。
 
 ### Q: `AutoController` 注解支持吗？
 
