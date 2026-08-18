@@ -104,9 +104,9 @@ class SwaggerPaths
         $operation->path = $route;
         $operation->tags = $tags;
         $operation->summary = $apiOperation->summary ?: Generator::UNDEFINED;
-        $operation->description = $this->getClassMethodPath($className, $methodName);
+        $operation->x = ['code-path' => $this->getClassMethodPath($className, $methodName)];
         if ($apiOperation->description) {
-            $operation->description .= '<br>' . $apiOperation->description;
+            $operation->description = $apiOperation->description;
         }
         $operation->operationId = $this->getOperationId($route, $methods);
 
