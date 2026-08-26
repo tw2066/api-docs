@@ -48,7 +48,7 @@ class BootAppRouteListener implements ListenerInterface
         }
 
         if (! $this->swaggerConfig->isEnable()) {
-            $this->logger->info('api_docs swagger not enable');
+            $this->logger->debug('api_docs swagger not enable');
             return;
         }
         if (! $this->swaggerConfig->getOutputDir()) {
