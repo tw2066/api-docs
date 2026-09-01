@@ -130,17 +130,11 @@ class SwaggerPaths
     }
 
     /**
-     * 获取类方法路径(快速定位后端代码).
+     * 获取类方法路径(定位后端代码).
      */
     protected function getClassMethodPath(string $fullClassName, string $methodName): string
     {
-        $parts = explode('\\', $fullClassName);
-        $shortParts = [];
-        for ($i = 0; $i < count($parts) - 1; ++$i) {
-            $shortParts[] = $parts[$i][0] ?? '';
-        }
-        $shortParts[] = end($parts);
-        return sprintf('%s', implode('.', $shortParts) . '::' . $methodName);
+        return sprintf('%s::%s',$fullClassName,$methodName);
     }
 
     /**
