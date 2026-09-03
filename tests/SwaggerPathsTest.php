@@ -70,8 +70,7 @@ class SwaggerPathsTest extends TestCase
 
         $result = $method->invoke($swaggerPaths, 'Hyperf\ApiDocs\Controller\UserController', 'getUser');
 
-        $this->assertStringContainsString('H.A.C.UserController', $result);
-        $this->assertStringContainsString('getUser', $result);
+        $this->assertStringContainsString('Hyperf\ApiDocs\Controller\UserController::getUser', $result);
     }
 
     public function testGetClassMethodPathWithShortNamespace(): void
