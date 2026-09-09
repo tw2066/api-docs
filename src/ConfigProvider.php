@@ -7,6 +7,7 @@ namespace Hyperf\ApiDocs;
 use Hyperf\ApiDocs\Listener\AfterDtoStartListener;
 use Hyperf\ApiDocs\Listener\AfterWorkerStartListener;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
+use Hyperf\ApiDocs\Listener\DiMapGenerateListener;
 
 class ConfigProvider
 {
@@ -19,6 +20,7 @@ class ConfigProvider
                 AfterDtoStartListener::class,
                 BootAppRouteListener::class,
                 AfterWorkerStartListener::class,
+                DiMapGenerateListener::class,
             ],
             'annotations' => [
                 'scan' => [
