@@ -73,6 +73,10 @@ class DiMapGenerateListener implements ListenerInterface
         }
 
         $path = rtrim($outputDir, '/\\') . '/di-map.json';
+        // 绑定来源只有 dependencies.php 与 lazy_loader.php：两者未更新且已有产物时跳过重写
+        if (! $this->shouldRegenerate($path)) {
+            return;
+        }
         $payload = [
                        'base_path' => BASE_PATH,
                        'generated_at' => date('c'),
@@ -85,6 +89,24 @@ class DiMapGenerateListener implements ListenerInterface
         ));
         rename($tmpPath, $path);
         $this->logger->debug('Generate Di Map file: ' . $path);
+    }
+
+    /**
+     * 是否需要重新生成：产物不存在时必须生成；否则 dependencies.php（项目绑定表）
+     * 或 lazy_loader.php（懒加载代理配置，可选文件）比产物新才重新生成。
+     */
+    private function shouldRegenerate(string $diMapPath): bool
+    {
+        if (! is_file($diMapPath)) {
+            return true;
+        }
+        $generatedAt = filemtime($diMapPath);
+        foreach ([BASE_PATH . '/config/autoload/dependencies.php', BASE_PATH . '/config/lazy_loader.php'] as $source) {
+            if (is_file($source) && filemtime($source) > $generatedAt) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
