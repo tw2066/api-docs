@@ -47,6 +47,11 @@ class DemoBodyRequest
         $this->bo = $bo;
     }
 
+    public function getBo(): bool
+    {
+        return $this->bo;
+    }
+
 
 
 }

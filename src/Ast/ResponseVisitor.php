@@ -48,7 +48,7 @@ class ResponseVisitor extends NodeVisitorAbstract
             }
         }
         if ($node instanceof Node\Stmt\Class_) {
-            $node->name = $this->generateClassName;
+            $node->name = new Node\Identifier($this->generateClassName);
         }
         if ($node instanceof Node\Stmt\Namespace_) {
             $name = new Node\Name('ApiDocs\\Proxy');

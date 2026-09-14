@@ -17,10 +17,9 @@
 <!-- Initialize the Scalar API Reference -->
 <script>
     Scalar.createApiReference('#app', {
-        // The URL of the OpenAPI/Swagger document
-        url: '{{$url}}',
-        // Avoid CORS issues
-        // proxyUrl: '',
+        sources: [
+            "{{$urls}}"
+        ],
     })
 </script>
 </body>

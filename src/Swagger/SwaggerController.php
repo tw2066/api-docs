@@ -27,17 +27,24 @@ class SwaggerController
 
     protected array $swaggerFileList;
 
-    public function __construct(protected SwaggerConfig $swaggerConfig, protected ResponseInterface $response,protected SwaggerOpenApi $swaggerOpenApi,)
-    {
+    public function __construct(
+        protected SwaggerConfig $swaggerConfig,
+        protected ResponseInterface $response,
+        protected SwaggerOpenApi $swaggerOpenApi,
+        protected SwaggerLlms $swaggerLlms,
+    ) {
         $this->outputDir = $this->swaggerConfig->getOutputDir();
         $this->uiFileList = is_dir($this->swaggerUiPath) ? scandir($this->swaggerUiPath) : [];
-        $this->swaggerFileList = scandir($this->outputDir);
+        if (! is_dir($this->outputDir) || ($swaggerFileList = scandir($this->outputDir)) === false) {
+            throw ApiDocsException::directoryCreationFailed($this->outputDir);
+        }
+        $this->swaggerFileList = $swaggerFileList;
     }
 
     public function getFile(string $file): PsrResponseInterface
     {
-        if (!in_array($file, $this->uiFileList)) {
-            throw new ApiDocsException('File does not exist');
+        if (! in_array($file, $this->uiFileList)) {
+            throw ApiDocsException::fileNotFound($file);
         }
         $file = $this->swaggerUiPath . '/' . $file;
         return $this->fileResponse($file);
@@ -46,26 +53,53 @@ class SwaggerController
     public function getJsonFile(string $httpName): PsrResponseInterface
     {
         $file = $httpName . '.json';
-        if (!in_array($file, $this->swaggerFileList)) {
-            throw new ApiDocsException('File does not exist');
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->fileResponse($filePath);
+        return $this->fileResponse($filePath)->withHeader('content-type', 'application/json;charset=utf-8');
     }
 
     public function getYamlFile(string $httpName): PsrResponseInterface
     {
         $file = $httpName . '.yaml';
-        if (!in_array($file, $this->swaggerFileList)) {
-            throw new ApiDocsException('File does not exist');
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
         }
         $filePath = $this->outputDir . '/' . $file;
-        return $this->fileResponse($filePath);
+        return $this->fileResponse($filePath)->withHeader('content-type', 'text/yaml;charset=utf-8');
+    }
+
+    public function llmsMd(string $httpName = 'http'): PsrResponseInterface
+    {
+        $prefix = $this->swaggerConfig->getPrefixUrl();
+        $url = $this->swaggerConfig->getSwagger()['servers'][0]['url'] ?? '';
+        if ($url) {
+            $prefix = $url . $prefix;
+        }
+        $file = $httpName . '.json';
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
+        $filePath = $this->outputDir . '/' . $file;
+        $content = $this->swaggerLlms->list($httpName, $filePath, $prefix);
+        return $this->response->raw($content);
+    }
+
+    public function llmsDetailMd(string $httpName, string $operationId): PsrResponseInterface
+    {
+        $file = $httpName . '.json';
+        if (! in_array($file, $this->swaggerFileList)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
+        $filePath = $this->outputDir . '/' . $file;
+        $content = $this->swaggerLlms->detail($operationId, $filePath);
+        return $this->response->raw($content);
     }
 
     protected function fileResponse(string $filePath)
     {
-        if (!$this->pharRunning() && Constant::ENGINE == 'Swoole') {  // phar报错
+        if (! $this->pharRunning() && Constant::ENGINE == 'Swoole') {  // phar报错
             $stream = new SwooleFileStream($filePath);
         } elseif (Constant::ENGINE == 'Swow') {
             /* @phpstan-ignore-next-line */

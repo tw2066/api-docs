@@ -1,42 +1,49 @@
-# PHP Swagger Api Docs
+# PHP Hyperf API Docs
+
 [![Latest Stable Version](https://img.shields.io/packagist/v/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![Total Downloads](https://img.shields.io/packagist/dt/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![License](https://img.shields.io/packagist/l/tangwei/apidocs)](https://github.com/tw2066/api-docs)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net)
 
-基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 swagger 文档生成组件，支持swoole/swow驱动
+[English](./README_EN.md) | 中文
 
-## 优点
+基于 [Hyperf](https://github.com/hyperf/hyperf) 框架的 Swagger/OpenAPI 文档自动生成组件，支持 Swoole/Swow 引擎，为您提供优雅的 API 文档解决方案。
 
-- 声明参数类型完成自动注入，参数映射到PHP类，根据类和注解自动生成Swagger文档
-- 代码DTO模式，可维护性好，扩展性好
-- 支持数组(类/简单类型)，递归，嵌套
-- 支持注解数据校验
-- 支持api token
-- 支持PHP8原生注解，PHP8.1枚举
-- 支持openapi 3.0
+## ✨ 特性
 
-## 使用须知
+- 🚀 **自动生成** - 基于 PHP 8 Attributes 自动生成 OpenAPI 3.0/3.1 文档
+- 🎯 **类型安全** - 支持 DTO 模式，参数自动映射到 PHP 类
+- 📝 **多种 UI** - 支持 Swagger UI、Knife4j、Redoc、RapiDoc、Scalar 等多种文档界面
+- ✅ **数据验证** - 集成 Hyperf 验证器，支持丰富的验证注解
+- 🔒 **安全认证** - 支持 API Token 和多种安全方案
+- 🔄 **类型支持** - 支持数组、递归、嵌套、枚举等复杂类型
+- 🎨 **灵活配置** - 可自定义全局响应格式、路由前缀等
+- 📦 **开箱即用** - 零配置即可使用，同时支持深度定制
 
-* php版本 >= 8.1，参数映射到PHP类不支持联合类型
-* 控制器中方法尽可能返回类(包含简单类型)，这样会更好的生成文档
-* 当返回类的结果满足不了时,可以使用 #[ApiResponse] 注解
+## 📋 环境要求
 
-## 例子
+- PHP >= 8.2
+- Hyperf ~3.2
+- Swoole >= 5.0 或 Swow
 
-> 请参考[example目录](https://github.com/tw2066/api-docs/tree/master/example)
+## 💡 使用须知
 
-## 安装
+- 控制器方法尽可能返回具体的类（包含简单类型），这样能更好地生成文档
+- 当返回类无法满足需求时，可使用 `#[ApiResponse]` 注解补充
 
-```
+## 📦 安装
+
+```bash
 composer require tangwei/apidocs
 ```
-默认使用swagger-ui,可安装knife4j-ui(功能更强大) (可选)
 
-```
+默认使用 Swagger UI，推荐安装 Knife4j UI（可选）：
+
+```bash
 composer require tangwei/knife4j-ui
 ```
 
-## 使用
+## 🚀 快速开始
 
 ### 1. 发布配置文件
 
@@ -44,12 +51,41 @@ composer require tangwei/knife4j-ui
 php bin/hyperf.php vendor:publish tangwei/apidocs
 ```
 
-#### 1.1 配置信息
+配置文件将发布到 `config/autoload/api_docs.php`
 
-> config/autoload/api_docs.php
+### 2. 基础配置
+
+```php
+<?php
+// config/autoload/api_docs.php
+return [
+    // 启用文档服务（建议生产环境禁用）
+    'enable' => env('APP_ENV') !== 'prod',
+    
+    // 文档访问路径
+    'prefix_url' => env('API_DOCS_PREFIX_URL', '/swagger'),
+    
+    // 基础信息
+    'swagger' => [
+        'info' => [
+            'title' => 'API 文档',
+            'version' => '1.0.0',
+            'description' => '项目 API 文档',
+        ],
+        'servers' => [
+            [
+                'url' => 'http://127.0.0.1:9501',
+                'description' => 'API 服务器',
+            ],
+        ],
+    ],
+];
+```
+
+> 完整配置文件示例：config/autoload/api_docs.php
 
 <details>
-  <summary>配置详情</summary>
+  <summary>完整配置说明（点击展开）</summary>
   <p>
 
 ```php
@@ -103,7 +139,7 @@ return [
     | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.5.0',
+    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.27.1',
 
     /*
     |--------------------------------------------------------------------------
@@ -192,295 +228,511 @@ return [
  </p>
 </details>
 
+### 3. 启动服务
 
-### 2. 直接启动框架(需要有http服务)
-
-```shell script
+```bash
 php bin/hyperf.php start
-
+```
+```
 [INFO] Swagger docs url at http://0.0.0.0:9501/swagger
-[INFO] TaskWorker#1 started.
 [INFO] Worker#0 started.
 [INFO] HTTP Server listening at 0.0.0.0:9501
 ```
 
-* 看到`Swagger docs url`显示，表示文档生成成功
-* 访问`/swagger`可以看到swagger页面
-* 已安装[knife4j-ui](https://github.com/tw2066/knife4j-ui)，访问`/swagger/doc`可以看到knife4j页面
-* 访问`/swagger/redoc`，可以看到[redoc](https://github.com/Redocly/redoc)页面
-* 访问`/swagger/scalar`，可以看到[scalar](https://github.com/scalar/scalar)页面
-* 访问`/swagger/rapidoc`，可以看到[rapidoc](https://github.com/rapi-doc/RapiDoc)页面
+- 启动成功后，访问 `http://your-host:9501/swagger` 即可查看 API 文档。
+- 访问 `http://your-host:9501/swagger/llms.txt` 包含控制器每个Markdown页面的链接,可以用于Ai快速访问编程文档。
+- 其他服务访问 `http://your-host:9501/swagger/{service-name}.md` 访问 `{service-name}` 服务的 Markdown 文档。
 
-## 注解
+## 📖 使用指南
 
-> 命名空间:`Hyperf\DTO\Annotation\Contracts`
+### 基础示例
 
-#### #[RequestBody] 注解
-
-- 获取Body参数
+#### 1. 定义 DTO 类
 
 ```php
-public function add(#[RequestBody] DemoBodyRequest $request){}
+<?php
+
+namespace App\Request;
+
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\DTO\Annotation\Validation\Required;
+use Hyperf\DTO\Annotation\Validation\Integer;
+use Hyperf\DTO\Annotation\Validation\Between;
+
+class UserRequest
+{
+    #[ApiModelProperty('用户名')]
+    #[Required]
+    public string $username;
+
+    #[ApiModelProperty('年龄')]
+    #[Required]
+    #[Integer]
+    #[Between(1, 120)]
+    public int $age;
+
+    #[ApiModelProperty('邮箱')]
+    public ?string $email = null;
+}
 ```
 
-#### #[RequestQuery] 注解
-
-- 获取GET参数
+#### 2. 编写控制器
 
 ```php
-public function add(#[RequestQuery] DemoQuery $request){}
+<?php
+
+namespace App\Controller;
+
+use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\PostMapping;
+use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Annotation\ApiOperation;
+use Hyperf\DTO\Annotation\Contracts\RequestBody;
+use Hyperf\DTO\Annotation\Contracts\RequestQuery;
+use Hyperf\DTO\Annotation\Contracts\Valid;
+use App\Request\UserRequest;
+
+#[Controller(prefix: '/user')]
+#[Api(tags: '用户管理', position: 1)]
+class UserController
+{
+    #[GetMapping(path: 'list')]
+    #[ApiOperation(summary: '获取用户列表')]
+    public function list(#[RequestQuery] #[Valid] UserRequest $request): array
+    {
+        return [
+            ['id' => 1, 'username' => 'admin'],
+            ['id' => 2, 'username' => 'user'],
+        ];
+    }
+
+    #[PostMapping(path: 'create')]
+    #[ApiOperation(summary: '创建用户')]
+    public function create(#[RequestBody] #[Valid] UserRequest $request): array
+    {
+        return [
+            'id' => 1,
+            'username' => $request->username,
+            'age' => $request->age,
+        ];
+    }
+}
 ```
 
-#### #[RequestFormData] 注解
+## 🎨 注解参考
 
-- 获取表单请求
+### 控制器注解
+
+#### `#[Api]` - 控制器标签
 
 ```php
-public function fromData(#[RequestFormData] DemoFormData $formData){}
+#[Api(
+    tags: '用户管理',         // 标签名称（支持数组）
+    description: '用户相关操作', // 描述
+    position: 1,             // 排序位置
+    hidden: false           // 是否隐藏
+)]
 ```
 
-- 获取文件(和表单一起使用)
+#### `#[ApiOperation]` - API 操作
+
+```php
+#[ApiOperation(
+    summary: '创建用户',       // 摘要
+    description: '详细描述',   // 详细描述
+    deprecated: false,        // 是否废弃
+    security: true,          // 是否需要认证
+    hidden: false           // 是否隐藏
+)]
+```
+
+#### `#[ApiResponse]` - 响应定义
+
+```php
+// 简单类型响应
+#[ApiResponse(PhpType::INT, 200, '成功')]
+
+// 对象响应
+#[ApiResponse(UserResponse::class, 200, '用户信息')]
+
+// 数组响应
+#[ApiResponse([UserResponse::class], 200, '用户列表')]
+
+// 分页响应
+#[ApiResponse(new Page([UserResponse::class]), 200, '分页数据')]
+```
+
+**泛型支持示例：**
+
+PHP 暂不支持泛型，可通过 `#[ApiVariable]` 实现：
+
+```php
+use Hyperf\ApiDocs\Annotation\ApiVariable;
+
+class Page
+{
+    public int $total;
+
+    #[ApiVariable]
+    public array $content;
+
+    public function __construct(array $content, int $total = 0)
+    {
+        $this->content = $content;
+        $this->total = $total;
+    }
+}
+```
+
+控制器使用：
+
+```php
+#[ApiOperation('分页查询')]
+#[GetMapping(path: 'page')]
+#[ApiResponse(new Page([UserResponse::class]))]
+public function page(#[RequestQuery] PageQuery $query): Page
+{
+    // 返回分页数据
+}
+```
+
+### 参数注解
+
+#### `#[RequestBody]` - Body 参数
+
+获取 POST/PUT/PATCH 请求的 JSON body 参数：
+
+```php
+public function create(#[RequestBody] #[Valid] UserRequest $request)
+{
+    // $request 自动填充 body 数据
+}
+```
+
+#### `#[RequestQuery]` - Query 参数
+
+获取 URL 查询参数（GET 参数）：
+
+```php
+public function list(#[RequestQuery] #[Valid] QueryRequest $request)
+{
+    // $request 自动填充查询参数
+}
+```
+
+#### `#[RequestFormData]` - 表单参数
+
+获取表单数据（multipart/form-data）：
 
 ```php
 #[ApiFormData(name: 'photo', format: 'binary')]
+public function upload(#[RequestFormData] UploadRequest $formData)
+{
+    $file = $this->request->file('photo');
+    // 处理文件上传
+}
 ```
 
-- 获取Body参数和GET参数
+#### `#[RequestHeader]` - 请求头参数
+
+获取请求头信息：
 
 ```php
-public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query){}
+public function auth(#[RequestHeader] #[Valid] AuthHeader $header)
+{
+    // $header 自动填充请求头数据
+}
 ```
 
-#### #[ApiSecurity] 注解
+> ⚠️ **注意**：一个方法不能同时注入 `RequestBody` 和 `RequestFormData`
 
-- 优先级: 方法 > 类 > 全局
+### 属性注解
+
+#### `#[ApiModelProperty]` - 属性描述
 
 ```php
+#[ApiModelProperty(
+    value: '用户名',        // 属性描述
+    example: 'admin',      // 示例值
+    required: true,        // 是否必填
+    hidden: false         // 是否隐藏
+)]
+public string $username;
+```
+
+#### `#[ApiHeader]` - 请求头定义
+
+```php
+// 全局请求头（类级别）
+#[ApiHeader('X-Request-Id')]
+
+// 方法级请求头
+#[ApiHeader(
+    name: 'Authorization',
+    required: true,
+    type: 'string',
+    description: 'Bearer token'
+)]
+```
+
+#### `#[ApiSecurity]` - 安全认证
+
+优先级：方法 > 类 > 全局
+
+```php
+// 使用默认认证
 #[ApiSecurity('Authorization')]
-public function getUserInfo(DemoToken $header){}
+
+// 方法级覆盖
+#[ApiOperation(summary: '登录', security: false)]  // 不需要认证
 ```
 
-> 注意: 一个方法，不能同时注入RequestBody和RequestFormData
-
-#### #[ApiResponse] 注解
-
-* php暂不能定义数组类型，返回的数据类型不能完全满足
-
-  当不能满足时，可以通过ApiResponse注解来解决
-
-  ```php
-  use Hyperf\ApiDocs\Annotation\ApiResponse; 
-  use Hyperf\DTO\Type\PhpType;
-  
-  #[ApiResponse([PhpType::BOOL], 201)]
-  #[ApiResponse([PhpType::INT], 202)]
-  #[ApiResponse([PhpType::BOOL])]
-  public function test(){}
-  ```
-
-* php暂不支持泛型，当返回存在相同结构时候，需要写很多类来返回
-
-  例: 分页只有`content`结构是可变，可以通过`#[ApiVariable]`配合使用
-
-  ```php
-  use Hyperf\ApiDocs\Annotation\ApiVariable;
-  
-  class Page
-  {
-      public int $total;
-  
-      #[ApiVariable]
-      public array $content;
-  
-      public function __construct(array $content, int $total = 0)
-      {
-          $this->content = $content;
-          $this->total = $total;
-      }
-  }
-  ```
-
-  控制器
-
-  ```php
-      #[ApiOperation('分页')]
-      #[GetMapping(path: 'activityPage')]
-      #[ApiResponse(new Page([ActivityResponse::class]))]
-      public function activityPage(#[RequestQuery] PageQuery $pageQuery): Page
-      {
-          $activityPage = Activity::paginate($pageQuery->getSize());
-          $arr = [];
-          foreach ($activityPage as $activity) {
-              $arr[] = ActivityResponse::from($activity);
-          }
-          return new Page($arr, $activityPage->total());
-      }
-  ```
-
-  通过`#[ApiResponse(new Page([ActivityResponse::class]))]`会生成相应的文档
 
 
+## ✅ 数据验证
 
-## 示例
+### 内置验证注解
 
-### 控制器
+组件提供丰富的验证注解支持：
 
 ```php
-#[Controller(prefix: '/demo')]
-#[Api(tags: 'demo管理', position: 1)]
-class DemoController extends AbstractController
+use Hyperf\DTO\Annotation\Validation\*;
+
+class UserRequest
 {
-    #[ApiOperation(summary: '查询')]
-    #[PostMapping(path: 'index')]
-    public function index(#[RequestQuery] #[Valid] DemoQuery $request): Contact
-    {
-        $contact = new Contact();
-        $contact->name = $request->name;
-        var_dump($request);
-        return $contact;
-    }
+    #[Required]                        // 必填
+    #[Max(50)]                         // 最大长度
+    public string $username;
 
-    #[PutMapping(path: 'add')]
-    #[ApiOperation(summary: '提交body数据和get参数')]
-    public function add(#[RequestBody] DemoBodyRequest $request, #[RequestQuery] DemoQuery $query)
-    {
-        var_dump($query);
-        return json_encode($request, JSON_UNESCAPED_UNICODE);
-    }
+    #[Required]
+    #[Integer]                         // 整数
+    #[Between(1, 120)]                 // 范围
+    public int $age;
 
-    #[PostMapping(path: 'fromData')]
-    #[ApiOperation(summary: '表单提交')]
-    #[ApiFormData(name: 'photo', type: 'file')]
-    public function fromData(#[RequestFormData] DemoFormData $formData): bool
-    {
-        $file = $this->request->file('photo');
-        var_dump($file);
-        var_dump($formData);
-        return true;
-    }
+    #[Email]                           // 邮箱格式
+    public ?string $email;
 
-    #[GetMapping(path: 'find/{id}/and/{in}')]
-    #[ApiOperation('查询单体记录')]
-    #[ApiHeader(name: 'test')]
-    public function find(int $id, float $in): array
-    {
-        return ['$id' => $id, '$in' => $in];
-    }
+    #[Url]                             // URL 格式
+    public ?string $website;
+
+    #[Regex('/^1[3-9]\d{9}$/')]       // 正则验证
+    public ?string $mobile;
+
+    #[In(['male', 'female'])]          // 枚举值
+    public ?string $gender;
+
+    #[Date]                            // 日期格式
+    public ?string $birthday;
 }
 ```
 
-## 验证器
-
-### 基于框架的验证
-
-> 安装hyperf框架验证器[hyperf/validation](https://github.com/hyperf/validation), 并配置(已安装忽略)
-
-- 注解
-  `Required` `Between` `Date` `Email` `Image` `Integer` `Nullable` `Numeric`  `Url` `Validation` `...`
-- 校验生效
-
-> 只需在控制器方法中加上 #[Valid] 注解
+> 💡 **提示**：只需在控制器方法参数中添加 `#[Valid]` 注解即可启用验证
 
 ```php
-public function index(#[RequestQuery] #[Valid] DemoQuery $request){}
-class DemoQuery
+public function create(#[RequestBody] #[Valid] UserRequest $request)
 {
-    #[ApiModelProperty('名称')]
-    #[Required]
-    #[Max(5)]
-    #[In(['qq','aa'])]
-    public string $name;
-
-    #[ApiModelProperty('正则')]
-    #[Str]
-    #[Regex('/^.+@.+$/i')]
-    #[StartsWith('aa,bb')]
-    #[Max(10)]
-    public string $email;
-
-    #[ApiModelProperty('数量')]
-    #[Required]
-    #[Integer]
-    #[Between(1,5)]
-    public int $num;
+    // 验证自动执行
 }
 ```
 
-### 自定义注解验证
+### 自定义验证
 
-> 注解的验证支持框架所有验证, 组件提供了常用的注解用于验证
-
-1. 使用自定义验证注解, 创建注解类继承`Hyperf\DTO\Annotation\Validation\BaseValidation`
-2. 重写`$rule`属性或`getRule`方法
+#### 使用 Validation 注解
 
 ```php
-//示例
+// 支持 Laravel 风格的验证规则
+#[Validation('required|string|min:3|max:50')]
+public string $username;
+
+// 数组元素验证
+#[Validation('integer', customKey: 'ids.*')]
+public array $ids;
+```
+
+#### 自定义验证注解
+
+```php
+<?php
+
+namespace App\Validation;
+
+use Attribute;
+use Hyperf\DTO\Annotation\Validation\BaseValidation;
+
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class Image extends BaseValidation
+class Mobile extends BaseValidation
 {
-    protected $rule = 'image';
+    protected $rule = 'regex:/^1[3-9]\d{9}$/';
+    
+    public function __construct(string $messages = '手机号格式错误')
+    {
+        parent::__construct($messages);
+    }
 }
 ```
 
-### 验证器Validation
-
-1. 大家都习惯了框架的`required|date|after:start_date`写法
+使用自定义验证：
 
 ```php
-//可以通过Validation实现
-#[Validation('required|date|after:start_date')]
+use App\Validation\Mobile;
+
+class RegisterRequest
+{
+    #[Required]
+    #[Mobile]
+    public string $phone;
+}
 ```
 
-2. 需要支持数组里面是int数据情况 `'intArr.*' => 'integer'`的情况
+## 🔧 高级特性
+
+### 数组类型支持
+
+#### 方法一：使用 PHPDoc
 
 ```php
-//可以通过Validation中customKey来自定义key实现
-#[Validation('integer', customKey: 'intArr.*')]
-public array $intArr;
+/**
+ * @var Address[]
+ */
+#[ApiModelProperty('地址列表')]
+public array $addresses;
+
+/**
+ * @var int[]
+ */
+#[ApiModelProperty('ID 列表')]
+public array $ids;
 ```
 
-## 注意
-
-### 数组类型的问题
-
-> PHP原生暂不支持`int[]`或`Class[]`类型, 使用示例
+#### 方法二：使用 ArrayType 注解
 
 ```php
-    /**
-     * class类型映射数组.
-     * @var \App\DTO\Address[]
-     */
-    #[ApiModelProperty('地址')]
-    public array $addressArr;
+use Hyperf\DTO\Annotation\ArrayType;
 
-    /**
-     * 简单类型映射数组.
-     * @var int[]
-     */
-    #[ApiModelProperty('int类型的数组')]
-    public array $intArr;
+#[ApiModelProperty('地址列表')]
+#[ArrayType(Address::class)]
+public array $addresses;
 
-    /**
-     * 通过注解映射数组.
-     */
-    #[ApiModelProperty('string类型的数组')]
-    #[ArrayType('string')]
-    public array $stringArr;
+#[ApiModelProperty('标签列表')]
+#[ArrayType('string')]
+public array $tags;
 ```
 
-### `AutoController`注解
+### 嵌套对象
 
-> 控制器中使用`AutoController`注解,只收集了`POST`方法
+```php
+class UserRequest
+{
+    public string $name;
+    
+    // 嵌套对象
+    #[ApiModelProperty('地址信息')]
+    public Address $address;
+    
+    /**
+     * @var Address[]
+     */
+    #[ApiModelProperty('多个地址')]
+    public array $addresses;
+}
 
-## DTO数据映射
+class Address
+{
+    public string $province;
+    public string $city;
+    public string $street;
+}
+```
 
-> api-docs引入到dto组件
+### 枚举支持
 
-### 注解
+```php
+use Hyperf\DTO\Type\PhpType;
 
-#### Dto注解
+enum StatusEnum: int
+{
+    case PENDING = 0;
+    case ACTIVE = 1;
+    case INACTIVE = 2;
+}
 
-标记为dto类
+class OrderRequest
+{
+    #[ApiModelProperty('订单状态')]
+    public StatusEnum $status;
+}
+```
+
+### 全局响应格式
+
+配置全局响应包装类：
+
+```php
+// config/autoload/api_docs.php
+return [
+    'global_return_responses_class' => \App\DTO\GlobalResponse::class,
+];
+```
+
+定义全局响应类：
+
+```php
+<?php
+
+namespace App\DTO;
+
+use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use Hyperf\ApiDocs\Annotation\ApiVariable;
+
+class GlobalResponse
+{
+    #[ApiModelProperty('状态码')]
+    public int $code = 0;
+
+    #[ApiModelProperty('消息')]
+    public string $message = 'success';
+
+    #[ApiVariable]
+    #[ApiModelProperty('响应数据')]
+    public mixed $data = null;
+}
+```
+
+### 文件上传
+
+```php
+#[PostMapping(path: 'upload')]
+#[ApiOperation(summary: '文件上传')]
+#[ApiFormData(name: 'file', format: 'binary', required: true)]
+#[ApiFormData(name: 'description', type: 'string')]
+public function upload(#[RequestFormData] UploadRequest $request)
+{
+    $file = $this->request->file('file');
+    // 处理文件上传
+    return ['url' => '/uploads/file.jpg'];
+}
+```
+
+## 🎭 多种 UI 界面
+
+访问不同的 UI 界面：
+
+- **Swagger UI**: `http://your-host:9501/swagger`
+- **Knife4j**: `http://your-host:9501/swagger/doc`（需安装 `tangwei/knife4j-ui`）
+- **Redoc**: `http://your-host:9501/swagger/redoc`
+- **RapiDoc**: `http://your-host:9501/swagger/rapidoc`
+- **Scalar**: `http://your-host:9501/swagger/scalar`
+
+## ⚙️ 配置参考
+
+### DTO 数据映射
+
+> api-docs 依赖 DTO 组件，更多详情请查看 [DTO 文档](https://github.com/hyperf/dto)
+
+#### `#[Dto]` 注解
+
+标记为 DTO 类：
 
 ```php
 use Hyperf\DTO\Annotation\Dto;
@@ -491,12 +743,12 @@ class DemoQuery
 }
 ```
 
-* 可以设置返回枚举`#[Dto(Convert::SNAKE)]`, 批量转换下划线返回的key
-* `Dto`注解不会生成文档, 要生成对应文档使用`JSONField`注解
+- 可以设置返回格式 `#[Dto(Convert::SNAKE)]`，批量转换为下划线格式的 key
+- `Dto` 注解不会生成文档，要生成对应文档使用 `JSONField` 注解
 
-#### JSONField注解
+#### `#[JSONField]` 注解
 
-用于设置属性的别名
+用于设置属性的别名：
 
 ```php
 use Hyperf\DTO\Annotation\Dto;
@@ -508,21 +760,27 @@ class DemoQuery
     #[ApiModelProperty('这是一个别名')]
     #[JSONField('alias_name')]
     #[Required]
-    public string $name;   
+    public string $name;
 }
 ```
 
-* 设置JSONField后会生成代理类,生成`alias_name`属性
-* 接受和返回字段都以`alias_name` 为准
+- 设置 `JSONField` 后会生成代理类，生成 `alias_name` 属性
+- 接收和返回字段都以 `alias_name` 为准
 
-## RPC [返回PHP对象](https://hyperf.wiki/3.1/#/zh-cn/json-rpc?id=%e8%bf%94%e5%9b%9e-php-%e5%af%b9%e8%b1%a1)
-> aspects.php中配置
+### RPC 支持
+
+[返回 PHP 对象](https://hyperf.wiki/3.2/#/zh-cn/json-rpc?id=%e8%bf%94%e5%9b%9e-php-%e5%af%b9%e8%b1%a1)
+
+aspects.php 中配置：
+
 ```php
 return [
     \Hyperf\DTO\Aspect\ObjectNormalizerAspect::class
 ]
 ```
-> 当框架导入 symfony/serializer (^5.0) 和 symfony/property-access (^5.0) 后，并在 dependencies.php 中配置一下映射关系
+
+当框架导入 `symfony/serializer (^5.0)` 和 `symfony/property-access (^5.0)` 后，在 dependencies.php 中配置映射关系：
+
 ```php
 use Hyperf\Serializer\SerializerFactory;
 use Hyperf\Serializer\Serializer;
@@ -532,22 +790,101 @@ return [
 ];
 ```
 
-## Phar 打包器
+## 💡 最佳实践
 
-```shell
-# 1.启动生成代理类和注解缓存
-php bin/hyperf.php start
-# 2.打包
-php bin/hyperf.php phar:build
+### 1. DTO 类设计
+
+- 使用有意义的类名，如 `CreateUserRequest`、`UserResponse`
+- 为每个属性添加 `ApiModelProperty` 注解
+- 分离 Request 和 Response 定义
+- 合理使用验证注解
+
+### 2. 控制器设计
+
+- 使用 `Api` 注解对控制器分组
+- 为每个方法添加 `ApiOperation` 描述
+- 尽可能返回具体类型而非 `array`
+- 合理使用 `ApiResponse` 定义响应格式
+
+### 3. 安全性
+
+- 生产环境禁用文档服务
+- 使用 `ApiSecurity` 控制 API 认证
+- 使用 `hidden: true` 隐藏敏感接口
+
+### 4. 性能优化
+
+- 开发环境使用文档，生产环境禁用
+- 合理使用缓存
+- 避免过深的嵌套结构
+
+## 📚 常见问题
+
+### Q: 文档没有生成？
+
+A: 检查以下几点：
+1. 配置文件中 `enable` 是否为 `true`
+2. 查看日志是否有错误信息
+
+### Q: 如何定义数组类型？
+
+A: 使用 PHPDoc 注释或 `ArrayType` 注解：
+
+```php
+/**
+ * @var User[]
+ */
+public array $users;
+
+// 或
+#[ArrayType(User::class)]
+public array $users;
 ```
 
-## Swagger界面
+### Q: 如何隐藏某些接口？
 
-![hMvJnQ](https://gitee.com/tw666/source/raw/master/img/swagger.png)
+A: 使用 `hidden` 参数：
 
-## PHP Accessor
+```php
+#[Api(hidden: true)]  // 隐藏整个控制器
 
-生成类访问器（Getter & Setter）
+#[ApiOperation(summary: '测试', hidden: true)]  // 隐藏单个接口
+```
 
-推荐使用[free2one/hyperf-php-accessor](https://github.com/kkguan/hyperf-php-accessor)
+### Q: 如何自定义响应格式？
+
+A: 使用 `ApiResponse` 注解或配置全局响应类：
+
+```php
+#[ApiResponse(UserResponse::class, 200, '成功')]
+public function getUser(): UserResponse
+{
+    return new UserResponse();
+}
+```
+
+### Q: 支持哪些验证规则？
+
+A: 支持所有 Hyperf Validation 规则。详见 [Hyperf 验证器文档](https://hyperf.wiki/3.2/#/zh-cn/validation)。
+
+### Q: `AutoController` 注解支持吗？
+
+A: 支持，但只会收集 `POST` 方法。建议使用标准路由注解以获得更好的文档生成效果。
+
+## 📖 示例项目
+
+> 完整示例请参考 [example 目录](https://github.com/tw2066/api-docs/tree/master/example)
+
+## 🔗 相关链接
+
+- [Hyperf 官方文档](https://hyperf.wiki)
+- [OpenAPI 规范](https://swagger.io/specification/)
+- [Swagger UI](https://swagger.io/tools/swagger-ui/)
+- [Knife4j](https://doc.xiaominfo.com/)
+- [示例项目](https://github.com/tw2066/api-docs/tree/master/example)
+
+---
+
+如果这个项目对你有帮助，请给个 ⭐ Star！
+
 

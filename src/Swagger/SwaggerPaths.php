@@ -92,7 +92,7 @@ class SwaggerPaths
 
         $method = strtolower($methods);
         /** @var GenerateParameters $generateParameters */
-        $generateParameters = make(GenerateParameters::class, [$className, $methodName, $apiHeaderArr, $apiFormDataArr]);
+        $generateParameters = make(GenerateParameters::class, [$className, $methodName, $apiHeaderArr, $apiFormDataArr, $route]);
         /** @var GenerateResponses $generateResponses */
         $generateResponses = make(GenerateResponses::class, [$className, $methodName, $apiResponseArr]);
         $parameters = $generateParameters->generate();
@@ -129,6 +129,11 @@ class SwaggerPaths
         $this->swaggerOpenApi->getQueuePaths()->insert([$pathItem, $method], 0 - $position);
     }
 
+    public function getRouteByOperationId(string $operationId): array
+    {
+        return self::$operationIds[$operationId] ?? [];
+    }
+
     /**
      * 获取类方法路径(定位后端代码).
      */
@@ -140,17 +145,22 @@ class SwaggerPaths
     /**
      * 获取全局操作ID.
      */
-    protected function getOperationId(string $route, string $methods): string
+    protected function getOperationId(string $route, string $methods, int $num = 1): string
     {
-        $operationId = Str::camel(str_replace('/', '_', $route));
+        $newRoute = str_replace(['{', '}'], '', $route);
+        $methods = strtolower($methods);
+        $operationId = Str::camel(str_replace('/', '_', $newRoute) . '_' . $methods);
         if (empty($operationId)) {
             $operationId = '-';
         }
+        if ($num > 1) {
+            $operationId .= $num;
+        }
         if (! isset(self::$operationIds[$operationId])) {
-            self::$operationIds[$operationId] = true;
+            self::$operationIds[$operationId] = [$route, $methods];
             return $operationId;
         }
-        return $this->getOperationId($operationId . ucfirst(strtolower($methods)), $methods);
+        return $this->getOperationId($operationId, $methods, ++$num);
     }
 
     /**

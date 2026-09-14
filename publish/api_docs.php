@@ -52,7 +52,7 @@ return [
     | 设置swagger资源路径,cdn资源
     |--------------------------------------------------------------------------
     */
-    'prefix_swagger_resources' => 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.27.1',
+    'prefix_swagger_resources' => 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -111,7 +111,7 @@ return [
         'info' => [
             'title' => 'API DOC',
             'version' => '0.1',
-            'description' => 'swagger api desc',
+            'description' => 'Swagger api desc, API for LLM integration [LLM Usage Guide](/swagger/llms.txt)',
         ],
         'servers' => [
             [
