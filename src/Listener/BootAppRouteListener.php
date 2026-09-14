@@ -48,7 +48,7 @@ class BootAppRouteListener implements ListenerInterface
         }
 
         if (! $this->swaggerConfig->isEnable()) {
-            $this->logger->info('api_docs swagger not enable');
+            $this->logger->debug('api_docs swagger not enable');
             return;
         }
         if (! $this->swaggerConfig->getOutputDir()) {
@@ -82,6 +82,10 @@ class BootAppRouteListener implements ListenerInterface
             $route->get('/webjars/{file:.*}', [SwaggerUiController::class, 'knife4jFile']);
             $route->get('/favicon.ico', [SwaggerUiController::class, 'favicon']);
 
+            $route->get('/llms.txt', [SwaggerController::class, 'llmsMd']);
+            $route->get('/{httpName}.md', [SwaggerController::class, 'llmsMd']);
+            $route->get('/{httpName}/{operationId}.md', [SwaggerController::class, 'llmsDetailMd']);
+
             $route->get('/{httpName}.json', [SwaggerController::class, 'getJsonFile']);
             $route->get('/{httpName}.yaml', [SwaggerController::class, 'getYamlFile']);
             $route->get('/{file}', [SwaggerController::class, 'getFile']);
@@ -89,6 +93,8 @@ class BootAppRouteListener implements ListenerInterface
         self::$httpServerName = $httpServer['name'];
         $isKnife4j = Composer::hasPackage('tangwei/knife4j-ui');
         $docHtml = $isKnife4j ? '/doc' : '';
-        static::$massage = 'Swagger docs url at http://' . $httpServer['host'] . ':' . $httpServer['port'] . $prefix . $docHtml;
+
+        $host = $httpServer['host'] == '0.0.0.0' ? '127.0.0.1' : $httpServer['host'];
+        static::$massage = 'Swagger docs url at http://' . $host . ':' . $httpServer['port'] . $prefix . $docHtml;
     }
 }

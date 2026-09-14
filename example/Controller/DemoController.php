@@ -35,6 +35,7 @@ use HyperfExample\ApiDocs\DTO\DataType;
 use HyperfExample\ApiDocs\DTO\Header\DemoToken;
 use HyperfExample\ApiDocs\DTO\PageQuery;
 use HyperfExample\ApiDocs\DTO\Request\DemoBodyRequest;
+use HyperfExample\ApiDocs\DTO\Request\DemoDatabaseRequest;
 use HyperfExample\ApiDocs\DTO\Request\DemoFormData;
 use HyperfExample\ApiDocs\DTO\Request\DemoQuery;
 use HyperfExample\ApiDocs\DTO\Response\ActivityResponse;
@@ -215,5 +216,11 @@ class DemoController
         $city->bodyName = [1, 2, 3];
         dump($city);
         return $city;
+    }
+    #[PostMapping(path: 'db')]
+    public function db(#[RequestBody] #[Valid] DemoDatabaseRequest $request): int
+    {
+        dump($request);
+        return 1;
     }
 }

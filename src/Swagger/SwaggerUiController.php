@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\Api;
+use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\ApiDocs\Listener\BootAppRouteListener;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
@@ -51,9 +52,16 @@ class SwaggerUiController extends SwaggerController
     public function scalar(): PsrResponseInterface
     {
         // https://github.com/scalar/scalar
+        $serverNameAll = array_reverse($this->swaggerOpenApi->serverNameAll);
+        $urls = '';
+        foreach ($serverNameAll as $serverName) {
+            $url = $this->getSwaggerFileUrl($serverName);
+            $urls .= "{url: '{$url}', title: '{$serverName} server'},";
+        }
         $filePath = $this->docsWebPath . '/scalar.html';
         $contents = file_get_contents($filePath);
-        $contents = str_replace('{{$url}}', BootAppRouteListener::$httpServerName . '.' . $this->swaggerConfig->getFormat(), $contents);
+        $contents = str_replace('"{{$urls}}"', $urls, $contents);
+
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
@@ -91,15 +99,28 @@ class SwaggerUiController extends SwaggerController
 
     public function knife4jFile(string $file): PsrResponseInterface
     {
-        $file = str_replace('..', '', $file);
-        $file = '/webjars/' . $file;
-        $file = $this->swaggerUiPath . '/' . $file;
-        return $this->fileResponse($file);
+        $file = $this->sanitizeFilePath($file);
+        $filePath = $this->swaggerUiPath . '/webjars/' . $file;
+        $realBasePath = realpath($this->swaggerUiPath . '/webjars');
+        $realFilePath = realpath($filePath);
+        if ($realFilePath === false || $realBasePath === false || ! str_starts_with($realFilePath, $realBasePath . DIRECTORY_SEPARATOR)) {
+            throw ApiDocsException::fileNotFound($file);
+        }
+        return $this->fileResponse($filePath);
     }
 
     public function favicon(): PsrResponseInterface
     {
         $file = $this->docsWebPath . '/favicon.png';
         return $this->fileResponse($file);
+    }
+
+    protected function sanitizeFilePath(string $file): string
+    {
+        do {
+            $file = str_replace(['..', '\\', "\0"], '', $file, $count);
+        } while ($count > 0);
+
+        return ltrim($file, '/');
     }
 }
