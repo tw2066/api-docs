@@ -243,6 +243,19 @@ php bin/hyperf.php start
 - 访问 `http://your-host:9501/swagger/llms.txt` 包含控制器每个Markdown页面的链接,可以用于Ai快速访问编程文档。
 - 其他服务访问 `http://your-host:9501/swagger/{service-name}.md` 访问 `{service-name}` 服务的 Markdown 文档。
 
+### 4. 发布 AI Skill（可选）
+
+组件内置了一份面向 AI 编码工具的使用指南（Skill），可按需发布到项目：
+
+```bash
+php bin/hyperf.php vendor:publish tangwei/apidocs --id=skill
+```
+
+- **Claude Code**：Skill 发布到 `.claude/skills/api-docs/`，新会话自动加载；组件升级后用 `--force` 重新发布即可更新。
+- **Codex 等其他工具**：在项目 `AGENTS.md` 中添加引用 `vendor/tangwei/apidocs/publish/skills/api-docs/SKILL.md` 即可。
+
+与运行时的 `/swagger/llms.txt`（供 AI 在线读取接口文档）互补，SKILL.md 供 AI 编码时离线参考组件用法。
+
 ## 📖 使用指南
 
 ### 基础示例

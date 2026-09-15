@@ -247,6 +247,19 @@ php bin/hyperf.php start
 - Visit `http://your-host:9501/swagger/llms.txt` for links to a Markdown page per controller, which can be used by AI to quickly access the API documentation.
 - Other servers can visit `http://your-host:9501/swagger/{service-name}.md` to access the Markdown documentation of the `{service-name}` server.
 
+### 4. Publish AI Skill (Optional)
+
+The component ships with a usage guide (Skill) for AI coding tools. Publish it to your project as needed:
+
+```bash
+php bin/hyperf.php vendor:publish tangwei/apidocs --id=skill
+```
+
+- **Claude Code**: the skill is published to `.claude/skills/api-docs/` and loads automatically in new sessions; re-publish with `--force` after upgrading the component.
+- **Codex and other tools**: add a reference to `vendor/tangwei/apidocs/publish/skills/api-docs/SKILL.md` in your project's `AGENTS.md`.
+
+Complementary to the runtime `/swagger/llms.txt` (for AI to read live API docs), SKILL.md serves as an offline reference for AI while coding.
+
 ## 📖 Usage Guide
 
 ### Basic Example

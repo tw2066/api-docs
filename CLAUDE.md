@@ -59,3 +59,4 @@ OpenAPI 文件**不是请求时生成的**，而是在应用启动时由事件�
 
 - `example/` 目录是注解用法的活文档（各参数注解、分页、枚举、递归类型的完整示例），改注解行为时对照它验证。
 - README.md / README_EN.md 需保持同步；环境要求以 composer.json 为准（README 中的版本号容易滞后）。
+- `publish/skills/api-docs/SKILL.md` 是通过 `vendor:publish --id=skill` 发布给使用方项目的 AI 使用指南，修改注解签名或配置键时需同步更新。
