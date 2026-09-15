@@ -36,6 +36,12 @@ class ConfigProvider
                     'source' => __DIR__ . '/../publish/api_docs.php',
                     'destination' => BASE_PATH . '/config/autoload/api_docs.php',
                 ],
+                [
+                    'id' => 'skill',
+                    'description' => 'The AI skill (SKILL.md) for api-docs.',
+                    'source' => __DIR__ . '/../publish/skills/api-docs',
+                    'destination' => BASE_PATH . '/.claude/skills/api-docs',
+                ],
             ],
         ];
     }
