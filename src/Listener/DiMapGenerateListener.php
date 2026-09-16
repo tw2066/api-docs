@@ -10,6 +10,7 @@ use Hyperf\Di\Container;
 use Hyperf\Di\Definition\DefinitionInterface;
 use Hyperf\Di\Definition\FactoryDefinition;
 use Hyperf\Di\Definition\ObjectDefinition;
+use Hyperf\DTO\DtoConfig;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\AfterWorkerStart;
 use Hyperf\Server\Event\MainCoroutineServerStart;
@@ -32,6 +33,7 @@ class DiMapGenerateListener implements ListenerInterface
         private StdoutLoggerInterface $logger,
         private SwaggerConfig $swaggerConfig,
         private ContainerInterface $container,
+        private DtoConfig $dtoConfig,
     ) {}
 
     /**
@@ -99,6 +101,10 @@ class DiMapGenerateListener implements ListenerInterface
     {
         if (! is_file($diMapPath)) {
             return true;
+        }
+        // 产物已存在且开启扫描缓存: 视为构建期产物, 不再重写
+        if ($this->dtoConfig->isScanCacheable()) {
+            return false;
         }
         $generatedAt = filemtime($diMapPath);
         foreach ([BASE_PATH . '/config/autoload/dependencies.php', BASE_PATH . '/config/lazy_loader.php'] as $source) {
