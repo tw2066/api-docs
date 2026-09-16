@@ -138,8 +138,15 @@ class SwaggerOpenApi
                 throw ApiDocsException::directoryCreationFailed($outputDir);
             }
         }
-        $outputFile = $outputDir . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
-        $this->openApi->saveAs($outputFile);
+        $this->openApi->saveAs($this->getOutputFile($serverName));
+    }
+
+    /**
+     * 获取指定 server 的文档产物文件路径.
+     */
+    public function getOutputFile(string $serverName): string
+    {
+        return $this->swaggerConfig->getOutputDir() . '/' . $serverName . '.' . $this->swaggerConfig->getFormat();
     }
 
     protected function setInfo(): void
