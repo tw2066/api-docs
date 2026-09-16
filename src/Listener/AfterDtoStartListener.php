@@ -53,7 +53,9 @@ class AfterDtoStartListener implements ListenerInterface
 
         $this->swaggerOpenApi->init($server['name']);
 
-        if ($this->dtoConfig->isScanCacheable()) {
+        // 文档文件已存在且开启扫描缓存时跳过生成(视为构建期产物); 否则走生成逻辑
+        $outputFile = rtrim($this->swaggerConfig->getOutputDir(), '/\\') . '/' . $server['name'] . '.' . $this->swaggerConfig->getFormat();
+        if ($this->dtoConfig->isScanCacheable() && file_exists($outputFile)) {
             return;
         }
 

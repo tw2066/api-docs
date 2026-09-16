@@ -119,7 +119,8 @@ class GenerateProxyClass
         $outputDir = $this->swaggerConfig->getProxyDir();
         $generateClassName = str_replace('\\', '_', $generateNamespaceClassName);
         $filename = $outputDir . $generateClassName . '.dto.proxy.php';
-        if (! $this->dtoConfig->isScanCacheable()) {
+        // 代理文件已存在且开启扫描缓存时跳过写入(视为构建期产物); 否则生成
+        if (! ($this->dtoConfig->isScanCacheable() && file_exists($filename))) {
             file_put_contents($filename, $content);
         }
         $classLoader = Composer::getLoader();
