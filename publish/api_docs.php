@@ -115,7 +115,7 @@ return [
         ],
         'servers' => [
             [
-                'url' => 'http://127.0.0.1:9501',
+                'url' => env('API_DOCS_SERVER_URL', 'http://127.0.0.1:9501'),
                 'description' => 'OpenApi host',
             ],
         ],
