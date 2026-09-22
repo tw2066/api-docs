@@ -25,8 +25,7 @@ class GenerateResponses
         protected SwaggerComponents $swaggerComponents,
         protected SwaggerCommon $common,
         protected GenerateProxyClass $genericProxyClass,
-    ) {
-    }
+    ) {}
 
     /**
      * 生成Response.
@@ -68,12 +67,16 @@ class GenerateResponses
     //        return $arr;
     //    }
 
-    protected function getContent(array|object|string $returnTypeClassName): array
+    protected function getContent(array|object|string $returnTypeClassName, array $types = []): array
     {
         // 获取全局类
         $globalReturnResponsesClass = $this->swaggerConfig->getGlobalReturnResponsesClass();
         if ($globalReturnResponsesClass) {
             $returnTypeClassName = make($globalReturnResponsesClass, [$returnTypeClassName]);
+        }
+        // 类名 + 属性类型映射(无需实例化)
+        if ($types !== [] && is_string($returnTypeClassName) && $this->genericProxyClass->getApiVariableClass($returnTypeClassName)) {
+            $returnTypeClassName = $this->genericProxyClass->generateByTypes($returnTypeClassName, $types);
         }
         // 判断对象
         if (is_object($returnTypeClassName)) {
@@ -155,6 +158,7 @@ class GenerateResponses
             $apiResponse->response = $value['response'] ?? null;
             $apiResponse->description = $value['description'] ?? null;
             ! empty($value['returnType']) && $apiResponse->returnType = $value['returnType'];
+            ! empty($value['types']) && $apiResponse->types = $value['types'];
             $resp[$apiResponse->response] = $this->getOAResp($apiResponse);
         }
         return $resp;
@@ -167,7 +171,7 @@ class GenerateResponses
         $response->description = $apiResponse->description;
         if (! empty($apiResponse->returnType)) {
             $returnType = $apiResponse->returnType;
-            $content = $this->getContent($returnType);
+            $content = $this->getContent($returnType, $apiResponse->types);
             $content && $response->content = $content;
         }
         return $response;

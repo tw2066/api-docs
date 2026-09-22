@@ -57,18 +57,56 @@ class GenerateProxyClass
      */
     public function generate(object $obj): string
     {
-        $ref = new ReflectionClass($obj);
         $classname = $obj::class;
         $properties = $this->getApiVariableClass($classname);
         if (empty($properties)) {
             return $classname;
         }
 
-        $propertyArr = [];
+        $propertyValues = [];
         foreach ($properties as $property) {
             // 获取变量值
-            $propertyValue = $obj->{$property};
+            $propertyValues[$property] = $obj->{$property};
+        }
+        return $this->generateProxy($classname, $propertyValues);
+    }
 
+    /**
+     * 通过属性类型映射生成代理类(无需实例化).
+     * @param array<string, mixed> $types 属性名 => 类名字符串/PhpType/实例/单元素数组
+     */
+    public function generateByTypes(string $classname, array $types): string
+    {
+        $classname = trim($classname, '\\');
+        $properties = $this->getApiVariableClass($classname);
+        if (empty($types) || empty($properties)) {
+            return $classname;
+        }
+        foreach ($types as $property => $type) {
+            if (! in_array($property, $properties, true)) {
+                throw new ApiDocsException("{$classname}: \${$property} is not an ApiVariable property");
+            }
+        }
+        // 未指定的可变属性按mixed处理(与实例写法中属性值为null一致)
+        $propertyValues = [];
+        foreach ($properties as $property) {
+            $propertyValues[$property] = $types[$property] ?? null;
+        }
+        return $this->generateProxy($classname, $propertyValues);
+    }
+
+    /**
+     * 获取代理类对应的源类.
+     */
+    public function getSourceClassname(string $proxyClassname): ?string
+    {
+        return $this->proxyClassArr[$proxyClassname] ?? null;
+    }
+
+    protected function generateProxy(string $classname, array $propertyValues): string
+    {
+        $propertyArr = [];
+        foreach ($propertyValues as $property => $propertyValue) {
             $type = $this->swaggerCommon->getPhpType($propertyValue);
             if (is_object($propertyValue) && $type != '\stdClass') {
                 $propertyClassname = $type;
@@ -94,9 +132,10 @@ class GenerateProxyClass
             }
         }
 
+        $ref = new ReflectionClass($classname);
         $file = new SplFileInfo($ref->getFileName());
         $realPath = $file->getRealPath();
-        [$generateNamespaceClassName, $content] = $this->phpParser($obj, $realPath, $propertyArr);
+        [$generateNamespaceClassName, $content] = $this->phpParser($classname, $realPath, $propertyArr);
 
         if (! isset($this->proxyClassArr[$generateNamespaceClassName])) {
             $this->putContents($generateNamespaceClassName, $content);
@@ -104,14 +143,6 @@ class GenerateProxyClass
         }
 
         return $generateNamespaceClassName;
-    }
-
-    /**
-     * 获取代理类对应的源类.
-     */
-    public function getSourceClassname(string $proxyClassname): ?string
-    {
-        return $this->proxyClassArr[$proxyClassname] ?? null;
     }
 
     protected function putContents($generateNamespaceClassName, $content): void
@@ -127,13 +158,13 @@ class GenerateProxyClass
         $classLoader->addClassMap([$generateNamespaceClassName => $filename]);
     }
 
-    protected function phpParser(object $generateClass, $filePath, $propertyArr): array
+    protected function phpParser(string $classname, $filePath, $propertyArr): array
     {
         $code = file_get_contents($filePath);
         $parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
         $ast = $parser->parse($code);
 
-        $simpleClassName = $this->swaggerCommon->getSimpleClassName($generateClass::class);
+        $simpleClassName = $this->swaggerCommon->getSimpleClassName($classname);
         $generateClassName = $simpleClassName;
         foreach ($propertyArr as $type) {
             if (is_array($type)) {
@@ -149,7 +180,7 @@ class GenerateProxyClass
         }
 
         $traverser = new NodeTraverser();
-        $resVisitor = make(ResponseVisitor::class, [$generateClass, $generateClassName, $propertyArr]);
+        $resVisitor = make(ResponseVisitor::class, [$generateClassName, $propertyArr]);
         $traverser->addVisitor($resVisitor);
         $ast = $traverser->traverse($ast);
 

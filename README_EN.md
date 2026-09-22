@@ -151,12 +151,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Global Responses
+    | Global Responses (mapped to ApiResponse annotation; supports returnType/types keys)
     |--------------------------------------------------------------------------
     */
     'responses' => [
         ['response' => 401, 'description' => 'Unauthorized'],
         ['response' => 500, 'description' => 'System error'],
+        // ['response' => 200, 'returnType' => Page::class, 'types' => ['content' => [UserResponse::class]]],
     ],
 
     /*
@@ -378,6 +379,9 @@ class UserController
 
 // Paginated response
 #[ApiResponse(new Page([UserResponse::class]), 200, 'Paginated data')]
+
+// Paginated response (types style, no instantiation needed)
+#[ApiResponse(Page::class, 200, 'Paginated data', types: ['content' => [UserResponse::class]])]
 ```
 
 ### Parameter Annotations
@@ -461,6 +465,21 @@ public function page(#[RequestQuery] PageQuery $query): Page
     // Return paginated data
 }
 ```
+
+Alternatively, use the `types` parameter with a "class name + property type map" — no instantiation required (keys are property names marked with `#[ApiVariable]`; values are class names, `PhpType`, instances, or single-element arrays):
+
+```php
+#[ApiOperation('Paginated query')]
+#[GetMapping(path: 'page')]
+#[ApiResponse(Page::class, types: ['content' => [UserResponse::class]])]
+public function page(#[RequestQuery] PageQuery $query): Page
+{
+    // Return paginated data
+}
+```
+
+> For nested variable types (e.g. `Page<CodeResponse<X>>`), pass an instance as the `types` value: `types: ['content' => [new CodeResponse(PhpType::INT)]]`.
+> Note: `types` only works when `returnType` is a single class name; array-wrapped forms like `[Page::class]` are not supported.
 
 ### Property Annotations
 
