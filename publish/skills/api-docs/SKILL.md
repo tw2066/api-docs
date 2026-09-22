@@ -78,10 +78,14 @@ use Hyperf\DTO\Type\PhpType;
 #[ApiResponse(Address::class, 201)]              // 指定返回类 + 状态码
 #[ApiResponse([PhpType::INT], 204, '简单类型数组')]
 #[ApiResponse(new Page([Address::class]), 206)]  // 对象实例示例
+// ApiVariable 可变类型可用 types 映射写法，无需实例化：
+#[ApiResponse(Page::class, 207, '分页数据', types: ['content' => [Address::class]])]
 public function getUser(int $id) { }
 ```
 
-参数顺序：`returnType`、`response`（默认 `'200'`）、`description`。
+参数顺序：`returnType`、`response`（默认 `'200'`）、`description`、`types`。
+
+`types`：键为返回类中 `#[ApiVariable]` 标记的属性名，值为类名 / `PhpType` / 实例 / 单元素数组（表示数组）。仅在 `returnType` 为单个类名时生效；嵌套可变类型可传实例，如 `types: ['content' => [new CodeResponse(PhpType::INT)]]`。
 
 ### ApiHeader —— 请求头(不常用)
 
@@ -167,6 +171,8 @@ class GlobalResponse
     public string $message = '';
 }
 ```
+
+在 `ApiResponse` 中声明可变类型的具体类型时，优先用 `types` 映射写法（见上文 ApiResponse 章节），无需 new 实例。
 
 ## DTO 与文档联动
 
@@ -416,7 +422,7 @@ class UserController
 | `global_return_responses_class` | 全局响应包装类 |
 | `validation_custom_attributes` | 用 `ApiModelProperty` 的值作为验证提示信息 |
 | `dto_default_value_level` | DTO 默认值等级：0 不设置；1 简单类型设默认值；2 复杂类型也设 null（慎用） |
-| `responses` | 全局响应（如 401/500），映射为 `ApiResponse` |
+| `responses` | 全局响应（如 401/500），映射为 `ApiResponse`（支持 `returnType`/`types` 键） |
 | `swagger.info` | 文档标题、版本、描述 |
 | `swagger.servers` | 服务地址列表 |
 | `swagger.components.securitySchemes` | 安全方案定义 |

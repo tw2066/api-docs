@@ -17,7 +17,6 @@ class ResponseVisitor extends NodeVisitorAbstract
     public BuilderFactory $factory;
 
     public function __construct(
-        protected object $generateClass,
         protected string $generateClassName,
         protected array $propertyArr,
     ) {
@@ -51,7 +50,7 @@ class ResponseVisitor extends NodeVisitorAbstract
             $node->name = new Node\Identifier($this->generateClassName);
         }
         if ($node instanceof Node\Stmt\Namespace_) {
-            $name = new Node\Name('ApiDocs\\Proxy');
+            $name = new Node\Name('ApiDocs\Proxy');
             $node->name = $name;
         }
     }

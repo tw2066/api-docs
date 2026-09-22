@@ -178,12 +178,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | 全局responses,映射到ApiResponse注解对象
+    | 全局responses,映射到ApiResponse注解对象(支持 returnType/types 键)
     |--------------------------------------------------------------------------
     */
     'responses' => [
         ['response' => 401, 'description' => 'Unauthorized'],
         ['response' => 500, 'description' => 'System error'],
+        // ['response' => 200, 'returnType' => Page::class, 'types' => ['content' => [UserResponse::class]]],
     ],
     /*
     |--------------------------------------------------------------------------
@@ -374,6 +375,9 @@ class UserController
 
 // 分页响应
 #[ApiResponse(new Page([UserResponse::class]), 200, '分页数据')]
+
+// 分页响应(types写法,无需实例化)
+#[ApiResponse(Page::class, 200, '分页数据', types: ['content' => [UserResponse::class]])]
 ```
 
 **泛型支持示例：**
@@ -409,6 +413,21 @@ public function page(#[RequestQuery] PageQuery $query): Page
     // 返回分页数据
 }
 ```
+
+也可以通过 `types` 参数以"类名 + 属性类型映射"的方式声明，无需实例化（键为 `#[ApiVariable]` 标记的属性名，值为类名/`PhpType`/实例/单元素数组）：
+
+```php
+#[ApiOperation('分页查询')]
+#[GetMapping(path: 'page')]
+#[ApiResponse(Page::class, types: ['content' => [UserResponse::class]])]
+public function page(#[RequestQuery] PageQuery $query): Page
+{
+    // 返回分页数据
+}
+```
+
+> 嵌套的可变类型（如 `Page<CodeResponse<X>>`）可继续用实例作为 `types` 的值：`types: ['content' => [new CodeResponse(PhpType::INT)]]`。
+> 注意：`types` 仅在 `returnType` 为单个类名时生效，不支持 `[Page::class]` 这类数组包裹形式。
 
 ### 参数注解
 
