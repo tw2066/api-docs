@@ -69,6 +69,7 @@ class SwaggerUiController extends SwaggerController
     {
         $filePath = $this->swaggerUiPath . '/doc.html';
         $contents = file_get_contents($filePath);
+        $contents = $this->injectFooterStyle($contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
@@ -122,5 +123,10 @@ class SwaggerUiController extends SwaggerController
         } while ($count > 0);
 
         return ltrim($file, '/');
+    }
+
+    protected function injectFooterStyle(string $contents): string
+    {
+        return str_replace('</head>', '<style>.globalFooter{display:none !important}</style></head>', $contents);
     }
 }
