@@ -20,7 +20,7 @@
   "require": {
     "php": ">=8.1",
     "tangwei/dto": "~4.0.0",
-    "zircote/swagger-php": "^6.0"
+    "zircote/swagger-php": "^5.8|^6.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.0",
