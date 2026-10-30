@@ -15,7 +15,6 @@ use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
-use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
@@ -153,7 +152,7 @@ class GenerateParameters
             }
             if (! $reflectionProperty->isPublic()
                 && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
-                && ! $rc->hasMethod(DtoConfig::getDtoAliasMethodName($fieldName))
+                && $propertyManager?->alias === null
             ) {
                 continue;
             }

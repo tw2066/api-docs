@@ -9,10 +9,13 @@ use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
+use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
+use HyperfTest\ApiDocs\Request\InterfaceSchema;
+use HyperfTest\ApiDocs\Request\PrivateAlias;
 use HyperfTest\ApiDocs\Request\TreeNode;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
@@ -89,6 +92,37 @@ class SwaggerSchemasTest extends TestCase
         $this->assertEquals('#/components/schemas/User', $addressProperties[1]->ref);
 
         $swaggerCommon->simpleClassNameClear();
+    }
+
+    /**
+     * DTO 4.0 不再生成别名 setter，私有 JSONField 属性仍应生成 schema 字段.
+     */
+    public function testPrivateJsonFieldAliasWithoutSetter(): void
+    {
+        (new JSONField('name_arr'))->collectProperty(PrivateAlias::class, 'nameArr');
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+        $schema = $swaggerComponents->generateSchemas(PrivateAlias::class);
+
+        $this->assertCount(1, $schema->properties);
+        $this->assertSame('name_arr', $schema->properties[0]->property);
+    }
+
+    public function testInterfacePropertiesUseNullSchemaType(): void
+    {
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+        $schema = $swaggerComponents->generateSchemas(InterfaceSchema::class);
+        $properties = [];
+        foreach ($schema->properties as $property) {
+            $properties[$property->property] = $property;
+        }
+
+        $this->assertSame('null', $properties['payment']->type);
+        $this->assertSame('array', $properties['payments']->type);
+        $this->assertSame('null', $properties['payments']->items->type);
     }
 
     public function testGetPropertiesWithEmptyClassName(): void

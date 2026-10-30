@@ -12,7 +12,6 @@ use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
-use Hyperf\DTO\DtoConfig;
 use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Attributes as OA;
@@ -72,7 +71,7 @@ class SwaggerComponents
             }
             if (! $reflectionProperty->isPublic()
                 && ! $rc->hasMethod(setter($fieldName))
-                && ! $rc->hasMethod(DtoConfig::getDtoAliasMethodName($fieldName))
+                && $propertyManager->alias === null
             ) {
                 continue;
             }
@@ -135,10 +134,17 @@ class SwaggerComponents
                         $items = new OA\Items();
                         $items->type = $this->common->getSwaggerType($propertyManager->arrSimpleType);
                         $property->items = $items;
+                    } elseif (! empty($propertyManager->arrInterfaceName)) {
+                        // 接口元素没有可引用的具体 schema，降级为未约束类型。
+                        $items = new OA\Items();
+                        $items->type = 'null';
+                        $property->items = $items;
                     }
                 } elseif (! empty($propertyManager->className)) {
                     $property->ref = $this->common->getComponentsName($propertyManager->className);
                     $this->generateSchemas($propertyManager->className);
+                } elseif (! empty($propertyManager->interfaceName)) {
+                    $property->type = 'null';
                 } else {
                     throw ApiDocsException::typeResolutionFailed($className, $fieldName);
                 }

@@ -7,11 +7,14 @@ namespace HyperfTest\ApiDocs;
 use Hyperf\ApiDocs\Swagger\GenerateParameters;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\ApiDocs\Swagger\SwaggerComponents;
+use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
+use Hyperf\DTO\Annotation\JSONField;
 use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
+use HyperfTest\ApiDocs\Request\PrivateAlias;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -25,6 +28,7 @@ class GenerateParametersTest extends TestCase
     protected function tearDown(): void
     {
         m::close();
+        AnnotationCollector::clear();
     }
 
     /**
@@ -55,6 +59,18 @@ class GenerateParametersTest extends TestCase
         $this->assertTrue($result['parameter'][0]->required);
     }
 
+    /**
+     * DTO 4.0 不再生成别名 setter，私有 JSONField 属性仍应生成参数.
+     */
+    public function testPrivateJsonFieldAliasWithoutSetter(): void
+    {
+        (new JSONField('name_arr'))->collectProperty(PrivateAlias::class, 'nameArr');
+        $parameters = $this->createGenerateParameters()->getParameterArrByClass(PrivateAlias::class, 'query');
+
+        $this->assertCount(1, $parameters);
+        $this->assertSame('name_arr', $parameters[0]->name);
+    }
+
     private function reflectionType(string $type, string $name, bool $allowsNull = false, bool $defaultValueAvailable = false): ReflectionType
     {
         return new ReflectionType($type, $allowsNull, [
@@ -65,14 +81,14 @@ class GenerateParametersTest extends TestCase
         ]);
     }
 
-    private function generate(string $route, array $definitions): array
+    private function createGenerateParameters(string $route = '/', array $definitions = []): GenerateParameters
     {
         $swaggerCommon = new SwaggerCommon();
         $container = m::mock(ContainerInterface::class);
         $methodDefinitionCollector = m::mock(MethodDefinitionCollectorInterface::class);
         $methodDefinitionCollector->shouldReceive('getParameters')->andReturn($definitions);
 
-        $generateParameters = new GenerateParameters(
+        return new GenerateParameters(
             'DemoController',
             'list',
             [],
@@ -85,6 +101,10 @@ class GenerateParametersTest extends TestCase
             new PropertyManager($swaggerCommon, new PropertyEnum()),
             m::mock(MethodParametersManager::class),
         );
-        return $generateParameters->generate();
+    }
+
+    private function generate(string $route, array $definitions): array
+    {
+        return $this->createGenerateParameters($route, $definitions)->generate();
     }
 }

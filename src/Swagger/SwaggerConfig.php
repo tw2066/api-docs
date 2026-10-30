@@ -37,7 +37,7 @@ class SwaggerConfig
         $jsonMapper = Mapper::getJsonMapper('bIgnoreVisibility');
         // 私有属性和函数
         $jsonMapper->bIgnoreVisibility = true;
-        $jsonMapper->map($data, $this);
+        $jsonMapper->simpleMap($data, $this);
     }
 
     public function setPrefixUrl(string $prefix_url): void
