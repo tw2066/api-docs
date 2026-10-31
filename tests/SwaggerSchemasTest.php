@@ -10,15 +10,23 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\DTO\Annotation\JSONField;
+use Hyperf\DTO\Annotation\Validation\Required;
+use Hyperf\DTO\Mapper;
 use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
 use HyperfTest\ApiDocs\Request\Address;
+use HyperfTest\ApiDocs\Request\AliasRequired;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
+use HyperfTest\ApiDocs\Request\InputAccessibility;
 use HyperfTest\ApiDocs\Request\InterfaceSchema;
 use HyperfTest\ApiDocs\Request\PrivateAlias;
+use HyperfTest\ApiDocs\Request\SchemaPayment;
+use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use HyperfTest\ApiDocs\Request\TreeNode;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
+use OpenApi\Annotations\Schema;
+use OpenApi\Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -45,7 +53,7 @@ class SwaggerSchemasTest extends TestCase
         $schemas = $swaggerComponents->generateSchemas($classname);
         $properties = $schemas->properties;
 
-        //dump($properties);die();
+        // dump($properties);die();
 
         $this->assertEquals('int', $properties[0]->property);
         $this->assertEquals('integer', $properties[0]->type);
@@ -95,9 +103,9 @@ class SwaggerSchemasTest extends TestCase
     }
 
     /**
-     * DTO 4.0 不再生成别名 setter，私有 JSONField 属性仍应生成 schema 字段.
+     * 私有别名属性仍可用于响应，但 DTO 4.0 请求输入为只读.
      */
-    public function testPrivateJsonFieldAliasWithoutSetter(): void
+    public function testPrivateJsonFieldAliasWithoutSetterIsReadOnly(): void
     {
         (new JSONField('name_arr'))->collectProperty(PrivateAlias::class, 'nameArr');
         $swaggerCommon = new SwaggerCommon();
@@ -107,22 +115,68 @@ class SwaggerSchemasTest extends TestCase
 
         $this->assertCount(1, $schema->properties);
         $this->assertSame('name_arr', $schema->properties[0]->property);
+        $this->assertTrue($schema->properties[0]->readOnly);
     }
 
-    public function testInterfacePropertiesUseNullSchemaType(): void
+    public function testInterfacePropertiesUseObjectSchemaType(): void
     {
         $swaggerCommon = new SwaggerCommon();
         $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
 
         $schema = $swaggerComponents->generateSchemas(InterfaceSchema::class);
-        $properties = [];
-        foreach ($schema->properties as $property) {
-            $properties[$property->property] = $property;
-        }
+        $properties = $this->propertiesByName($schema);
 
-        $this->assertSame('null', $properties['payment']->type);
+        $this->assertSame('object', $properties['payment']->type);
         $this->assertSame('array', $properties['payments']->type);
-        $this->assertSame('null', $properties['payments']->items->type);
+        $this->assertSame('object', $properties['payments']->items->type);
+        $this->assertSame(Generator::UNDEFINED, $properties['untyped']->items->type);
+    }
+
+    public function testInterfacePropertiesUseStaticClassMapSchema(): void
+    {
+        $mapper = Mapper::getJsonMapper();
+        $originalClassMap = $mapper->classMap;
+        $mapper->classMap[SchemaPaymentInterface::class] = SchemaPayment::class;
+
+        try {
+            $swaggerCommon = new SwaggerCommon();
+            $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+            $schema = $swaggerComponents->generateSchemas(InterfaceSchema::class);
+            $properties = $this->propertiesByName($schema);
+
+            $this->assertSame('#/components/schemas/SchemaPayment', $properties['payment']->ref);
+            $this->assertSame('#/components/schemas/SchemaPayment', $properties['payments']->items->ref);
+            $this->assertArrayHasKey('SchemaPayment', $swaggerComponents->getSchemas());
+        } finally {
+            $mapper->classMap = $originalClassMap;
+        }
+    }
+
+    public function testRequiredUsesJsonFieldAlias(): void
+    {
+        (new JSONField('display_name'))->collectProperty(AliasRequired::class, 'displayName');
+        (new Required())->collectProperty(AliasRequired::class, 'displayName');
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+        $schema = $swaggerComponents->generateSchemas(AliasRequired::class);
+
+        $this->assertSame(['display_name'], $schema->required);
+        $this->assertSame('display_name', $schema->properties[0]->property);
+    }
+
+    public function testReadonlyPropertyIsReadOnlyAndStaticPropertyIsSkipped(): void
+    {
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerComponents = new SwaggerComponents($swaggerCommon, new PropertyManager($swaggerCommon, new PropertyEnum()), null);
+
+        $schema = $swaggerComponents->generateSchemas(InputAccessibility::class);
+        $properties = $this->propertiesByName($schema);
+
+        $this->assertArrayNotHasKey('static', $properties);
+        $this->assertTrue($properties['id']->readOnly);
+        $this->assertSame(Generator::UNDEFINED, $properties['name']->readOnly);
     }
 
     public function testGetPropertiesWithEmptyClassName(): void
@@ -210,5 +264,14 @@ class SwaggerSchemasTest extends TestCase
         $this->assertSame('#/components/schemas/TreeNode', $siblingProperties[1]->ref);
 
         $swaggerCommon->simpleClassNameClear();
+    }
+
+    private function propertiesByName(Schema $schema): array
+    {
+        $properties = [];
+        foreach ($schema->properties as $property) {
+            $properties[$property->property] = $property;
+        }
+        return $properties;
     }
 }

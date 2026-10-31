@@ -12,8 +12,10 @@ use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
+use Hyperf\DTO\Mapper;
 use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
+use OpenApi\Annotations\Schema;
 use OpenApi\Attributes as OA;
 use OpenApi\Generator;
 
@@ -27,8 +29,7 @@ class SwaggerComponents
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
         protected ?GenerateProxyClass $generateProxyClass,
-    ) {
-    }
+    ) {}
 
     public function getSchemas(): array
     {
@@ -54,6 +55,9 @@ class SwaggerComponents
             // 属性
             $property = new OA\Property();
             $fieldName = $reflectionProperty->getName();
+            if ($reflectionProperty->isStatic()) {
+                continue;
+            }
             $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
             if ($propertyManager === null) {
                 // 属性未被 DTO 扫描器登记（如代理类），按反射类型兜底
@@ -69,22 +73,28 @@ class SwaggerComponents
             if ($apiModelProperty->hidden) {
                 continue;
             }
+            $hasSetter = $rc->hasMethod(setter($fieldName));
+            $isReadOnly = $reflectionProperty->isReadOnly()
+                || (! $reflectionProperty->isPublic() && ! $hasSetter);
             if (! $reflectionProperty->isPublic()
-                && ! $rc->hasMethod(setter($fieldName))
+                && ! $hasSetter
                 && $propertyManager->alias === null
             ) {
                 continue;
             }
 
-            // 字段名称
+            // DTO 4.0 不再生成别名 setter；响应别名属性保留，但禁止用于请求。
             $property->property = $propertyManager->alias ?? $fieldName;
+            if ($isReadOnly) {
+                $property->readOnly = true;
+            }
             // 描述
             $apiModelProperty->value !== null && $property->description = $apiModelProperty->value;
             // required
             /** @var Required $requiredAnnotation */
             $requiredAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, Required::class)?->toAnnotations()[0];
             if ($apiModelProperty->required || $requiredAnnotation) {
-                $requiredArr[] = $fieldName;
+                $requiredArr[] = $property->property;
             }
             $property->example = $apiModelProperty->example;
             $property->default = $this->common->getPropertyDefaultValue($className, $reflectionProperty);
@@ -109,9 +119,7 @@ class SwaggerComponents
                 // 数组
                 if ($swaggerType == 'array') {
                     $property->type = 'array';
-                    $items = new OA\Items();
-                    $items->type = 'null';
-                    $property->items = $items;
+                    $property->items = new OA\Items();
                 } else {
                     // 普通简单类型
                     $property->type = $swaggerType;
@@ -135,16 +143,15 @@ class SwaggerComponents
                         $items->type = $this->common->getSwaggerType($propertyManager->arrSimpleType);
                         $property->items = $items;
                     } elseif (! empty($propertyManager->arrInterfaceName)) {
-                        // 接口元素没有可引用的具体 schema，降级为未约束类型。
                         $items = new OA\Items();
-                        $items->type = 'null';
+                        $this->setInterfaceSchema($items, $propertyManager->arrInterfaceName);
                         $property->items = $items;
                     }
                 } elseif (! empty($propertyManager->className)) {
                     $property->ref = $this->common->getComponentsName($propertyManager->className);
                     $this->generateSchemas($propertyManager->className);
                 } elseif (! empty($propertyManager->interfaceName)) {
-                    $property->type = 'null';
+                    $this->setInterfaceSchema($property, $propertyManager->interfaceName);
                 } else {
                     throw ApiDocsException::typeResolutionFailed($className, $fieldName);
                 }
@@ -174,6 +181,21 @@ class SwaggerComponents
         }
         $data['requiredArr'] && $schema->required = $data['requiredArr'];
         return $this->schemas[$simpleClassName];
+    }
+
+    protected function setInterfaceSchema(Schema $property, string $interfaceName): void
+    {
+        $classMap = Mapper::getJsonMapper()->classMap;
+        $mappedClass = $classMap[$interfaceName] ?? $classMap['\\' . $interfaceName] ?? null;
+        if (is_string($mappedClass) && class_exists($mappedClass)) {
+            $mappedClass = ltrim($mappedClass, '\\');
+            $property->ref = $this->common->getComponentsName($mappedClass);
+            $this->generateSchemas($mappedClass);
+            return;
+        }
+
+        // 动态 classMap 无法在启动期确定具体结构，接口值至少应是对象。
+        $property->type = 'object';
     }
 
     protected function buildPropertyFromReflection(\ReflectionProperty $reflectionProperty): Property

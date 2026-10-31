@@ -3,7 +3,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![Total Downloads](https://img.shields.io/packagist/dt/tangwei/apidocs)](https://packagist.org/packages/tangwei/apidocs)
 [![License](https://img.shields.io/packagist/l/tangwei/apidocs)](https://github.com/tw2066/api-docs)
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue)](https://www.php.net)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-blue)](https://www.php.net)
 
 English | [中文](./README.md)
 
@@ -22,8 +22,9 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 
 ## 📋 Requirements
 
-- PHP >= 8.2
-- Hyperf ~3.2
+- PHP >= 8.1
+- Hyperf ~3.1 or ~3.2
+- DTO ~4.0
 - Swoole >= 5.0 or Swow
 
 ## 💡 Important Notes
@@ -31,6 +32,9 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 - Union types are not supported for parameter mapping to PHP classes
 - Controller methods should return specific types (including simple types) for better documentation generation
 - Use `#[ApiResponse]` annotation when return types cannot fully express the response structure
+- DTO 4.0 input uses each field's primaryKey: the external alias when `#[JSONField]` is present, otherwise the PHP property name; private/protected properties require a regular business setter, while readonly/static properties are excluded from input mapping
+- For interface properties, configure a concrete class through the DTO `classMap`; unresolved or runtime-dynamic mappings fall back to a generic `object` schema
+- After upgrading to DTO 4.0, clear and regenerate the proxy files in `runtime/container/proxy/`
 
 ## 📦 Installation
 

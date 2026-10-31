@@ -11,9 +11,12 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
 use Hyperf\Di\ReflectionType;
 use Hyperf\DTO\Annotation\JSONField;
+use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
+use HyperfTest\ApiDocs\Request\AliasRequired;
+use HyperfTest\ApiDocs\Request\InputAccessibility;
 use HyperfTest\ApiDocs\Request\PrivateAlias;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -60,15 +63,33 @@ class GenerateParametersTest extends TestCase
     }
 
     /**
-     * DTO 4.0 不再生成别名 setter，私有 JSONField 属性仍应生成参数.
+     * DTO 4.0 的私有别名属性没有业务 setter 时不可写，不应生成请求参数.
      */
-    public function testPrivateJsonFieldAliasWithoutSetter(): void
+    public function testPrivateJsonFieldAliasWithoutSetterIsNotParameter(): void
     {
         (new JSONField('name_arr'))->collectProperty(PrivateAlias::class, 'nameArr');
         $parameters = $this->createGenerateParameters()->getParameterArrByClass(PrivateAlias::class, 'query');
 
+        $this->assertCount(0, $parameters);
+    }
+
+    public function testPublicJsonFieldAliasIsParameter(): void
+    {
+        (new JSONField('display_name'))->collectProperty(AliasRequired::class, 'displayName');
+        (new Required())->collectProperty(AliasRequired::class, 'displayName');
+        $parameters = $this->createGenerateParameters()->getParameterArrByClass(AliasRequired::class, 'query');
+
         $this->assertCount(1, $parameters);
-        $this->assertSame('name_arr', $parameters[0]->name);
+        $this->assertSame('display_name', $parameters[0]->name);
+        $this->assertTrue($parameters[0]->required);
+    }
+
+    public function testReadonlyAndStaticPropertiesAreNotParameters(): void
+    {
+        $parameters = $this->createGenerateParameters()->getParameterArrByClass(InputAccessibility::class, 'query');
+
+        $this->assertCount(1, $parameters);
+        $this->assertSame('name', $parameters[0]->name);
     }
 
     private function reflectionType(string $type, string $name, bool $allowsNull = false, bool $defaultValueAvailable = false): ReflectionType

@@ -18,6 +18,7 @@ use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use HyperfTest\ApiDocs\Request\Page;
 use Mockery as m;
+use OpenApi\Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -109,6 +110,21 @@ class GenerateResponsesTest extends TestCase
         $this->assertNotNull($resp206);
         $this->assertSame('分页数据', $resp206->description);
         $this->assertSame('#/components/schemas/Address', $resp206->content['application/json']->schema->ref);
+    }
+
+    public function testNestedArrayResponseItemsHaveUnconstrainedType(): void
+    {
+        $swaggerConfig = m::mock(SwaggerConfig::class);
+        $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn('');
+        $generateResponses = $this->makeGenerateResponses($swaggerConfig, []);
+        $method = new \ReflectionMethod($generateResponses, 'getContent');
+        $method->setAccessible(true);
+
+        $content = $method->invoke($generateResponses, 'array');
+        $schema = $content['application/json']->schema;
+
+        $this->assertSame('array', $schema->type);
+        $this->assertSame(Generator::UNDEFINED, $schema->items->type);
     }
 
     private function makeGenerateResponses(SwaggerConfig $swaggerConfig, array $apiResponseArr, ?GenerateProxyClass $proxy = null, array $containerHasClasses = []): GenerateResponses

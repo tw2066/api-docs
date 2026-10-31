@@ -39,8 +39,7 @@ class GenerateParameters
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
         protected MethodParametersManager $methodParametersManager
-    ) {
-    }
+    ) {}
 
     public function generate(): array
     {
@@ -137,9 +136,17 @@ class GenerateParameters
         $parameters = [];
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
+            $fieldName = $reflectionProperty->getName();
+            if ($reflectionProperty->isStatic() || $reflectionProperty->isReadOnly()) {
+                continue;
+            }
+            if (! $reflectionProperty->isPublic()
+                && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
+            ) {
+                continue;
+            }
             $propertyManager = $this->propertyManager->getProperty($parameterClassName, $reflectionProperty->name);
             $parameter = new OA\Parameter();
-            $fieldName = $reflectionProperty->getName();
             $schema = new OA\Schema();
             $parameter->name = $propertyManager?->alias ?? $fieldName;
             $parameter->in = $in;
@@ -148,12 +155,6 @@ class GenerateParameters
             $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
             $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
             if ($apiModelProperty->hidden) {
-                continue;
-            }
-            if (! $reflectionProperty->isPublic()
-                && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
-                && $propertyManager?->alias === null
-            ) {
                 continue;
             }
             // 存在自定义简单类型

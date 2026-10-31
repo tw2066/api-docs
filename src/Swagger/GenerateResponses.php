@@ -107,7 +107,9 @@ class GenerateResponses
                 $schema->type = 'array';
                 $items = new OA\Items();
                 $swaggerType = $this->common->getSwaggerType($returnTypeClassName);
-                $items->type = $swaggerType == 'array' ? 'null' : $swaggerType;
+                if ($swaggerType !== 'array') {
+                    $items->type = $swaggerType;
+                }
                 $schema->items = $items;
             }
             $mediaType->schema = $schema;

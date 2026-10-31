@@ -236,6 +236,10 @@ class UserRequest
 }
 ```
 
+- DTO 4.0 输入只接受字段 primaryKey：有 `#[JSONField]` 时使用别名，否则使用 PHP 属性名；private/protected 属性需要正常业务 setter，readonly/static 属性不参与输入映射。
+- 只用于响应的私有别名字段在 schema 中标记为 `readOnly`，调用方不应将其作为请求字段提交。
+- 接口属性优先通过 DTO `classMap` 配置具体类；无法静态解析时文档使用通用 `object`，不要把接口字段描述为 `null`。
+
 ### DTO 验证常用注解
 
 验证注解位于 `Hyperf\DTO\Annotation\Validation\*`，均为**属性注解、可叠加**，构造参数 `messages:` 可自定义错误消息。
