@@ -12,11 +12,14 @@ use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
+use Hyperf\DTO\JsonMapper;
 use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use HyperfTest\ApiDocs\Request\Page;
+use HyperfTest\ApiDocs\Request\SchemaPayment;
+use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use Mockery as m;
 use OpenApi\Generator;
 use PHPUnit\Framework\TestCase;
@@ -112,6 +115,43 @@ class GenerateResponsesTest extends TestCase
         $this->assertSame('#/components/schemas/Address', $resp206->content['application/json']->schema->ref);
     }
 
+    public function testMixedResponseHasUnconstrainedSchema(): void
+    {
+        $swaggerConfig = m::mock(SwaggerConfig::class);
+        $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn('');
+        $generateResponses = $this->makeGenerateResponses($swaggerConfig, []);
+
+        $content = $this->invokeGetContent($generateResponses, 'mixed');
+
+        $this->assertSame(Generator::UNDEFINED, $content['text/plain']->schema->type);
+    }
+
+    public function testInterfaceResponseUsesClassMap(): void
+    {
+        $mapper = new JsonMapper();
+        $mapper->classMap[SchemaPaymentInterface::class] = SchemaPayment::class;
+        $swaggerCommon = new SwaggerCommon();
+        $swaggerCommon->setDtoMapper($mapper);
+        $swaggerConfig = m::mock(SwaggerConfig::class);
+        $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn('');
+        $generateResponses = $this->makeGenerateResponses($swaggerConfig, [], swaggerCommon: $swaggerCommon);
+
+        $content = $this->invokeGetContent($generateResponses, SchemaPaymentInterface::class);
+
+        $this->assertSame('#/components/schemas/SchemaPayment', $content['application/json']->schema->ref);
+    }
+
+    public function testUnresolvedInterfaceResponseHasObjectContent(): void
+    {
+        $swaggerConfig = m::mock(SwaggerConfig::class);
+        $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn('');
+        $generateResponses = $this->makeGenerateResponses($swaggerConfig, []);
+
+        $content = $this->invokeGetContent($generateResponses, SchemaPaymentInterface::class);
+
+        $this->assertSame('object', $content['application/json']->schema->type);
+    }
+
     public function testNestedArrayResponseItemsHaveUnconstrainedType(): void
     {
         $swaggerConfig = m::mock(SwaggerConfig::class);
@@ -127,13 +167,20 @@ class GenerateResponsesTest extends TestCase
         $this->assertSame(Generator::UNDEFINED, $schema->items->type);
     }
 
-    private function makeGenerateResponses(SwaggerConfig $swaggerConfig, array $apiResponseArr, ?GenerateProxyClass $proxy = null, array $containerHasClasses = []): GenerateResponses
+    private function invokeGetContent(GenerateResponses $generateResponses, string $type): array
+    {
+        $method = new \ReflectionMethod($generateResponses, 'getContent');
+        $method->setAccessible(true);
+        return $method->invoke($generateResponses, $type);
+    }
+
+    private function makeGenerateResponses(SwaggerConfig $swaggerConfig, array $apiResponseArr, ?GenerateProxyClass $proxy = null, array $containerHasClasses = [], ?SwaggerCommon $swaggerCommon = null): GenerateResponses
     {
         $container = m::mock(ContainerInterface::class);
         $container->shouldReceive('has')->andReturnUsing(fn ($class) => in_array($class, $containerHasClasses, true));
         $container->shouldReceive('get')->with(MethodDefinitionCollectorInterface::class)->andReturn(new MethodDefinitionCollector());
 
-        $swaggerCommon = new SwaggerCommon();
+        $swaggerCommon ??= new SwaggerCommon();
         return new GenerateResponses(
             DemoBodyRequest::class,
             'getBo',

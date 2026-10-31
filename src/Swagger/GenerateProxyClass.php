@@ -13,8 +13,6 @@ use Hyperf\Support\Composer;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
-use ReflectionClass;
-use SplFileInfo;
 
 use function Hyperf\Support\make;
 
@@ -132,8 +130,8 @@ class GenerateProxyClass
             }
         }
 
-        $ref = new ReflectionClass($classname);
-        $file = new SplFileInfo($ref->getFileName());
+        $ref = new \ReflectionClass($classname);
+        $file = new \SplFileInfo($ref->getFileName());
         $realPath = $file->getRealPath();
         [$generateNamespaceClassName, $content] = $this->phpParser($classname, $realPath, $propertyArr);
 
@@ -180,7 +178,7 @@ class GenerateProxyClass
         }
 
         $traverser = new NodeTraverser();
-        $resVisitor = make(ResponseVisitor::class, [$generateClassName, $propertyArr]);
+        $resVisitor = make(ResponseVisitor::class, [$generateClassName, $propertyArr, $classname]);
         $traverser->addVisitor($resVisitor);
         $ast = $traverser->traverse($ast);
 

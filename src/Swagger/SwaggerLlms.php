@@ -53,11 +53,15 @@ class SwaggerLlms
         $openapi['components'] = $newComponents['components'] ?? [];
         unset($openapi['tags'], $openapi['externalDocs']);
 
-        $flags = Yaml::DUMP_OBJECT_AS_MAP ^ Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE;
-        $yaml = Yaml::dump($openapi, 10, 2, $flags);
+        $yaml = $this->dumpYaml($openapi);
         $content = sprintf("# %s\n\n## %s\n\n", $path['summary'] ?? $path['operationId'], $path['description'] ?? '');
         $yaml = sprintf("```yaml\n%s\n```", $yaml);
         return $content . $yaml;
+    }
+
+    protected function dumpYaml(array $openapi): string
+    {
+        return Yaml::dump($openapi, 10, 2, Yaml::DUMP_OBJECT_AS_MAP);
     }
 
     protected function getSchemas($data = [], array $components = []): array

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace HyperfTest\ApiDocs\Request;
 
-interface SchemaPaymentInterface {}
-
 class InterfaceSchema
 {
     public ?SchemaPaymentInterface $payment = null;
@@ -14,9 +12,10 @@ class InterfaceSchema
     public array $payments = [];
 
     public array $untyped = [];
-}
 
-class SchemaPayment implements SchemaPaymentInterface
-{
-    public string $provider = '';
+    /** @var SchemaPaymentInterface[][] */
+    public array $paymentMatrix = [];
+
+    /** @var int[][] */
+    public array $intMatrix = [];
 }

@@ -24,7 +24,7 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 
 - PHP >= 8.1
 - Hyperf ~3.1 or ~3.2
-- DTO ~4.0
+- DTO ~4.0.0
 - Swoole >= 5.0 or Swow
 
 ## 💡 Important Notes
@@ -32,7 +32,7 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 - Union types are not supported for parameter mapping to PHP classes
 - Controller methods should return specific types (including simple types) for better documentation generation
 - Use `#[ApiResponse]` annotation when return types cannot fully express the response structure
-- DTO 4.0 input uses each field's primaryKey: the external alias when `#[JSONField]` is present, otherwise the PHP property name; private/protected properties require a regular business setter, while readonly/static properties are excluded from input mapping
+- DTO 4.0 input uses each field's primaryKey: the external alias when `#[JSONField]` is present, otherwise the PHP property name; private/protected properties require a regular business setter, while readonly/static properties are excluded from input mapping. Fields marked `#[Required]` are the exception: validation runs before mapping, so they remain required request fields in the documentation
 - For interface properties, configure a concrete class through the DTO `classMap`; unresolved or runtime-dynamic mappings fall back to a generic `object` schema
 - After upgrading to DTO 4.0, clear and regenerate the proxy files in `runtime/container/proxy/`
 

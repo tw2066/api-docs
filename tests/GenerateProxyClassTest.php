@@ -14,6 +14,7 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\DTO\DtoConfig;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\Page;
+use HyperfTest\ApiDocs\Request\ProxyWithHelper;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,7 @@ class GenerateProxyClassTest extends TestCase
     protected function tearDown(): void
     {
         m::close();
-        AnnotationCollector::clear(Page::class);
+        AnnotationCollector::clear();
     }
 
     /**
@@ -84,6 +85,19 @@ class GenerateProxyClassTest extends TestCase
     {
         $this->expectException(ApiDocsException::class);
         new ApiResponse(Page::class, 200, 'ok', [123 => Address::class]);
+    }
+
+    public function testGenerateProxyKeepsHelperClassName(): void
+    {
+        (new ApiVariable())->collectProperty(ProxyWithHelper::class, 'content');
+        $proxy = $this->makeGenerateProxyClass();
+        $proxyClass = $proxy->generateByTypes(ProxyWithHelper::class, ['content' => [Address::class]]);
+        $filename = sys_get_temp_dir() . '/api_docs_proxy_test/' . str_replace('\\', '_', $proxyClass) . '.dto.proxy.php';
+
+        $this->assertFileExists($filename);
+        $content = file_get_contents($filename);
+        $this->assertSame(1, substr_count($content, 'class ProxyWithHelperArrayAddress'));
+        $this->assertSame(1, substr_count($content, 'class ProxyHelper'));
     }
 
     private function makeGenerateProxyClass(): GenerateProxyClass

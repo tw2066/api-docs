@@ -9,18 +9,20 @@ use Hyperf\DTO\Annotation\ArrayType;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
-use ReflectionClass;
-use ReflectionProperty;
 
 class ResponseVisitor extends NodeVisitorAbstract
 {
     public BuilderFactory $factory;
 
+    protected string $sourceShortName;
+
     public function __construct(
         protected string $generateClassName,
         protected array $propertyArr,
+        string $sourceClassName,
     ) {
         $this->factory = new BuilderFactory();
+        $this->sourceShortName = (new \ReflectionClass($sourceClassName))->getShortName();
     }
 
     public function leaveNode(Node $node)
@@ -46,7 +48,9 @@ class ResponseVisitor extends NodeVisitorAbstract
                 // $node->props[0]->default = null;
             }
         }
-        if ($node instanceof Node\Stmt\Class_) {
+        if ($node instanceof Node\Stmt\Class_
+            && $node->name?->toString() === $this->sourceShortName
+        ) {
             $node->name = new Node\Identifier($this->generateClassName);
         }
         if ($node instanceof Node\Stmt\Namespace_) {
@@ -63,8 +67,8 @@ class ResponseVisitor extends NodeVisitorAbstract
     protected function getNotDefaultPropertyFromAnnotation(AbstractAnnotation $annotation): array
     {
         $properties = [];
-        $ref = new ReflectionClass($annotation);
-        foreach ($ref->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        $ref = new \ReflectionClass($annotation);
+        foreach ($ref->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             if ($property->hasDefaultValue() && $property->getDefaultValue() === $property->getValue($annotation)) {
                 continue;
             }

@@ -6,20 +6,17 @@ namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
-use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\ReflectionManager;
 use Hyperf\DTO\Annotation\Validation\In;
 use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\ApiAnnotation;
-use Hyperf\DTO\Mapper;
 use Hyperf\DTO\Scan\Property;
+use Hyperf\DTO\Scan\PropertyEnum;
 use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Annotations\Schema;
 use OpenApi\Attributes as OA;
 use OpenApi\Generator;
-
-use function Hyperf\Support\setter;
 
 class SwaggerComponents
 {
@@ -47,118 +44,70 @@ class SwaggerComponents
             return ['propertyArr' => [], 'requiredArr' => []];
         }
 
+        $this->common->syncDtoMapper();
         $rc = ReflectionManager::reflectClass($className);
         $propertyArr = [];
         $requiredArr = [];
-        // 循环字段
         foreach ($rc->getProperties() as $reflectionProperty) {
-            // 属性
-            $property = new OA\Property();
             $fieldName = $reflectionProperty->getName();
             if ($reflectionProperty->isStatic()) {
                 continue;
             }
             $propertyManager = $this->propertyManager->getProperty($className, $fieldName);
             if ($propertyManager === null) {
-                // 属性未被 DTO 扫描器登记（如代理类），按反射类型兜底
+                // 属性未被 DTO 扫描器登记（如代理类），按反射类型兜底。
                 $propertyManager = $this->buildPropertyFromReflection($reflectionProperty);
             }
 
-            // 适配ApiVariable注解
             $sourceClassName = $this->generateProxyClass?->getSourceClassname($className) ?? $className;
             $apiModelProperty = ApiAnnotation::getProperty($sourceClassName, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
-
-            /** @var In $inAnnotation */
-            $inAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, In::class)?->toAnnotations()[0];
             if ($apiModelProperty->hidden) {
                 continue;
             }
-            $hasSetter = $rc->hasMethod(setter($fieldName));
-            $isReadOnly = $reflectionProperty->isReadOnly()
-                || (! $reflectionProperty->isPublic() && ! $hasSetter);
+            $requiredAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, Required::class)?->toAnnotations()[0];
+            $isRequired = $apiModelProperty->required || $requiredAnnotation !== null;
+            [, $accessor] = $this->common->inspectDtoProperty($rc, $fieldName);
+            $isWritable = $accessor !== null;
             if (! $reflectionProperty->isPublic()
-                && ! $hasSetter
+                && ! $isWritable
                 && $propertyManager->alias === null
+                && ! $isRequired
             ) {
                 continue;
             }
 
-            // DTO 4.0 不再生成别名 setter；响应别名属性保留，但禁止用于请求。
+            $property = new OA\Property();
             $property->property = $propertyManager->alias ?? $fieldName;
-            if ($isReadOnly) {
-                $property->readOnly = true;
-            }
-            // 描述
             $apiModelProperty->value !== null && $property->description = $apiModelProperty->value;
-            // required
-            /** @var Required $requiredAnnotation */
-            $requiredAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, Required::class)?->toAnnotations()[0];
-            if ($apiModelProperty->required || $requiredAnnotation) {
+            if ($isRequired) {
+                // 验证发生在 DTO 映射前，不可写属性仍可能是请求必填字段。
                 $requiredArr[] = $property->property;
             }
             $property->example = $apiModelProperty->example;
             $property->default = $this->common->getPropertyDefaultValue($className, $reflectionProperty);
 
-            $isSimpleType = $propertyManager->isSimpleType;
-            $phpSimpleType = $propertyManager->phpSimpleType;
-            if ($apiModelProperty->phpType) {
-                $isSimpleType = true;
-                $phpSimpleType = $apiModelProperty->phpType;
+            $schema = $apiModelProperty->phpType
+                ? $this->createSchema(type: $apiModelProperty->phpType, namespace: $rc->getNamespaceName())
+                : $this->createSchema($propertyManager);
+            $inAnnotation = ApiAnnotation::getProperty($sourceClassName, $fieldName, In::class)?->toAnnotations()[0];
+            if ($inAnnotation !== null && empty($apiModelProperty->phpType)) {
+                $schema->enum = $inAnnotation->getValue();
             }
-
-            // swagger 类型
-            $swaggerType = $this->common->getSwaggerType($phpSimpleType);
-
-            // 枚举:in
-            if (! empty($inAnnotation) && empty($apiModelProperty->phpType)) {
-                $property->type = $swaggerType;
-                $property->enum = $inAnnotation->getValue();
-            }
-            // 简单类型
-            elseif ($isSimpleType) {
-                // 数组
-                if ($swaggerType == 'array') {
-                    $property->type = 'array';
-                    $property->items = new OA\Items();
-                } else {
-                    // 普通简单类型
-                    $property->type = $swaggerType;
-                }
-            } // 枚举类型
-            elseif ($propertyManager->enum) {
-                $property->type = $this->common->getSwaggerType($propertyManager->enum->backedType);
-                $property->enum = $propertyManager->enum->valueList;
-            } // 普通类
-            else {
-                if ($swaggerType == 'array') {
-                    $property->type = 'array';
-                    if (! empty($propertyManager->arrClassName)) {
-                        $items = new OA\Items();
-                        $items->ref = $this->common->getComponentsName($propertyManager->arrClassName);
-                        $property->items = $items;
-                        $this->generateSchemas($propertyManager->arrClassName);
-                        $property->default = Generator::UNDEFINED;
-                    } elseif (! empty($propertyManager->arrSimpleType)) {
-                        $items = new OA\Items();
-                        $items->type = $this->common->getSwaggerType($propertyManager->arrSimpleType);
-                        $property->items = $items;
-                    } elseif (! empty($propertyManager->arrInterfaceName)) {
-                        $items = new OA\Items();
-                        $this->setInterfaceSchema($items, $propertyManager->arrInterfaceName);
-                        $property->items = $items;
-                    }
-                } elseif (! empty($propertyManager->className)) {
-                    $property->ref = $this->common->getComponentsName($propertyManager->className);
-                    $this->generateSchemas($propertyManager->className);
-                } elseif (! empty($propertyManager->interfaceName)) {
-                    $this->setInterfaceSchema($property, $propertyManager->interfaceName);
-                } else {
-                    throw ApiDocsException::typeResolutionFailed($className, $fieldName);
-                }
+            $this->copySchemaType($schema, $property);
+            if (! $isWritable && ! $isRequired) {
+                $this->markReadOnly($property);
             }
             $propertyArr[] = $property;
         }
         return ['propertyArr' => $propertyArr, 'requiredArr' => $requiredArr];
+    }
+
+    public function createSchema(?Property $property = null, ?string $type = null, string $namespace = ''): Schema
+    {
+        $property ??= $this->propertyManager->createPropertyFromType($type, $namespace);
+        $schema = new OA\Schema();
+        $this->applySchemaType($schema, $property);
+        return $schema;
     }
 
     public function generateSchemas(string $className)
@@ -169,7 +118,7 @@ class SwaggerComponents
         }
         $schema = new OA\Schema();
         $schema->schema = $simpleClassName;
-        // 先登记再解析属性，防止循环引用类（A ↔ B）导致无限递归
+        // 先登记再解析属性，防止循环引用类（A ↔ B）导致无限递归。
         $this->schemas[$simpleClassName] = $schema;
 
         $data = $this->getProperties($className);
@@ -183,31 +132,121 @@ class SwaggerComponents
         return $this->schemas[$simpleClassName];
     }
 
-    protected function setInterfaceSchema(Schema $property, string $interfaceName): void
+    protected function applySchemaType(Schema $schema, Property $property): void
     {
-        $classMap = Mapper::getJsonMapper()->classMap;
-        $mappedClass = $classMap[$interfaceName] ?? $classMap['\\' . $interfaceName] ?? null;
-        if (is_string($mappedClass) && class_exists($mappedClass)) {
-            $mappedClass = ltrim($mappedClass, '\\');
-            $property->ref = $this->common->getComponentsName($mappedClass);
-            $this->generateSchemas($mappedClass);
+        if ($property->enum !== null) {
+            $this->applyEnum($schema, $property->enum);
+            return;
+        }
+        if ($property->phpSimpleType === 'array') {
+            $this->applyArrayType($schema, $property);
+            return;
+        }
+        if ($property->className !== null) {
+            $this->applyClassType($schema, $property->className);
+            return;
+        }
+        if ($property->interfaceName !== null) {
+            $this->applyClassType($schema, $property->interfaceName);
             return;
         }
 
-        // 动态 classMap 无法在启动期确定具体结构，接口值至少应是对象。
-        $property->type = 'object';
+        $type = $this->common->getSwaggerType($property->phpSimpleType);
+        if ($type !== null) {
+            $schema->type = $type;
+        }
+    }
+
+    protected function applyArrayType(Schema $schema, Property $property): void
+    {
+        $depth = max(1, $property->arrayDepth);
+        $current = $schema;
+        for ($level = 0; $level < $depth; ++$level) {
+            $current->type = 'array';
+            $current->items = new OA\Items();
+            $current = $current->items;
+        }
+
+        if ($property->arrClassName !== null) {
+            $this->applyClassType($current, $property->arrClassName);
+            return;
+        }
+        if ($property->arrInterfaceName !== null) {
+            $this->applyClassType($current, $property->arrInterfaceName);
+            return;
+        }
+        $type = $this->common->getSwaggerType($property->arrSimpleType);
+        if ($type !== null) {
+            $current->type = $type;
+            if ($type === 'array') {
+                $current->items = new OA\Items();
+            }
+        }
+    }
+
+    protected function applyClassType(Schema $schema, string $className): void
+    {
+        $mappedClass = $this->common->resolveDtoClass($className);
+        if ($mappedClass === null) {
+            // 接口或动态 classMap 无法在启动期确定具体结构。
+            $schema->type = 'object';
+            return;
+        }
+        if (enum_exists($mappedClass)) {
+            $this->applyEnumClass($schema, $mappedClass);
+            return;
+        }
+
+        $schema->ref = $this->common->getComponentsName($mappedClass);
+        $this->generateSchemas($mappedClass);
+    }
+
+    protected function applyEnumClass(Schema $schema, string $enumClass): void
+    {
+        $propertyEnum = (new PropertyEnum())->get($enumClass);
+        if ($propertyEnum !== null) {
+            $this->applyEnum($schema, $propertyEnum);
+            return;
+        }
+
+        $schema->type = 'string';
+        $schema->enum = array_map(static fn ($case) => $case->name, $enumClass::cases());
+    }
+
+    protected function applyEnum(Schema $schema, PropertyEnum $propertyEnum): void
+    {
+        $schema->type = $this->common->getSwaggerType($propertyEnum->backedType);
+        $schema->enum = $propertyEnum->valueList;
+    }
+
+    protected function copySchemaType(Schema $source, Schema $target): void
+    {
+        foreach (['type', 'ref', 'items', 'enum'] as $field) {
+            if ($source->{$field} !== Generator::UNDEFINED) {
+                $target->{$field} = $source->{$field};
+            }
+        }
+    }
+
+    protected function markReadOnly(OA\Property $property): void
+    {
+        $property->readOnly = true;
+        if ($property->ref === Generator::UNDEFINED) {
+            return;
+        }
+
+        // swagger-php 序列化 $ref 时会丢弃同级字段，使用 allOf 保留 readOnly。
+        $ref = new OA\Schema();
+        $ref->ref = $property->ref;
+        $property->ref = Generator::UNDEFINED;
+        $property->allOf = [$ref];
     }
 
     protected function buildPropertyFromReflection(\ReflectionProperty $reflectionProperty): Property
     {
-        $property = new Property();
-        $phpType = $this->common->getTypeName($reflectionProperty);
-        if ($this->common->isSimpleType($phpType)) {
-            $property->phpSimpleType = $phpType;
-        } else {
-            $property->isSimpleType = false;
-            $property->className = $phpType;
-        }
-        return $property;
+        return $this->propertyManager->createPropertyFromType(
+            $this->common->getTypeName($reflectionProperty),
+            $reflectionProperty->getDeclaringClass()->getNamespaceName(),
+        );
     }
 }

@@ -24,14 +24,14 @@
 
 - PHP >= 8.1
 - Hyperf ~3.1 或 ~3.2
-- DTO ~4.0
+- DTO ~4.0.0
 - Swoole >= 5.0 或 Swow
 
 ## 💡 使用须知
 
 - 控制器方法尽可能返回具体的类（包含简单类型），这样能更好地生成文档
 - 当返回类无法满足需求时，可使用 `#[ApiResponse]` 注解补充
-- DTO 4.0 输入只接受字段 primaryKey：有 `#[JSONField]` 时使用其外部别名，否则使用 PHP 属性名；private/protected 属性需要正常业务 setter 才能接收输入，readonly/static 属性不参与输入映射
+- DTO 4.0 输入只接受字段 primaryKey：有 `#[JSONField]` 时使用其外部别名，否则使用 PHP 属性名；private/protected 属性需要正常业务 setter 才能接收输入，readonly/static 属性不参与输入映射。带 `#[Required]` 的字段例外：验证先于映射执行，文档仍将其列为请求必填字段
 - 接口属性建议通过 DTO `classMap` 指定具体类；未指定或运行时动态映射时，文档降级为通用 `object`
 - 升级到 DTO 4.0 后，建议清理并重新生成 `runtime/container/proxy/` 中的代理文件
 

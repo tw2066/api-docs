@@ -18,6 +18,7 @@ use Hyperf\DTO\ApiAnnotation;
 use Hyperf\DTO\Scan\MethodParametersManager;
 use Hyperf\DTO\Scan\Property;
 use Hyperf\DTO\Scan\PropertyManager;
+use OpenApi\Annotations\Schema;
 use OpenApi\Attributes as OA;
 use Psr\Container\ContainerInterface;
 
@@ -76,29 +77,32 @@ class GenerateParameters
                 $requestBody = new OA\RequestBody();
                 $requestBody->required = true;
                 $property = $this->methodParametersManager->getProperty($this->controller, $this->action, $paramName);
-                $requestBody->content = $this->getContent($property->arrClassName ?? '', property: $property);
+                $requestBody->content = $this->getContent('array', property: $property);
                 $result['requestBody'] = $requestBody;
             }
 
-            if ($this->container->has($parameterClassName)) {
+            $resolvedParameterClass = $this->common->resolveDtoClass($parameterClassName) ?? $parameterClassName;
+            if ($this->container->has($resolvedParameterClass)
+                || class_exists($resolvedParameterClass)
+                || interface_exists($resolvedParameterClass)
+            ) {
                 if ($methodParameter == null) {
                     continue;
                 }
                 if ($methodParameter->isRequestBody()) {
                     $requestBody = new OA\RequestBody();
                     $requestBody->required = true;
-                    // $requestBody->description = '';
-                    $requestBody->content = $this->getContent($parameterClassName);
+                    $requestBody->content = $this->getContent($resolvedParameterClass);
                     $result['requestBody'] = $requestBody;
                 }
                 if ($methodParameter->isRequestQuery()) {
-                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($parameterClassName, 'query'));
+                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($resolvedParameterClass, 'query'));
                 }
                 if ($methodParameter->isRequestHeader()) {
-                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($parameterClassName, 'header'));
+                    $parameterArr = array_merge($parameterArr, $this->getParameterArrByClass($resolvedParameterClass, 'header'));
                 }
                 if ($methodParameter->isRequestFormData()) {
-                    $requestFormDataclass = $parameterClassName;
+                    $requestFormDataclass = $resolvedParameterClass;
                 }
             }
         }
@@ -134,53 +138,40 @@ class GenerateParameters
     public function getParameterArrByClass(string $parameterClassName, string $in): array
     {
         $parameters = [];
+        $this->common->syncDtoMapper();
         $rc = ReflectionManager::reflectClass($parameterClassName);
         foreach ($rc->getProperties() ?? [] as $reflectionProperty) {
             $fieldName = $reflectionProperty->getName();
-            if ($reflectionProperty->isStatic() || $reflectionProperty->isReadOnly()) {
+            if ($reflectionProperty->isStatic()) {
                 continue;
             }
-            if (! $reflectionProperty->isPublic()
-                && ! $rc->hasMethod(\Hyperf\Support\setter($fieldName))
-            ) {
-                continue;
-            }
-            $propertyManager = $this->propertyManager->getProperty($parameterClassName, $reflectionProperty->name);
-            $parameter = new OA\Parameter();
-            $schema = new OA\Schema();
-            $parameter->name = $propertyManager?->alias ?? $fieldName;
-            $parameter->in = $in;
-            $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
-
-            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class);
-            $apiModelProperty = $apiModelProperty ?: new ApiModelProperty();
+            $apiModelProperty = ApiAnnotation::getProperty($parameterClassName, $fieldName, ApiModelProperty::class) ?: new ApiModelProperty();
             if ($apiModelProperty->hidden) {
                 continue;
             }
-            // 存在自定义简单类型
-            if ($apiModelProperty->phpType) {
-                $phpType = $apiModelProperty->phpType;
-            } else {
-                $phpType = $this->common->getTypeName($reflectionProperty);
-                $enum = $propertyManager?->enum;
-                if ($enum) {
-                    $phpType = $enum->backedType;
-                }
-                /** @var In $inAnnotation */
+            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class)?->toAnnotations()[0];
+            $isRequired = $apiModelProperty->required || $requiredAnnotation !== null;
+            [, $accessor, $accessorType] = $this->common->inspectDtoProperty($rc, $fieldName);
+            if ($accessor === null && ! $isRequired) {
+                continue;
+            }
+
+            $propertyManager = $this->propertyManager->getProperty($parameterClassName, $fieldName);
+            $schema = $apiModelProperty->phpType
+                ? $this->swaggerComponents->createSchema(type: $apiModelProperty->phpType, namespace: $rc->getNamespaceName())
+                : $this->swaggerComponents->createSchema($propertyManager, $accessorType, $rc->getNamespaceName());
+            $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
+            if (empty($apiModelProperty->phpType)) {
                 $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class)?->toAnnotations()[0];
-                if (! empty($inAnnotation)) {
+                if ($inAnnotation !== null) {
                     $schema->enum = $inAnnotation->getValue();
-                }
-                if (! empty($enum)) {
-                    $schema->enum = $enum->valueList;
                 }
             }
 
-            $schema->type = $this->common->getSwaggerType($phpType);
-
-            /** @var Required $requiredAnnotation */
-            $requiredAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, Required::class)?->toAnnotations()[0];
-            if ($apiModelProperty->required || $requiredAnnotation) {
+            $parameter = new OA\Parameter();
+            $parameter->name = $propertyManager?->alias ?? $fieldName;
+            $parameter->in = $in;
+            if ($isRequired) {
                 $parameter->required = true;
             }
             $parameter->schema = $schema;
@@ -200,23 +191,9 @@ class GenerateParameters
         return $arr;
     }
 
-    protected function getJsonContent(string $className, ?Property $property = null): OA\JsonContent
+    protected function getJsonContent(string $className, ?Property $property = null): Schema
     {
-        $jsonContent = new OA\JsonContent();
-        $this->swaggerComponents->generateSchemas($className);
-        if ($property?->phpSimpleType == 'array') {
-            $jsonContent->type = 'array';
-            $items = new OA\Items();
-            if ($property->arrClassName) {
-                $items->ref = $this->common->getComponentsName($property->arrClassName);
-            } else {
-                $items->type = $this->common->getSwaggerType($property->arrSimpleType);
-            }
-            $jsonContent->items = $items;
-        } else {
-            $jsonContent->ref = $this->common->getComponentsName($className);
-        }
-        return $jsonContent;
+        return $this->swaggerComponents->createSchema($property, $className);
     }
 
     /**
@@ -234,7 +211,10 @@ class GenerateParameters
             $parameter->name = $param->name;
             $parameter->in = $param->getIn();
             $schema->default = $param->default;
-            $schema->type = $this->common->getSwaggerType($param->type);
+            $type = $this->common->getSwaggerType($param->type);
+            if ($type !== null) {
+                $schema->type = $type;
+            }
             // 描述
             $parameter->description = $param->description;
             if ($param->required !== null) {
@@ -269,7 +249,10 @@ class GenerateParameters
             $property->description = $param->description;
             $param->required && $requiredArr[] = $fieldName;
             $property->default = $param->default;
-            $property->type = $this->common->getSwaggerType($param->type);
+            $type = $this->common->getSwaggerType($param->type);
+            if ($type !== null) {
+                $property->type = $type;
+            }
             $property->format = $param->format;
             $propertyArr[] = $property;
         }
