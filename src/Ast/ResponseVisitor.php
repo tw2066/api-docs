@@ -45,7 +45,8 @@ class ResponseVisitor extends NodeVisitorAbstract
                     $propertyTypeName = 'array';
                 }
                 $node->type = new Node\Identifier($propertyTypeName);
-                // $node->props[0]->default = null;
+                // 原默认值可能与运行时替换后的类型不兼容。
+                $node->props[0]->default = null;
             }
         }
         if ($node instanceof Node\Stmt\Class_

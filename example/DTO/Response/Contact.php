@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace HyperfExample\ApiDocs\DTO\Response;
 
+use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
+use HyperfExample\ApiDocs\DTO\Address;
 
+#[ApiModel('联系人信息')]
 class Contact
 {
     #[ApiModelProperty('名称')]
-    public string $name;
+    public string $name = '';
 
     #[ApiModelProperty('年龄')]
     public ?int $age = null;
@@ -17,18 +20,14 @@ class Contact
     #[ApiModelProperty('城市')]
     public ?CityResponse $city = null;
 
-    #[ApiModelProperty('城市1')]
-    public ?City1 $city1 = null;
-
     /**
-     * 需要绝对路径.
-     * @var \HyperfExample\ApiDocs\DTO\Address[]
+     * @var Address[]
      */
     #[ApiModelProperty('地址')]
-    public array $addressArr;
+    public array $addressArr = [];
 
     #[ApiModelProperty('数组')]
-    private ?array $arr;
+    private ?array $arr = null;
 
     public function getArr(): ?array
     {

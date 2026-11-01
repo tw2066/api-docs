@@ -12,8 +12,10 @@ use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\DTO\DtoConfig;
+use Hyperf\DTO\Type\PhpType;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\Page;
+use HyperfTest\ApiDocs\Request\ProxyNullableDefaults;
 use HyperfTest\ApiDocs\Request\ProxyWithHelper;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
@@ -98,6 +100,25 @@ class GenerateProxyClassTest extends TestCase
         $content = file_get_contents($filename);
         $this->assertSame(1, substr_count($content, 'class ProxyWithHelperArrayAddress'));
         $this->assertSame(1, substr_count($content, 'class ProxyHelper'));
+    }
+
+    public function testGeneratedProxyRemovesIncompatibleDefaults(): void
+    {
+        (new ApiVariable())->collectProperty(ProxyNullableDefaults::class, 'data');
+        (new ApiVariable())->collectProperty(ProxyNullableDefaults::class, 'content');
+        $proxy = $this->makeGenerateProxyClass();
+        $proxyClass = $proxy->generateByTypes(ProxyNullableDefaults::class, [
+            'data' => PhpType::INT,
+            'content' => null,
+        ]);
+        $filename = sys_get_temp_dir() . '/api_docs_proxy_test/' . str_replace('\\', '_', $proxyClass) . '.dto.proxy.php';
+
+        $content = file_get_contents($filename);
+        $this->assertStringContainsString('public int $data;', $content);
+        $this->assertStringNotContainsString('public int $data = null', $content);
+
+        require $filename;
+        $this->assertTrue(class_exists($proxyClass, false));
     }
 
     private function makeGenerateProxyClass(): GenerateProxyClass
