@@ -8,10 +8,10 @@ use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\MethodDefinitionCollector;
 use Hyperf\Di\MethodDefinitionCollectorInterface;
+use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use ReflectionClass;
 
 /**
  * @internal
@@ -111,7 +111,15 @@ class SwaggerCommonTest extends TestCase
         $this->assertEquals('array', $swaggerCommon->getSwaggerType('array'));
         $this->assertEquals('object', $swaggerCommon->getSwaggerType('object'));
         $this->assertEquals('string', $swaggerCommon->getSwaggerType('string'));
-        $this->assertEquals('null', $swaggerCommon->getSwaggerType('unknown'));
+        $this->assertNull($swaggerCommon->getSwaggerType('unknown'));
+        $this->assertNull($swaggerCommon->getSwaggerType('mixed'));
+    }
+
+    public function testGetPhpTypeSupportsInterfaces(): void
+    {
+        $swaggerCommon = new SwaggerCommon();
+
+        $this->assertSame('\\' . SchemaPaymentInterface::class, $swaggerCommon->getPhpType(SchemaPaymentInterface::class));
     }
 
     public function testGetSimpleType2SwaggerType(): void
@@ -144,7 +152,7 @@ class SwaggerCommonTest extends TestCase
         $swaggerCommon->getSimpleClassName('Test\Class\Name');
         $swaggerCommon->simpleClassNameClear();
 
-        $reflection = new ReflectionClass($swaggerCommon);
+        $reflection = new \ReflectionClass($swaggerCommon);
         $property = $reflection->getProperty('classNameCache');
         $property->setAccessible(true);
         $this->assertEmpty($property->getValue($swaggerCommon));

@@ -94,57 +94,30 @@ class GenerateResponses
             $returnTypeClassName = is_object($returnTypeClassName) ? $returnTypeClassName::class : $returnTypeClassName;
         }
         $returnTypeClassName == 'array' && $isArray = true;
-        $arr = [];
+        $schemaType = $returnTypeClassName;
+        if ($isArray && $schemaType !== 'array') {
+            $schemaType = ($schemaType ?? 'mixed') . '[]';
+        }
+
         $mediaType = new OA\MediaType();
-        $mediaTypeStr = 'text/plain';
-        // 简单类型
-        if ($this->common->isSimpleType($returnTypeClassName)) {
-            $schema = new OA\Schema();
-            $schema->type = $this->common->getSwaggerType($returnTypeClassName);
-            // 数组
-            if ($isArray) {
-                $mediaTypeStr = 'application/json';
-                $schema->type = 'array';
-                $items = new OA\Items();
-                $swaggerType = $this->common->getSwaggerType($returnTypeClassName);
-                $items->type = $swaggerType == 'array' ? 'null' : $swaggerType;
-                $schema->items = $items;
-            }
-            $mediaType->schema = $schema;
-        } elseif ($this->container->has($returnTypeClassName)) {
-            $mediaTypeStr = 'application/json';
-            $mediaType->schema = $this->getJsonContent($returnTypeClassName, $isArray);
+        if ($isArray) {
+            $mediaType->mediaType = 'application/json';
+            $mediaType->schema = $this->swaggerComponents->createSchema(type: $schemaType);
+        } elseif ($this->common->isSimpleType($returnTypeClassName)) {
+            $mediaType->mediaType = 'text/plain';
+            $mediaType->schema = $this->swaggerComponents->createSchema(type: $returnTypeClassName);
+        } elseif (is_string($returnTypeClassName) && (
+            $this->container->has($returnTypeClassName)
+            || class_exists($returnTypeClassName)
+            || interface_exists($returnTypeClassName)
+        )) {
+            $mediaType->mediaType = 'application/json';
+            $mediaType->schema = $this->swaggerComponents->createSchema(type: $returnTypeClassName);
         } else {
-            //            $schema = new OA\Schema();
-            //            $schema->type = 'null';
-            //            $mediaType->schema = $schema;
-            // 其他类型数据 eg:mixed
             return [];
         }
 
-        $arr[$mediaTypeStr] = $mediaType;
-        $mediaType->mediaType = $mediaTypeStr;
-        return $arr;
-    }
-
-    /**
-     * 获取返回类型的JsonContent.
-     */
-    protected function getJsonContent(string $returnTypeClassName, bool $isArray): OA\JsonContent
-    {
-        $jsonContent = new OA\JsonContent();
-        $this->swaggerComponents->generateSchemas($returnTypeClassName);
-
-        if ($isArray) {
-            $jsonContent->type = 'array';
-            $items = new OA\Items();
-            $items->ref = $this->common->getComponentsName($returnTypeClassName);
-            $jsonContent->items = $items;
-        } else {
-            $jsonContent->ref = $this->common->getComponentsName($returnTypeClassName);
-        }
-
-        return $jsonContent;
+        return [$mediaType->mediaType => $mediaType];
     }
 
     /**

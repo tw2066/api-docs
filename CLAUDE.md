@@ -15,7 +15,7 @@ composer analyse               # PHPStan 静态分析（-l 0，仅 src/）
 composer cs-fix                # php-cs-fixer 格式化 src 和 tests
 ```
 
-CI 矩阵为 PHP 8.2/8.3/8.4 + Hyperf 3.2（pin `hyperf/di:3.2.*` + `tangwei/dto:dev-master`）。本包通过 `tangwei/dto ~3.2` 传递依赖 Hyperf ~3.2，不兼容 Hyperf 3.1。
+CI 矩阵覆盖 PHP 8.1/8.2/8.3/8.4 + Hyperf 3.1，以及 PHP 8.2/8.3/8.4 + Hyperf 3.2（pin 对应 `hyperf/di` + `tangwei/dto:dev-master`）。本包通过 `tangwei/dto ~4.0.0` 传递依赖 Hyperf 3.1/3.2。
 
 ## 架构核心
 

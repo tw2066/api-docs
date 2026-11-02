@@ -5,16 +5,44 @@ declare(strict_types=1);
 namespace Hyperf\ApiDocs\Swagger;
 
 use Hyperf\DTO\DtoCommon;
+use Hyperf\DTO\JsonMapper;
+use Hyperf\DTO\Mapper;
 use Hyperf\DTO\Type\PhpType;
 use OpenApi\Generator;
-use ReflectionProperty;
-use Throwable;
 
 class SwaggerCommon extends DtoCommon
 {
     protected array $classNameCache = [];
 
     protected array $simpleClassNameCache = [];
+
+    private ?JsonMapper $dtoMapper = null;
+
+    public function setDtoMapper(JsonMapper $dtoMapper): void
+    {
+        $this->dtoMapper = $dtoMapper;
+    }
+
+    public function getDtoMapper(): JsonMapper
+    {
+        return $this->dtoMapper ?? Mapper::getJsonMapper();
+    }
+
+    public function syncDtoMapper(): void
+    {
+        $this->bIgnoreVisibility = $this->getDtoMapper()->bIgnoreVisibility;
+    }
+
+    public function inspectDtoProperty(\ReflectionClass $rc, string $name): array
+    {
+        $this->syncDtoMapper();
+        return $this->inspectPropertyMetadata($rc, $name);
+    }
+
+    public function resolveDtoClass(?string $type): ?string
+    {
+        return $this->getDtoMapper()->resolveMappedClass($type, null);
+    }
 
     public function getComponentsName(string $className): string
     {
@@ -53,7 +81,7 @@ class SwaggerCommon extends DtoCommon
     /**
      * 获取swagger类型.
      */
-    public function getSwaggerType(mixed $phpType): string
+    public function getSwaggerType(mixed $phpType): ?string
     {
         return match ($phpType) {
             'int', 'integer' => 'integer',
@@ -62,7 +90,7 @@ class SwaggerCommon extends DtoCommon
             'array' => 'array',
             'object' => 'object',
             'string' => 'string',
-            default => 'null',
+            default => null,
         };
     }
 
@@ -92,13 +120,13 @@ class SwaggerCommon extends DtoCommon
         if (is_object($type) && $type::class !== 'stdClass') {
             return '\\' . $type::class;
         }
-        if (is_string($type) && class_exists($type)) {
+        if (is_string($type) && (class_exists($type) || interface_exists($type))) {
             return '\\' . trim($type, '\\');
         }
         return 'mixed';
     }
 
-    public function getPropertyDefaultValue(string $className, ReflectionProperty $reflectionProperty): mixed
+    public function getPropertyDefaultValue(string $className, \ReflectionProperty $reflectionProperty): mixed
     {
         $default = Generator::UNDEFINED;
         try {
@@ -106,7 +134,7 @@ class SwaggerCommon extends DtoCommon
             if ($reflectionProperty->isInitialized($obj)) {
                 $default = $reflectionProperty->getValue($obj);
             }
-        } catch (Throwable) {
+        } catch (\Throwable) {
             $fieldName = $reflectionProperty->getName();
             $classVars = get_class_vars($className);
             if (isset($classVars[$fieldName])) {

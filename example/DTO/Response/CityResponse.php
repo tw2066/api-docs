@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HyperfExample\ApiDocs\DTO\Response;
 
+use Hyperf\ApiDocs\Annotation\ApiModel;
 use Hyperf\ApiDocs\Annotation\ApiModelProperty;
 use Hyperf\DTO\Annotation\Dto;
 use Hyperf\DTO\Annotation\JSONField;
@@ -11,24 +12,15 @@ use Hyperf\DTO\Annotation\Validation\Required;
 use Hyperf\DTO\Type\Convert;
 
 #[Dto(Convert::SNAKE)]
+#[ApiModel('城市响应')]
 class CityResponse
 {
     #[ApiModelProperty('名称')]
-    public string $name;
-    public string $name22222;
-
-    #[JSONField('name_arr_1')]
-    #[Required]
-    private array $nameArr = [];
+    public string $name = '';
 
     public array $bodyName = [];
 
-    /**
-     * @return array
-     */
-    public function getBodyName(): array
-    {
-        return $this->bodyName;
-    }
-
+    #[JSONField('name_list')]
+    #[Required]
+    private array $nameArr = [];
 }
