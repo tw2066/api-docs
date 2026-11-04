@@ -99,6 +99,11 @@ class SwaggerSchemasTest extends TestCase
         $this->assertEquals('array', $properties[8]->type);
         $this->assertEquals('integer', $properties[8]->items->type);
 
+        // 数组属性不写入 default，避免 Knife4j 把默认值序列化成字符串示例
+        $this->assertEquals('addressList4', $properties[9]->property);
+        $this->assertEquals('array', $properties[9]->type);
+        $this->assertSame(Generator::UNDEFINED, $properties[9]->default);
+
         $addressSchemas = $swaggerComponents->generateSchemas(Address::class);
 
         $addressProperties = $addressSchemas->properties;

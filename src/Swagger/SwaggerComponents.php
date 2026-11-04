@@ -84,8 +84,10 @@ class SwaggerComponents
                 $requiredArr[] = $property->property;
             }
             $property->example = $apiModelProperty->example;
-            $property->default = $this->common->getPropertyDefaultValue($className, $reflectionProperty);
-
+            // 数组默认值会被 Knife4j 生成请求示例时序列化成字符串（如 "[]"），且属性默认值并非服务端默认值，数组不写入 default。
+            if ($propertyManager->phpSimpleType !== 'array') {
+                $property->default = $this->common->getPropertyDefaultValue($className, $reflectionProperty);
+            }
             $schema = $apiModelProperty->phpType
                 ? $this->createSchema(type: $apiModelProperty->phpType, namespace: $rc->getNamespaceName())
                 : $this->createSchema($propertyManager);

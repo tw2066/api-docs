@@ -160,7 +160,9 @@ class GenerateParameters
             $schema = $apiModelProperty->phpType
                 ? $this->swaggerComponents->createSchema(type: $apiModelProperty->phpType, namespace: $rc->getNamespaceName())
                 : $this->swaggerComponents->createSchema($propertyManager, $accessorType, $rc->getNamespaceName());
-            $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
+            if ($propertyManager?->phpSimpleType !== 'array') {
+                $schema->default = $this->common->getPropertyDefaultValue($parameterClassName, $reflectionProperty);
+            }
             if (empty($apiModelProperty->phpType)) {
                 $inAnnotation = ApiAnnotation::getProperty($parameterClassName, $fieldName, In::class)?->toAnnotations()[0];
                 if ($inAnnotation !== null) {

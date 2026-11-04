@@ -39,6 +39,9 @@ class DemoBodyRequest
     #[ArrayType('int')]
     public array $intList2;
 
+    #[ArrayType(Address::class)]
+    public array $addressList4 = [];
+
     /**
      * @param bool $bo
      */
