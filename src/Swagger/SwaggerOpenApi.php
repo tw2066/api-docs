@@ -131,6 +131,11 @@ class SwaggerOpenApi
         }
         // 设置components->schemas
         $this->openApi->components->schemas = array_values($this->componentsSchemas);
+        // Knife4j 页脚设置
+        $this->openApi->x = array_merge(
+            is_array($this->openApi->x) ? $this->openApi->x : [],
+            ['openapi' => ['x-setting' => ['enableFooter' => false]]]
+        );
         // 创建目录
         $outputDir = $this->swaggerConfig->getOutputDir();
         if (file_exists($outputDir) === false) {
