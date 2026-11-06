@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Redoc</title>
+    <title>Api Docs</title>
     <!-- needed for adaptive design -->
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!--
-    Redoc doesn't change outer page styles
+    Redoc CE doesn't reset the body margin
     -->
     <style>
         body {
@@ -18,7 +17,13 @@
     </style>
 </head>
 <body>
+<!--
+Redoc element with link to your API description
+-->
 <redoc spec-url='{{$url}}'></redoc>
-<script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"> </script>
+<!--
+Link to Redoc script on CDN for rendering standalone element
+-->
+<script type="module" src="https://cdn.redoc.ly/redoc/v3.x/bundles/redoc.standalone.js"></script>
 </body>
 </html>
