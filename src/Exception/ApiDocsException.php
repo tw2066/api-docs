@@ -13,6 +13,11 @@ class ApiDocsException extends RuntimeException
         return new self("File not found: {$path}");
     }
 
+    public static function operationNotFound(string $operationId): self
+    {
+        return new self("Operation not found: {$operationId}");
+    }
+
     public static function directoryCreationFailed(string $path): self
     {
         return new self("Failed to create directory: {$path}");
