@@ -73,6 +73,15 @@ class SwaggerLlmsTest extends TestCase
         $this->assertStringNotContainsString('externalDocs', $content);
     }
 
+    public function testDetailDecodesUrlEncodedOperationId(): void
+    {
+        $file = $this->createOpenApiFile();
+
+        $content = (new SwaggerLlms())->detail('anthropicAny%3A.%2BPost', $file);
+
+        $this->assertStringContainsString('`POST /anthropic/{any:.+}`', $content);
+    }
+
     public function testDetailThrowsWhenOperationIdNotExist(): void
     {
         $file = $this->createOpenApiFile();
@@ -133,6 +142,13 @@ class SwaggerLlmsTest extends TestCase
                     'post' => [
                         'tags' => ['Order'],
                         'operationId' => 'ordersPost',
+                        'responses' => ['200' => ['description' => 'ok']],
+                    ],
+                ],
+                '/anthropic/{any:.+}' => [
+                    'post' => [
+                        'tags' => ['Anthropic'],
+                        'operationId' => 'anthropicAny:.+Post',
                         'responses' => ['200' => ['description' => 'ok']],
                     ],
                 ],

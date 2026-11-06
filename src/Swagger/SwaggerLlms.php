@@ -58,6 +58,8 @@ class SwaggerLlms
 
     public function detail(string $operationId, string $filePath): string
     {
+        // 客户端可能对 URL 中的 : + 等字符做百分号编码
+        $operationId = rawurldecode($operationId);
         $openapi = $this->load($filePath);
         $route = $methods = null;
         $path = [];
