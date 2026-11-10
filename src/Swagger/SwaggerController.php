@@ -93,8 +93,12 @@ class SwaggerController
             throw ApiDocsException::fileNotFound($file);
         }
         $filePath = $this->outputDir . '/' . $file;
-        $content = $this->swaggerLlms->detail($operationId, $filePath);
-        return $this->response->raw($content);
+        try {
+            $content = $this->swaggerLlms->detail($operationId, $filePath);
+        } catch (ApiDocsException) {
+            return $this->response->raw("Operation not found: {$operationId}")->withStatus(404);
+        }
+        return $this->response->raw($content)->withHeader('content-type', 'text/markdown; charset=utf-8');
     }
 
     protected function fileResponse(string $filePath)

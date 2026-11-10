@@ -69,8 +69,8 @@ class SwaggerUiController extends SwaggerController
     {
         $filePath = $this->swaggerUiPath . '/doc.html';
         $contents = file_get_contents($filePath);
-        // 调整页脚高度
-        $contents = str_replace('</head>', '<style>.globalFooter{margin:3.5px 0 2.5px !important}.knife4j-body-content{height:calc(100vh - 115px) !important}</style></head>', $contents);
+        // 隐藏页脚
+        $contents = str_replace('</head>', '<style>.globalFooter{display:none !important}.knife4j-body-content{height:calc(100vh - 109px) !important}</style></head>', $contents);
         return $this->response->withAddedHeader('content-type', 'text/html')->withBody(new SwooleStream($contents));
     }
 
