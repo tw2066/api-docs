@@ -17,7 +17,7 @@ return [
     // 设置路由前缀
     'prefix_url' => env('API_DOCS_PREFIX_URL', '/swagger'),
     // 设置 swagger 资源路径，cdn 资源
-    'prefix_swagger_resources' => 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.0',
+    'prefix_swagger_resources' => 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.34.1',
 
     // 设置全局返回的代理类
     // 全局返回 如 [code => 200, data => null] 格式，设置后会全局生成对应文档
