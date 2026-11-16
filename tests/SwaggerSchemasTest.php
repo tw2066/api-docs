@@ -73,36 +73,37 @@ class SwaggerSchemasTest extends TestCase
         $this->assertEquals('string', $properties[1]->type);
         $this->assertEquals('hi', $properties[1]->default);
 
-        $this->assertEquals('bo', $properties[2]->property);
-        $this->assertEquals('boolean', $properties[2]->type);
+        $this->assertEquals('address', $properties[2]->property);
+        $this->assertEquals('#/components/schemas/Address', $properties[2]->ref);
 
-        $this->assertEquals('address', $properties[3]->property);
-        $this->assertEquals('#/components/schemas/Address', $properties[3]->ref);
+        $this->assertEquals('addressList1', $properties[3]->property);
+        $this->assertEquals('array', $properties[3]->type);
+        $this->assertEquals('#/components/schemas/Address', $properties[3]->items->ref);
 
-        $this->assertEquals('addressList1', $properties[4]->property);
+        $this->assertEquals('addressList2', $properties[4]->property);
         $this->assertEquals('array', $properties[4]->type);
         $this->assertEquals('#/components/schemas/Address', $properties[4]->items->ref);
 
-        $this->assertEquals('addressList2', $properties[5]->property);
+        $this->assertEquals('addressList3', $properties[5]->property);
         $this->assertEquals('array', $properties[5]->type);
         $this->assertEquals('#/components/schemas/Address', $properties[5]->items->ref);
 
-        $this->assertEquals('addressList3', $properties[6]->property);
+        $this->assertEquals('intList1', $properties[6]->property);
         $this->assertEquals('array', $properties[6]->type);
-        $this->assertEquals('#/components/schemas/Address', $properties[6]->items->ref);
+        $this->assertEquals('integer', $properties[6]->items->type);
 
-        $this->assertEquals('intList1', $properties[7]->property);
+        $this->assertEquals('intList2', $properties[7]->property);
         $this->assertEquals('array', $properties[7]->type);
         $this->assertEquals('integer', $properties[7]->items->type);
 
-        $this->assertEquals('intList2', $properties[8]->property);
-        $this->assertEquals('array', $properties[8]->type);
-        $this->assertEquals('integer', $properties[8]->items->type);
-
         // 数组属性不写入 default，避免 Knife4j 把默认值序列化成字符串示例
-        $this->assertEquals('addressList4', $properties[9]->property);
-        $this->assertEquals('array', $properties[9]->type);
-        $this->assertSame(Generator::UNDEFINED, $properties[9]->default);
+        $this->assertEquals('addressList4', $properties[8]->property);
+        $this->assertEquals('array', $properties[8]->type);
+        $this->assertSame(Generator::UNDEFINED, $properties[8]->default);
+
+        // bo 是 private 属性，php-cs-fixer 的 ordered_class_elements 会把它排在 public 属性之后
+        $this->assertEquals('bo', $properties[9]->property);
+        $this->assertEquals('boolean', $properties[9]->type);
 
         $addressSchemas = $swaggerComponents->generateSchemas(Address::class);
 
