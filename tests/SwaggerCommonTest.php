@@ -12,6 +12,7 @@ use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 
 /**
  * @internal
@@ -152,7 +153,7 @@ class SwaggerCommonTest extends TestCase
         $swaggerCommon->getSimpleClassName('Test\Class\Name');
         $swaggerCommon->simpleClassNameClear();
 
-        $reflection = new \ReflectionClass($swaggerCommon);
+        $reflection = new ReflectionClass($swaggerCommon);
         $property = $reflection->getProperty('classNameCache');
         $property->setAccessible(true);
         $this->assertEmpty($property->getValue($swaggerCommon));

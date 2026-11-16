@@ -9,6 +9,9 @@ use Hyperf\DTO\JsonMapper;
 use Hyperf\DTO\Mapper;
 use Hyperf\DTO\Type\PhpType;
 use OpenApi\Generator;
+use ReflectionClass;
+use ReflectionProperty;
+use Throwable;
 
 class SwaggerCommon extends DtoCommon
 {
@@ -33,7 +36,7 @@ class SwaggerCommon extends DtoCommon
         $this->bIgnoreVisibility = $this->getDtoMapper()->bIgnoreVisibility;
     }
 
-    public function inspectDtoProperty(\ReflectionClass $rc, string $name): array
+    public function inspectDtoProperty(ReflectionClass $rc, string $name): array
     {
         $this->syncDtoMapper();
         return $this->inspectPropertyMetadata($rc, $name);
@@ -126,7 +129,7 @@ class SwaggerCommon extends DtoCommon
         return 'mixed';
     }
 
-    public function getPropertyDefaultValue(string $className, \ReflectionProperty $reflectionProperty): mixed
+    public function getPropertyDefaultValue(string $className, ReflectionProperty $reflectionProperty): mixed
     {
         $default = Generator::UNDEFINED;
         try {
@@ -134,7 +137,7 @@ class SwaggerCommon extends DtoCommon
             if ($reflectionProperty->isInitialized($obj)) {
                 $default = $reflectionProperty->getValue($obj);
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $fieldName = $reflectionProperty->getName();
             $classVars = get_class_vars($className);
             if (isset($classVars[$fieldName])) {

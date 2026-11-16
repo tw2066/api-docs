@@ -7,6 +7,7 @@ namespace HyperfTest\ApiDocs;
 use Hyperf\ApiDocs\Exception\ApiDocsException;
 use Hyperf\ApiDocs\Swagger\SwaggerLlms;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 /**
  * @internal
@@ -26,7 +27,7 @@ class SwaggerLlmsTest extends TestCase
 
     public function testEmptySchemaObjectIsDumpedAsYamlMap(): void
     {
-        $method = new \ReflectionMethod(SwaggerLlms::class, 'dumpYaml');
+        $method = new ReflectionMethod(SwaggerLlms::class, 'dumpYaml');
         $method->setAccessible(true);
 
         $yaml = $method->invoke(new SwaggerLlms(), ['schema' => ['items' => []]]);
@@ -98,7 +99,7 @@ class SwaggerLlmsTest extends TestCase
             'Node' => ['type' => 'object', 'properties' => ['child' => ['$ref' => '#/components/schemas/Node']]],
         ]];
 
-        $method = new \ReflectionMethod(SwaggerLlms::class, 'getSchemas');
+        $method = new ReflectionMethod(SwaggerLlms::class, 'getSchemas');
         $method->setAccessible(true);
         $schemas = $method->invoke(new SwaggerLlms(), ['$ref' => '#/components/schemas/Node'], $components);
 
@@ -107,7 +108,7 @@ class SwaggerLlmsTest extends TestCase
 
     public function testGetSchemasSkipsUndefinedSchema(): void
     {
-        $method = new \ReflectionMethod(SwaggerLlms::class, 'getSchemas');
+        $method = new ReflectionMethod(SwaggerLlms::class, 'getSchemas');
         $method->setAccessible(true);
         $schemas = $method->invoke(new SwaggerLlms(), ['$ref' => '#/components/schemas/Missing'], []);
 

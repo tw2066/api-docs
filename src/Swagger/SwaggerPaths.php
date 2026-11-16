@@ -139,7 +139,7 @@ class SwaggerPaths
      */
     protected function getClassMethodPath(string $fullClassName, string $methodName): string
     {
-        return sprintf('%s::%s',$fullClassName,$methodName);
+        return sprintf('%s::%s', $fullClassName, $methodName);
     }
 
     /**

@@ -9,6 +9,10 @@ use Hyperf\Contract\ConfigInterface;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class SwaggerConfigTest extends TestCase
 {
     protected function tearDown(): void

@@ -4,4 +4,6 @@ declare(strict_types=1);
 
 namespace HyperfTest\ApiDocs\Request;
 
-interface SchemaPaymentInterface {}
+interface SchemaPaymentInterface
+{
+}

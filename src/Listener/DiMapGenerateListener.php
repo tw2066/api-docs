@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Hyperf\ApiDocs\Listener;
 
+use Closure;
 use Hyperf\ApiDocs\Swagger\SwaggerConfig;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Container;
@@ -15,6 +16,13 @@ use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\AfterWorkerStart;
 use Hyperf\Server\Event\MainCoroutineServerStart;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionProperty;
+use Throwable;
 
 use function Hyperf\Support\class_basename;
 
@@ -34,7 +42,8 @@ class DiMapGenerateListener implements ListenerInterface
         private SwaggerConfig $swaggerConfig,
         private ContainerInterface $container,
         private DtoConfig $dtoConfig,
-    ) {}
+    ) {
+    }
 
     /**
      * @return string[] returns the events that you want to listen
@@ -60,7 +69,7 @@ class DiMapGenerateListener implements ListenerInterface
         }
         try {
             $this->generate();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Generate Di Map file failed: ' . $e->getMessage());
         }
     }
@@ -80,9 +89,9 @@ class DiMapGenerateListener implements ListenerInterface
             return;
         }
         $payload = [
-                       'base_path' => BASE_PATH,
-                       'generated_at' => date('c'),
-                   ] + $this->collect();
+            'base_path' => BASE_PATH,
+            'generated_at' => date('c'),
+        ] + $this->collect();
         // 原子写：避免 IDE 插件读到写了一半的文件
         $tmpPath = $path . '.tmp';
         file_put_contents($tmpPath, json_encode(
@@ -91,28 +100,6 @@ class DiMapGenerateListener implements ListenerInterface
         ));
         rename($tmpPath, $path);
         $this->logger->debug('Generate Di Map file: ' . $path);
-    }
-
-    /**
-     * 是否需要重新生成：产物不存在时必须生成；否则 dependencies.php（项目绑定表）
-     * 或 lazy_loader.php（懒加载代理配置，可选文件）比产物新才重新生成。
-     */
-    private function shouldRegenerate(string $diMapPath): bool
-    {
-        if (! is_file($diMapPath)) {
-            return true;
-        }
-        // 产物已存在且开启扫描缓存: 视为构建期产物, 不再重写
-        if ($this->dtoConfig->isScanCacheable()) {
-            return false;
-        }
-        $generatedAt = filemtime($diMapPath);
-        foreach ([BASE_PATH . '/config/autoload/dependencies.php', BASE_PATH . '/config/lazy_loader.php'] as $source) {
-            if (is_file($source) && filemtime($source) > $generatedAt) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -150,6 +137,28 @@ class DiMapGenerateListener implements ListenerInterface
             'definitions' => $this->filterSelfMapped($definitions),
             'resolved' => $this->filterSelfMapped($resolved),
         ];
+    }
+
+    /**
+     * 是否需要重新生成：产物不存在时必须生成；否则 dependencies.php（项目绑定表）
+     * 或 lazy_loader.php（懒加载代理配置，可选文件）比产物新才重新生成。
+     */
+    private function shouldRegenerate(string $diMapPath): bool
+    {
+        if (! is_file($diMapPath)) {
+            return true;
+        }
+        // 产物已存在且开启扫描缓存: 视为构建期产物, 不再重写
+        if ($this->dtoConfig->isScanCacheable()) {
+            return false;
+        }
+        $generatedAt = filemtime($diMapPath);
+        foreach ([BASE_PATH . '/config/autoload/dependencies.php', BASE_PATH . '/config/lazy_loader.php'] as $source) {
+            if (is_file($source) && filemtime($source) > $generatedAt) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -199,8 +208,8 @@ class DiMapGenerateListener implements ListenerInterface
      */
     private function getFactoryPath(callable|string $factory): ?string
     {
-        if ($factory instanceof \Closure) {
-            $file = (new \ReflectionFunction($factory))->getFileName();
+        if ($factory instanceof Closure) {
+            $file = (new ReflectionFunction($factory))->getFileName();
             return $this->localizePath($file ?: null);
         }
         if (is_array($factory)) {
@@ -223,18 +232,18 @@ class DiMapGenerateListener implements ListenerInterface
     {
         try {
             $callable = match (true) {
-                $factory instanceof \Closure => new \ReflectionFunction($factory),
-                is_array($factory) => new \ReflectionMethod($factory[0], $factory[1]),
-                is_string($factory) && str_contains($factory, '::') => new \ReflectionMethod(...explode('::', $factory, 2)),
-                is_string($factory) && method_exists($factory, '__invoke') => new \ReflectionMethod($factory, '__invoke'),
-                is_object($factory) => new \ReflectionMethod($factory, '__invoke'),
+                $factory instanceof Closure => new ReflectionFunction($factory),
+                is_array($factory) => new ReflectionMethod($factory[0], $factory[1]),
+                is_string($factory) && str_contains($factory, '::') => new ReflectionMethod(...explode('::', $factory, 2)),
+                is_string($factory) && method_exists($factory, '__invoke') => new ReflectionMethod($factory, '__invoke'),
+                is_object($factory) => new ReflectionMethod($factory, '__invoke'),
                 default => null,
             };
-        } catch (\ReflectionException) {
+        } catch (ReflectionException) {
             return null;
         }
         $type = $callable?->getReturnType();
-        if (! $type instanceof \ReflectionNamedType || $type->isBuiltin()) {
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return null;
         }
         $name = $type->getName();
@@ -243,7 +252,7 @@ class DiMapGenerateListener implements ListenerInterface
             return $name;
         }
         // self/static/parent 需结合声明类解析
-        if (! $callable instanceof \ReflectionMethod) {
+        if (! $callable instanceof ReflectionMethod) {
             return null;
         }
         if ($lower === 'parent') {
@@ -258,7 +267,7 @@ class DiMapGenerateListener implements ListenerInterface
         if (! class_exists($class) && ! interface_exists($class) && ! enum_exists($class)) {
             return null;
         }
-        $file = (new \ReflectionClass($class))->getFileName();
+        $file = (new ReflectionClass($class))->getFileName();
         if (! $file) {
             return null;
         }
@@ -315,6 +324,6 @@ class DiMapGenerateListener implements ListenerInterface
 
     private function readProperty(object $object, string $property): mixed
     {
-        return (new \ReflectionProperty($object, $property))->getValue($object);
+        return (new ReflectionProperty($object, $property))->getValue($object);
     }
 }

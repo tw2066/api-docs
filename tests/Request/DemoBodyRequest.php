@@ -8,17 +8,14 @@ use Hyperf\DTO\Annotation\ArrayType;
 
 class DemoBodyRequest
 {
-
     public int $int = 12345;
 
     public string $str = 'hi';
 
-    private bool $bo = true;
-
     public Address $address;
 
     /**
-     * @var \HyperfTest\ApiDocs\Request\Address[]
+     * @var Address[]
      */
     public array $addressList1;
 
@@ -26,7 +23,6 @@ class DemoBodyRequest
      * @var Address[]
      */
     public array $addressList2;
-
 
     #[ArrayType(Address::class)]
     public array $addressList3;
@@ -42,9 +38,8 @@ class DemoBodyRequest
     #[ArrayType(Address::class)]
     public array $addressList4 = [];
 
-    /**
-     * @param bool $bo
-     */
+    private bool $bo = true;
+
     public function setBo(bool $bo): void
     {
         $this->bo = $bo;
@@ -54,7 +49,4 @@ class DemoBodyRequest
     {
         return $this->bo;
     }
-
-
-
 }

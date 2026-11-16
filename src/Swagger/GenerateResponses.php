@@ -25,7 +25,8 @@ class GenerateResponses
         protected SwaggerComponents $swaggerComponents,
         protected SwaggerCommon $common,
         protected GenerateProxyClass $genericProxyClass,
-    ) {}
+    ) {
+    }
 
     /**
      * 生成Response.

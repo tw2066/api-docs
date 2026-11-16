@@ -27,6 +27,8 @@ use Mockery as m;
 use OpenApi\Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionMethod;
+use ReflectionProperty;
 
 /**
  * @internal
@@ -172,11 +174,11 @@ class GenerateParametersTest extends TestCase
     public function testRequestBodyArrayHasItemsWithoutNullComponent(): void
     {
         $generateParameters = $this->createGenerateParameters();
-        $method = new \ReflectionMethod($generateParameters, 'getJsonContent');
+        $method = new ReflectionMethod($generateParameters, 'getJsonContent');
         $method->setAccessible(true);
 
         $schema = $method->invoke($generateParameters, 'array');
-        $property = new \ReflectionProperty($generateParameters, 'swaggerComponents');
+        $property = new ReflectionProperty($generateParameters, 'swaggerComponents');
         $property->setAccessible(true);
         $components = $property->getValue($generateParameters);
 
@@ -194,7 +196,7 @@ class GenerateParametersTest extends TestCase
         $generateParameters = $this->createGenerateParameters(swaggerCommon: $swaggerCommon);
         $property = (new PropertyManager($swaggerCommon, new PropertyEnum()))
             ->createPropertyFromType(SchemaPaymentInterface::class . '[][]', '');
-        $method = new \ReflectionMethod($generateParameters, 'getJsonContent');
+        $method = new ReflectionMethod($generateParameters, 'getJsonContent');
         $method->setAccessible(true);
 
         $schema = $method->invoke($generateParameters, 'array', $property);

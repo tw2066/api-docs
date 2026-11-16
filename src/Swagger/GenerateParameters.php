@@ -40,7 +40,8 @@ class GenerateParameters
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
         protected MethodParametersManager $methodParametersManager
-    ) {}
+    ) {
+    }
 
     public function generate(): array
     {

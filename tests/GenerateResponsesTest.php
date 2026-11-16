@@ -24,6 +24,7 @@ use Mockery as m;
 use OpenApi\Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionMethod;
 
 /**
  * @internal
@@ -157,7 +158,7 @@ class GenerateResponsesTest extends TestCase
         $swaggerConfig = m::mock(SwaggerConfig::class);
         $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn('');
         $generateResponses = $this->makeGenerateResponses($swaggerConfig, []);
-        $method = new \ReflectionMethod($generateResponses, 'getContent');
+        $method = new ReflectionMethod($generateResponses, 'getContent');
         $method->setAccessible(true);
 
         $content = $method->invoke($generateResponses, 'array');
@@ -169,7 +170,7 @@ class GenerateResponsesTest extends TestCase
 
     private function invokeGetContent(GenerateResponses $generateResponses, string $type): array
     {
-        $method = new \ReflectionMethod($generateResponses, 'getContent');
+        $method = new ReflectionMethod($generateResponses, 'getContent');
         $method->setAccessible(true);
         return $method->invoke($generateResponses, $type);
     }

@@ -12,4 +12,6 @@ class ProxyWithHelper
     public array $content = [];
 }
 
-class ProxyHelper {}
+class ProxyHelper
+{
+}

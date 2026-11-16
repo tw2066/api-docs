@@ -17,6 +17,7 @@ use Hyperf\DTO\Scan\PropertyManager;
 use OpenApi\Annotations\Schema;
 use OpenApi\Attributes as OA;
 use OpenApi\Generator;
+use ReflectionProperty;
 
 class SwaggerComponents
 {
@@ -26,7 +27,8 @@ class SwaggerComponents
         protected SwaggerCommon $common,
         protected PropertyManager $propertyManager,
         protected ?GenerateProxyClass $generateProxyClass,
-    ) {}
+    ) {
+    }
 
     public function getSchemas(): array
     {
@@ -244,7 +246,7 @@ class SwaggerComponents
         $property->allOf = [$ref];
     }
 
-    protected function buildPropertyFromReflection(\ReflectionProperty $reflectionProperty): Property
+    protected function buildPropertyFromReflection(ReflectionProperty $reflectionProperty): Property
     {
         return $this->propertyManager->createPropertyFromType(
             $this->common->getTypeName($reflectionProperty),
