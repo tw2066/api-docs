@@ -53,7 +53,7 @@ class GenerateProxyClass
     }
 
     /**
-     * 生成代理类.
+     * 生成代理类
      */
     public function generate(object $obj): string
     {
@@ -96,7 +96,7 @@ class GenerateProxyClass
     }
 
     /**
-     * 获取代理类对应的源类.
+     * 获取代理类对应的源类
      */
     public function getSourceClassname(string $proxyClassname): ?string
     {

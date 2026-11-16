@@ -43,7 +43,7 @@ class GenerateParametersTest extends TestCase
     }
 
     /**
-     * 路由占位符中的简单类型参数应生成为 path 必填.
+     * 路由占位符中的简单类型参数应生成为 path 必填
      */
     public function testPathParamInRoute(): void
     {
@@ -58,7 +58,7 @@ class GenerateParametersTest extends TestCase
     }
 
     /**
-     * 带正则约束的占位符 {id:\d+} 也应识别为 path 参数.
+     * 带正则约束的占位符 {id:\d+} 也应识别为 path 参数
      */
     public function testPathParamWithRegexConstraint(): void
     {
@@ -71,7 +71,7 @@ class GenerateParametersTest extends TestCase
     }
 
     /**
-     * DTO 4.0 的私有别名属性没有业务 setter 时不可写，不应生成请求参数.
+     * DTO 4.0 的私有别名属性没有业务 setter 时不可写，不应生成请求参数
      */
     public function testPrivateJsonFieldAliasWithoutSetterIsNotParameter(): void
     {

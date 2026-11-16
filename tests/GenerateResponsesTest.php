@@ -38,7 +38,7 @@ class GenerateResponsesTest extends TestCase
     }
 
     /**
-     * 同状态码时，方法级 ApiResponse 注解应覆盖全局 responses 配置.
+     * 同状态码时，方法级 ApiResponse 注解应覆盖全局 responses 配置
      */
     public function testAnnotationResponseOverridesGlobalResponse(): void
     {
@@ -65,7 +65,7 @@ class GenerateResponsesTest extends TestCase
     }
 
     /**
-     * 注解未覆盖的状态码仍使用全局配置.
+     * 注解未覆盖的状态码仍使用全局配置
      */
     public function testGlobalResponseKeptWhenNotOverridden(): void
     {

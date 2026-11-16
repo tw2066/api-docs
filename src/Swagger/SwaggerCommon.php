@@ -59,7 +59,7 @@ class SwaggerCommon extends DtoCommon
     }
 
     /**
-     * 获取简单php类名.
+     * 获取简单php类名
      */
     public function getSimpleClassName(?string $className): string
     {
@@ -82,7 +82,7 @@ class SwaggerCommon extends DtoCommon
     }
 
     /**
-     * 获取swagger类型.
+     * 获取swagger类型
      */
     public function getSwaggerType(mixed $phpType): ?string
     {
@@ -98,7 +98,7 @@ class SwaggerCommon extends DtoCommon
     }
 
     /**
-     * 通过PHP类型 获取SwaggerType类型.
+     * 通过PHP类型 获取SwaggerType类型
      */
     public function getSimpleType2SwaggerType(?string $phpType): ?string
     {

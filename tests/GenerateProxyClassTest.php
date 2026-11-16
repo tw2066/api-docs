@@ -40,7 +40,7 @@ class GenerateProxyClassTest extends TestCase
     }
 
     /**
-     * types映射写法与实例写法应产出相同的代理类.
+     * types映射写法与实例写法应产出相同的代理类
      */
     public function testGenerateByTypesMatchesInstanceGenerate(): void
     {

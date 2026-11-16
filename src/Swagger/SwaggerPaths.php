@@ -42,7 +42,7 @@ class SwaggerPaths
     }
 
     /**
-     * 增加一条路由.
+     * 增加一条路由
      */
     public function addPath(string $className, string $methodName, string $route, string $methods): void
     {
@@ -226,7 +226,7 @@ class SwaggerPaths
     }
 
     /**
-     * 获取方法在类中的位置.
+     * 获取方法在类中的位置
      */
     protected function getMethodNamePosition(string $className, string $methodName): int
     {
@@ -235,7 +235,7 @@ class SwaggerPaths
     }
 
     /**
-     * 设置位置并获取类位置数组.
+     * 设置位置并获取类位置数组
      */
     protected function makeMethodIndex(string $className): array
     {

@@ -118,7 +118,7 @@ class SwaggerSchemasTest extends TestCase
     }
 
     /**
-     * 私有别名属性仍可用于响应，但 DTO 4.0 请求输入为只读.
+     * 私有别名属性仍可用于响应，但 DTO 4.0 请求输入为只读
      */
     public function testPrivateJsonFieldAliasWithoutSetterIsReadOnly(): void
     {
@@ -358,7 +358,7 @@ class SwaggerSchemasTest extends TestCase
     }
 
     /**
-     * 自引用与互相引用的 DTO 不会导致 generateSchemas 无限递归.
+     * 自引用与互相引用的 DTO 不会导致 generateSchemas 无限递归
      */
     public function testCircularReferenceSchemas(): void
     {

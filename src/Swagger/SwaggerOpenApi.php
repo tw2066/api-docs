@@ -142,7 +142,7 @@ class SwaggerOpenApi
     }
 
     /**
-     * 获取指定 server 的文档产物文件路径.
+     * 获取指定 server 的文档产物文件路径
      */
     public function getOutputFile(string $serverName): string
     {

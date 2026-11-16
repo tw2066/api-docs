@@ -17,7 +17,7 @@ use Hyperf\Server\Server;
 use Hyperf\Support\Composer;
 
 /**
- * 添加路由到框架.
+ * 添加路由到框架
  */
 class BootAppRouteListener implements ListenerInterface
 {
