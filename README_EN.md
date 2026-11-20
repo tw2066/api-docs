@@ -35,6 +35,7 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 - DTO 4.0 input uses each field's primaryKey: the external alias when `#[JSONField]` is present, otherwise the PHP property name; private/protected properties require a regular business setter, while readonly/static properties are excluded from input mapping. Fields marked `#[Required]` are the exception: validation runs before mapping, so they remain required request fields in the documentation
 - For interface properties, configure a concrete class through the DTO `classMap`; unresolved or runtime-dynamic mappings fall back to a generic `object` schema
 - After upgrading to DTO 4.0, clear and regenerate the proxy files in `runtime/container/proxy/`
+- Upgrading from 3.x? See [UPGRADE-4.0.md](UPGRADE-4.0.md)
 
 ## 📦 Installation
 
