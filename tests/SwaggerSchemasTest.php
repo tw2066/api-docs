@@ -170,6 +170,18 @@ class SwaggerSchemasTest extends TestCase
         $this->assertArrayHasKey('SchemaPayment', $swaggerComponents->getSchemas());
     }
 
+    /**
+     * 与 Hyperf AbstractCallableDefinitionCollector 一致：联合类型取第一个成员。
+     */
+    public function testUnionPropertyUsesFirstMemberSchema(): void
+    {
+        $swaggerComponents = $this->createComponents();
+
+        $properties = $this->propertiesByName($swaggerComponents->generateSchemas(UnionSchema::class));
+
+        $this->assertSame('#/components/schemas/OtherSchemaPayment', $properties['value']->ref);
+    }
+
     public function testRequiredUsesJsonFieldAlias(): void
     {
         (new JSONField('display_name'))->collectProperty(AliasRequired::class, 'displayName');
@@ -302,19 +314,6 @@ class SwaggerSchemasTest extends TestCase
     /**
      * 标量 classMap 目标（DateTime => 'string'）没有 schema 可生成，文档期降级为 object。
      */
-    /**
-     * 原生联合类型不能按首成员生成 schema，降级为通用 object。
-     */
-    public function testUnionPropertyFallsBackToObjectSchema(): void
-    {
-        $swaggerComponents = $this->createComponents();
-
-        $properties = $this->propertiesByName($swaggerComponents->generateSchemas(UnionSchema::class));
-
-        $this->assertSame('object', $properties['value']->type);
-        $this->assertSame(Generator::UNDEFINED, $properties['value']->ref);
-    }
-
     public function testScalarClassMapTargetFallsBackToObjectSchema(): void
     {
         $mapper = new JsonMapper();

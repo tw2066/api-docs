@@ -42,11 +42,11 @@ use Hyperf\DTO\Mapper;
 Mapper::getJsonMapper()->classMap[PaymentInterface::class] = CardPayment::class;
 ```
 
-### 3. 联合类型属性文档降级为 `object`
+### 3. 联合类型属性文档使用第一个成员
 
-原生联合类型（如 `DateTime|string`、`FooA|FooB`）无法确定唯一 schema，4.0 统一输出通用 `object`，不再取联合类型的第一个成员。
+原生联合类型（如 `DateTime|string`、`FooA|FooB`）与 Hyperf 框架保持一致：文档取第一个成员生成 schema（`FooA|FooB` → `FooA` 的 component），与 DTO 映射侧“联合类型取第一个成员”的行为一致。
 
-映射侧同样按原值写入，由 PHP 原生联合类型兜底；非法值抛 `JsonMapper_Exception`。
+需要多类型时，推荐具体 DTO + `type` 判别字段；接口/抽象类属性请通过 `classMap` 指定具体类。
 
 ### 4. `ApiResponse` 新增 `types` 参数
 
@@ -69,7 +69,7 @@ public function list(): Page
 - schema 的属性名与 `required` 使用外部别名；只用于响应的私有别名字段标记为 `readOnly`。
 - 带 `#[Required]` 的私有/只读字段仍按请求必填输出。
 - 数组属性不再写入 `default`（避免 Knife4j 在生成请求示例时把数组默认值序列化成字符串）。
-- 未配置 classMap 的接口属性、联合类型属性统一为 `object`，不再输出首成员 schema。
+- 未配置 classMap 的接口属性统一为 `object`；联合类型属性取第一个成员生成 schema。
 
 ### 6. 新增组件（非 breaking）
 
@@ -110,7 +110,7 @@ public function list(): Page
 - 访问 `/swagger`、`/swagger/llms.txt`、`/swagger/{httpName}/{operationId}.md`。
 - 用包含以下场景的 DTO 验证文档与请求行为一致：
   - 接口/抽象类属性（静态 classMap 与未配置两种）；
-  - 联合类型属性；
+  - 联合类型属性（首成员 schema）；
   - `#[JSONField]` 别名、`#[Required]`、只读/私有字段；
   - `#[ApiResponse(..., types: ...)]` 与 `global_return_responses_class` 组合。
 - 运行项目测试；如有 OpenAPI snapshot / 契约测试，更新基线。

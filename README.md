@@ -33,6 +33,7 @@
 - 当返回类无法满足需求时，可使用 `#[ApiResponse]` 注解补充
 - DTO 4.0 输入只接受字段 primaryKey：有 `#[JSONField]` 时使用其外部别名，否则使用 PHP 属性名；private/protected 属性需要正常业务 setter 才能接收输入，readonly/static 属性不参与输入映射。带 `#[Required]` 的字段例外：验证先于映射执行，文档仍将其列为请求必填字段
 - 接口属性建议通过 DTO `classMap` 指定具体类；未指定或运行时动态映射时，文档降级为通用 `object`
+- 联合类型属性（如 `FooA|FooB`）与 Hyperf 框架一致，取第一个成员生成 schema；需要多态时请使用具体 DTO + 判别字段或 `classMap`
 - 升级到 DTO 4.0 后，建议清理并重新生成 `runtime/container/proxy/` 中的代理文件
 - 从 3.x 升级请参考 [UPGRADE-4.0.md](UPGRADE-4.0.md)
 
