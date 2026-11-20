@@ -138,6 +138,11 @@ class SwaggerComponents
 
     protected function applySchemaType(Schema $schema, Property $property): void
     {
+        if ($property->union) {
+            // 原生联合类型无法确定唯一的 component schema，降级为通用 object。
+            $schema->type = 'object';
+            return;
+        }
         if ($property->enum !== null) {
             $this->applyEnum($schema, $property->enum);
             return;

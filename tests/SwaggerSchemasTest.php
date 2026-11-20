@@ -34,6 +34,7 @@ use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use HyperfTest\ApiDocs\Request\StatusEnum;
 use HyperfTest\ApiDocs\Request\StatusInterface;
 use HyperfTest\ApiDocs\Request\TreeNode;
+use HyperfTest\ApiDocs\Request\UnionSchema;
 use HyperfTest\ApiDocs\Request\User;
 use Mockery as m;
 use OpenApi\Annotations\Schema;
@@ -300,6 +301,19 @@ class SwaggerSchemasTest extends TestCase
     /**
      * 标量 classMap 目标（DateTime => 'string'）没有 schema 可生成，文档期降级为 object。
      */
+    /**
+     * 原生联合类型不能按首成员生成 schema，降级为通用 object。
+     */
+    public function testUnionPropertyFallsBackToObjectSchema(): void
+    {
+        $swaggerComponents = $this->createComponents();
+
+        $properties = $this->propertiesByName($swaggerComponents->generateSchemas(UnionSchema::class));
+
+        $this->assertSame('object', $properties['value']->type);
+        $this->assertSame(Generator::UNDEFINED, $properties['value']->ref);
+    }
+
     public function testScalarClassMapTargetFallsBackToObjectSchema(): void
     {
         $mapper = new JsonMapper();
