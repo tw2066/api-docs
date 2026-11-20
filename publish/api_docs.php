@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Hyperf\ApiDocs\DTO\GlobalResponse;
+
 use function Hyperf\Support\env;
 
 return [

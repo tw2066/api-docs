@@ -12,6 +12,8 @@ use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
+use const BASE_PATH;
+
 /**
  * @internal
  * @coversNothing
@@ -62,7 +64,7 @@ class DiMapGenerateListenerTest extends TestCase
 
         $data = json_decode((string) file_get_contents($path), true);
         $this->assertIsArray($data);
-        $this->assertSame(\BASE_PATH, $data['base_path']);
+        $this->assertSame(BASE_PATH, $data['base_path']);
         $this->assertSame([], $data['definitions']);
         $this->assertSame([], $data['resolved']);
         // 唯一临时文件已 rename，不应残留

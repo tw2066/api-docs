@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HyperfTest\ApiDocs;
 
+use DateTime;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
 use Hyperf\ApiDocs\Swagger\SwaggerComponents;
 use Hyperf\Di\Annotation\AnnotationCollector;
@@ -317,7 +318,7 @@ class SwaggerSchemasTest extends TestCase
     public function testScalarClassMapTargetFallsBackToObjectSchema(): void
     {
         $mapper = new JsonMapper();
-        $mapper->classMap[\DateTime::class] = 'string';
+        $mapper->classMap[DateTime::class] = 'string';
         $swaggerComponents = $this->createComponents($mapper);
 
         $properties = $this->propertiesByName($swaggerComponents->generateSchemas(DateTimeSchema::class));

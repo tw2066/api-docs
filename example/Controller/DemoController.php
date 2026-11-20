@@ -141,7 +141,9 @@ class DemoController
     #[ApiOperation(summary: '获取请求头')]
     #[PostMapping(path: 'header/{id}')]
     #[ApiSecurity]
-    public function header(#[RequestHeader] #[Valid] DemoToken $header): void {}
+    public function header(#[RequestHeader] #[Valid] DemoToken $header): void
+    {
+    }
 
     #[ApiOperation(summary: '返回 obj(弃用)', deprecated: true)]
     #[GetMapping(path: 'obj')]
