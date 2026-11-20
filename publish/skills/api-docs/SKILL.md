@@ -242,7 +242,7 @@ class UserRequest
 
 ### DTO 验证常用注解
 
-验证注解位于 `Hyperf\DTO\Annotation\Validation\*`，均为**属性注解、可叠加**，构造参数 `messages:` 可自定义错误消息。
+验证注解位于 `Hyperf\DTO\Annotation\Validation\*`，均为**属性注解、可叠加**。单个注解用构造参数 `message:` 自定义错误消息；通用 `#[Validation]` 用 `messages:`（数组或 `|` 分隔字符串）。
 
 | 注解 | 说明 | 示例 |
 |------|------|------|
@@ -251,7 +251,7 @@ class UserRequest
 | `#[Integer]` / `#[Numeric]` | 整数 / 数值 | `#[Integer]` |
 | `#[Boolean]` | 布尔值 | `#[Boolean(strict: true)]` |
 | `#[Str]` | 字符串 | `#[Str]` |
-| `#[Email]` / `#[Url]` / `#[Date]` / `#[Json]` / `#[Image]` | 格式校验 | `#[Email(messages: '邮箱格式不正确')]` |
+| `#[Email]` / `#[Url]` / `#[Date]` / `#[Json]` / `#[Image]` | 格式校验 | `#[Email(message: '邮箱格式不正确')]` |
 | `#[Between]` / `#[Max]` / `#[Min]` / `#[Size]` | 范围 / 大小 | `#[Between(min: 2, max: 10)]`、`#[Max(100)]` |
 | `#[In]` / `#[NotIn]` | 值在 / 不在列表中 | `#[In(['a', 'b'])]` |
 | `#[Regex]` / `#[NotRegex]` / `#[StartsWith]` | 模式匹配 | `#[Regex('/^\d+$/')]` |

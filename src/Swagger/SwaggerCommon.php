@@ -44,7 +44,8 @@ class SwaggerCommon extends DtoCommon
 
     public function resolveDtoClass(?string $type): ?string
     {
-        return $this->getDtoMapper()->resolveMappedClass($type, null);
+        // 文档期没有运行时入参：不执行 callable classMap，标量目标降级为通用 object。
+        return $this->getDtoMapper()->resolveMappedClass($type, null, false);
     }
 
     public function getComponentsName(string $className): string

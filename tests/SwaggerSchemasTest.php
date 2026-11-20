@@ -21,6 +21,7 @@ use HyperfTest\ApiDocs\Request\AccessorSchema;
 use HyperfTest\ApiDocs\Request\Address;
 use HyperfTest\ApiDocs\Request\AliasRequired;
 use HyperfTest\ApiDocs\Request\CardPayment;
+use HyperfTest\ApiDocs\Request\DateTimeSchema;
 use HyperfTest\ApiDocs\Request\DemoBodyRequest;
 use HyperfTest\ApiDocs\Request\EnumSchema;
 use HyperfTest\ApiDocs\Request\InputAccessibility;
@@ -278,15 +279,38 @@ class SwaggerSchemasTest extends TestCase
         $this->assertSame('#/components/schemas/OtherSchemaPayment', $schema->ref);
     }
 
-    public function testCallableClassMapUsesDtoResolver(): void
+    /**
+     * callable classMap 的分派目标依赖运行时值，文档期降级为通用 object；
+     * 带 array 形参的 callable 也不会再被 null 调用而抛 TypeError。
+     */
+    public function testCallableClassMapFallsBackToObjectSchema(): void
     {
         $mapper = new JsonMapper();
-        $mapper->classMap[SchemaPaymentInterface::class] = static fn ($type, $value) => SchemaPayment::class;
+        $mapper->classMap[SchemaPaymentInterface::class] = static function (string $type, array $value): string {
+            return SchemaPayment::class;
+        };
         $swaggerComponents = $this->createComponents($mapper);
 
         $schema = $swaggerComponents->createSchema(type: SchemaPaymentInterface::class);
 
-        $this->assertSame('#/components/schemas/SchemaPayment', $schema->ref);
+        $this->assertSame('object', $schema->type);
+        $this->assertSame(Generator::UNDEFINED, $schema->ref);
+    }
+
+    /**
+     * 标量 classMap 目标（DateTime => 'string'）没有 schema 可生成，文档期降级为 object。
+     */
+    public function testScalarClassMapTargetFallsBackToObjectSchema(): void
+    {
+        $mapper = new JsonMapper();
+        $mapper->classMap[\DateTime::class] = 'string';
+        $swaggerComponents = $this->createComponents($mapper);
+
+        $properties = $this->propertiesByName($swaggerComponents->generateSchemas(DateTimeSchema::class));
+
+        $this->assertSame('object', $properties['createdAt']->type);
+        $this->assertSame('array', $properties['paidAt']->type);
+        $this->assertSame('object', $properties['paidAt']->items->type);
     }
 
     public function testInvalidClassMapTargetThrows(): void
