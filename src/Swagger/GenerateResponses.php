@@ -70,14 +70,15 @@ class GenerateResponses
 
     protected function getContent(array|object|string $returnTypeClassName, array $types = []): array
     {
+        // 类名 + 属性类型映射(无需实例化)。必须在包裹全局响应之前处理：
+        // 包裹后 returnType 变成对象，is_string() 判断会让 types 永远失效。
+        if ($types !== [] && is_string($returnTypeClassName) && $this->genericProxyClass->getApiVariableClass($returnTypeClassName)) {
+            $returnTypeClassName = $this->genericProxyClass->generateByTypes($returnTypeClassName, $types);
+        }
         // 获取全局类
         $globalReturnResponsesClass = $this->swaggerConfig->getGlobalReturnResponsesClass();
         if ($globalReturnResponsesClass) {
             $returnTypeClassName = make($globalReturnResponsesClass, [$returnTypeClassName]);
-        }
-        // 类名 + 属性类型映射(无需实例化)
-        if ($types !== [] && is_string($returnTypeClassName) && $this->genericProxyClass->getApiVariableClass($returnTypeClassName)) {
-            $returnTypeClassName = $this->genericProxyClass->generateByTypes($returnTypeClassName, $types);
         }
         // 判断对象
         if (is_object($returnTypeClassName)) {

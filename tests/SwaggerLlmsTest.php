@@ -36,6 +36,30 @@ class SwaggerLlmsTest extends TestCase
         $this->assertStringNotContainsString('items: []', $yaml);
     }
 
+    public function testEmptyListFieldsAreDumpedAsYamlSequence(): void
+    {
+        $method = new ReflectionMethod(SwaggerLlms::class, 'dumpYaml');
+        $method->setAccessible(true);
+
+        $yaml = $method->invoke(new SwaggerLlms(), [
+            'security' => [],
+            'tags' => [],
+            'components' => [
+                'parameters' => [],
+                'schemas' => ['User' => ['type' => 'object', 'required' => []]],
+            ],
+            'schema' => ['items' => []],
+        ]);
+
+        $this->assertStringContainsString('security: []', $yaml);
+        $this->assertStringContainsString('tags: []', $yaml);
+        $this->assertStringContainsString('required: []', $yaml);
+        // components.parameters 是映射，空值仍是 {}
+        $this->assertMatchesRegularExpression('/parameters:\s*\{\s*\}/', $yaml);
+        // 空 schema 仍是映射
+        $this->assertMatchesRegularExpression('/items:\s*\{\s*\}/', $yaml);
+    }
+
     public function testListGroupsByTagAndIncludesMethodAndPath(): void
     {
         $file = $this->createOpenApiFile();
@@ -72,6 +96,14 @@ class SwaggerLlmsTest extends TestCase
         $this->assertStringContainsString('User:', $content);
         $this->assertStringNotContainsString('/orders', $content);
         $this->assertStringNotContainsString('externalDocs', $content);
+    }
+
+    public function testDetailKeepsEmptySecurityAsSequence(): void
+    {
+        $content = (new SwaggerLlms())->detail('usersIdGet', $this->createOpenApiFile());
+
+        $this->assertStringContainsString('security: []', $content);
+        $this->assertStringNotContainsString('security: {  }', $content);
     }
 
     public function testDetailDecodesUrlEncodedOperationId(): void
@@ -129,6 +161,8 @@ class SwaggerLlmsTest extends TestCase
                         'summary' => 'Get user',
                         'description' => "First line\nSecond line",
                         'operationId' => 'usersIdGet',
+                        // security: false 场景会写入空列表
+                        'security' => [],
                         'responses' => [
                             '200' => [
                                 'description' => 'ok',

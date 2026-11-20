@@ -15,6 +15,30 @@ class SwaggerLlms
     protected const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
 
     /**
+     * OpenAPI 中语义固定为列表的字段：空数组必须输出 []，而不是 Symfony YAML 的 {  }。
+     */
+    protected const YAML_LIST_KEYS = [
+        'security', 'tags', 'servers', 'parameters', 'required', 'enum',
+        'allOf', 'oneOf', 'anyOf', 'prefixItems',
+    ];
+
+    /**
+     * 值为“名称 => 定义”映射的字段：其直接子键是用户自定义名称，
+     * 不能按 OpenAPI 关键字处理（例如 components.parameters 是映射而非列表）。
+     */
+    protected const YAML_NAME_MAP_KEYS = [
+        'properties', 'patternProperties', 'definitions', '$defs', 'schemas',
+        'headers', 'content', 'responses', 'paths', 'webhooks', 'callbacks',
+        'links', 'securitySchemes', 'encoding', 'variables', 'mapping',
+        'components', 'examples',
+    ];
+
+    /**
+     * 空列表哨兵：json_decode(..., true) 后 [] 与 {} 无法区分，先标记再在 dump 后还原。
+     */
+    protected const YAML_EMPTY_LIST_MARKER = '__API_DOCS_EMPTY_LIST__';
+
+    /**
      * 已解析的 OpenAPI 文件缓存: filePath => ['mtime' => int, 'data' => array].
      */
     protected static array $fileCache = [];
@@ -121,7 +145,13 @@ class SwaggerLlms
 
     protected function dumpYaml(array $openapi): string
     {
-        return Yaml::dump($openapi, 10, 2, Yaml::DUMP_OBJECT_AS_MAP);
+        $yaml = Yaml::dump($this->markEmptyListFields($openapi), 10, 2, Yaml::DUMP_OBJECT_AS_MAP);
+        // 只替换自己插入的哨兵值，不会命中描述文本中的同名内容。
+        return preg_replace(
+            '/^(\s*)([A-Za-z0-9_$-]+): ' . preg_quote(self::YAML_EMPTY_LIST_MARKER, '/') . '$/m',
+            '$1$2: []',
+            $yaml
+        ) ?? $yaml;
     }
 
     protected function oneLine(string $text): string
@@ -151,5 +181,30 @@ class SwaggerLlms
             }
         }
         return $schemas;
+    }
+
+    /**
+     * json_decode(..., true) 无法区分空对象 {} 与空列表 []。已知列表字段先替换为哨兵，
+     * dump 后还原成 []，避免输出非法的 `security: {  }`。
+     *
+     * @param bool $keysAreNames 当前数组的键是用户自定义名称（properties/components.schemas 等），
+     *                           不能当作 OpenAPI 关键字处理
+     */
+    private function markEmptyListFields(array $data, bool $keysAreNames = false): array
+    {
+        foreach ($data as $key => $value) {
+            if (! is_array($value)) {
+                continue;
+            }
+            if ($value === [] && ! $keysAreNames && is_string($key) && in_array($key, self::YAML_LIST_KEYS, true)) {
+                $data[$key] = self::YAML_EMPTY_LIST_MARKER;
+                continue;
+            }
+            $data[$key] = $this->markEmptyListFields(
+                $value,
+                is_string($key) && in_array($key, self::YAML_NAME_MAP_KEYS, true)
+            );
+        }
+        return $data;
     }
 }

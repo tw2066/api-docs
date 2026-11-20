@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HyperfTest\ApiDocs;
 
 use Hyperf\ApiDocs\Annotation\ApiResponse;
+use Hyperf\ApiDocs\DTO\GlobalResponse;
 use Hyperf\ApiDocs\Swagger\GenerateProxyClass;
 use Hyperf\ApiDocs\Swagger\GenerateResponses;
 use Hyperf\ApiDocs\Swagger\SwaggerCommon;
@@ -113,6 +114,44 @@ class GenerateResponsesTest extends TestCase
         }
         $this->assertNotNull($resp206);
         $this->assertSame('分页数据', $resp206->description);
+        $this->assertSame('#/components/schemas/Address', $resp206->content['application/json']->schema->ref);
+    }
+
+    /**
+     * types 必须在包裹 global_return_responses_class 之前生效，
+     * 否则 returnType 变成对象后 is_string 判断失败，Page 的 ApiVariable 会退化为 mixed。
+     */
+    public function testTypesAppliedBeforeGlobalResponseWrapping(): void
+    {
+        $swaggerConfig = m::mock(SwaggerConfig::class);
+        $swaggerConfig->shouldReceive('getResponsesCode')->andReturn('200');
+        $swaggerConfig->shouldReceive('getGlobalReturnResponsesClass')->andReturn(GlobalResponse::class);
+        $swaggerConfig->shouldReceive('getResponses')->andReturn([]);
+
+        $proxy = m::mock(GenerateProxyClass::class);
+        $proxy->shouldReceive('getApiVariableClass')->with(Page::class)->andReturn(['content']);
+        $proxy->shouldReceive('getApiVariableClass')->with(GlobalResponse::class)->andReturn(['data']);
+        $proxy->shouldReceive('generateByTypes')
+            ->once()
+            ->with(Page::class, ['content' => [Address::class]])
+            ->andReturn(Address::class);
+        // 默认 200 响应与 206 注解响应都会经过全局响应包装
+        $proxy->shouldReceive('generate')
+            ->twice()
+            ->with(m::type(GlobalResponse::class))
+            ->andReturn(Address::class);
+
+        $apiResponse = new ApiResponse(Page::class, 206, '分页数据', ['content' => [Address::class]]);
+        $generateResponses = $this->makeGenerateResponses($swaggerConfig, [$apiResponse], $proxy, [Address::class]);
+        $responses = $generateResponses->generate();
+
+        $resp206 = null;
+        foreach ($responses as $response) {
+            if ((int) $response->response === 206) {
+                $resp206 = $response;
+            }
+        }
+        $this->assertNotNull($resp206);
         $this->assertSame('#/components/schemas/Address', $resp206->content['application/json']->schema->ref);
     }
 
