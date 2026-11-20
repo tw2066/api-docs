@@ -92,13 +92,28 @@ class DiMapGenerateListener implements ListenerInterface
             'base_path' => BASE_PATH,
             'generated_at' => date('c'),
         ] + $this->collect();
-        // 原子写：避免 IDE 插件读到写了一半的文件
-        $tmpPath = $path . '.tmp';
-        file_put_contents($tmpPath, json_encode(
+        $json = json_encode(
             $payload,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        ));
-        rename($tmpPath, $path);
+        );
+        if ($json === false) {
+            $this->logger->error('Generate Di Map file failed: ' . json_last_error_msg());
+            return;
+        }
+        // 多 server 的 worker 0 是不同进程，临时文件必须按进程/次数隔离；
+        // 写完后再原子 rename，避免并发写同一 tmp 或发布半成品。
+        $tmpPath = $path . '.tmp.' . getmypid() . '.' . str_replace('.', '', uniqid('', true));
+        $written = file_put_contents($tmpPath, $json);
+        if ($written === false || $written !== strlen($json)) {
+            $this->logger->error('Generate Di Map file failed: cannot write ' . $tmpPath);
+            @unlink($tmpPath);
+            return;
+        }
+        if (! @rename($tmpPath, $path)) {
+            $this->logger->error('Generate Di Map file failed: cannot rename ' . $tmpPath);
+            @unlink($tmpPath);
+            return;
+        }
         $this->logger->debug('Generate Di Map file: ' . $path);
     }
 
