@@ -31,6 +31,7 @@ use HyperfTest\ApiDocs\Request\OtherSchemaPayment;
 use HyperfTest\ApiDocs\Request\PrivateAlias;
 use HyperfTest\ApiDocs\Request\PrivateRefAlias;
 use HyperfTest\ApiDocs\Request\SchemaPayment;
+use HyperfTest\ApiDocs\Request\ScalarUnionSchema;
 use HyperfTest\ApiDocs\Request\SchemaPaymentInterface;
 use HyperfTest\ApiDocs\Request\StatusEnum;
 use HyperfTest\ApiDocs\Request\StatusInterface;
@@ -180,6 +181,16 @@ class SwaggerSchemasTest extends TestCase
         $properties = $this->propertiesByName($swaggerComponents->generateSchemas(UnionSchema::class));
 
         $this->assertSame('#/components/schemas/OtherSchemaPayment', $properties['value']->ref);
+    }
+
+    public function testScalarUnionPropertyUsesFirstReflectionTypeSchema(): void
+    {
+        $swaggerComponents = $this->createComponents();
+
+        $properties = $this->propertiesByName($swaggerComponents->generateSchemas(ScalarUnionSchema::class));
+
+        // int|string 的反射首成员是 string
+        $this->assertSame('string', $properties['value']->type);
     }
 
     public function testRequiredUsesJsonFieldAlias(): void

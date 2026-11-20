@@ -29,7 +29,7 @@ Automatic Swagger/OpenAPI documentation generator for the [Hyperf](https://githu
 
 ## 💡 Important Notes
 
-- Union-typed properties follow the Hyperf framework behavior: the first union member is used for mapping and schema generation; use a concrete DTO with a discriminator field when multiple shapes are needed
+- Union-typed properties use the first union member for both schema generation and mapping; the member order follows PHP reflection; use a concrete DTO with a discriminator field when multiple shapes are needed
 - Controller methods should return specific types (including simple types) for better documentation generation
 - Use `#[ApiResponse]` annotation when return types cannot fully express the response structure
 - DTO 4.0 input uses each field's primaryKey: the external alias when `#[JSONField]` is present, otherwise the PHP property name; private/protected properties require a regular business setter, while readonly/static properties are excluded from input mapping. Fields marked `#[Required]` are the exception: validation runs before mapping, so they remain required request fields in the documentation

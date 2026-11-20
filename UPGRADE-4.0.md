@@ -44,9 +44,9 @@ Mapper::getJsonMapper()->classMap[PaymentInterface::class] = CardPayment::class;
 
 ### 3. 联合类型属性文档使用第一个成员
 
-原生联合类型（如 `DateTime|string`、`FooA|FooB`）与 Hyperf 框架保持一致：文档取第一个成员生成 schema（`FooA|FooB` → `FooA` 的 component），与 DTO 映射侧“联合类型取第一个成员”的行为一致。
+原生联合类型（如 `DateTime|string`、`FooA|FooB`）统一按第一个成员生成 schema 并映射：`FooA|FooB` → `FooA`，`DateTime|string` → `DateTime`。文档、验证与 DTO 映射使用同一个单类型。
 
-需要多类型时，推荐具体 DTO + `type` 判别字段；接口/抽象类属性请通过 `classMap` 指定具体类。
+首成员以 PHP `ReflectionUnionType::getTypes()` 为准：类成员排在内置类型之前，类与类之间按声明顺序。需要多类型时，推荐具体 DTO + `type` 判别字段；接口/抽象类属性请通过 `classMap` 指定具体类。
 
 ### 4. `ApiResponse` 新增 `types` 参数
 
